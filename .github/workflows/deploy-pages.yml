@@ -2,7 +2,7 @@ name: Deploy inventory site to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [claude/home-chat-system-artifact-ecvwjp]
     paths:
       - "site/**"
       - ".github/workflows/deploy-pages.yml"

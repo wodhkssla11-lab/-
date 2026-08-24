@@ -40,7 +40,8 @@
   "settings": {
     "title": "DRT · 재고관리",
     "subtitle": "로트 단위 공정 이동 관리",
-    "editPin": "4333"
+    "editPin": "0926",
+    "viewPin": "4333"
   },
   "master": {
     "vendors": [

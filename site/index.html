@@ -11,6 +11,7 @@
     padding: 20px; border-radius: 14px; position: relative; box-sizing: border-box;
   }
   .ivs-root * { box-sizing: border-box; }
+  .ivs-viewgate { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
   body { background: #0A0E16; margin: 0; }
   .ivs-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
   .ivs-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -680,7 +681,8 @@ const DEFAULT_MASTER = { vendors: DEFAULT_VENDORS };
 const DEFAULT_SETTINGS = {
   title: "리사이클링팀 · 재고관리",
   subtitle: "원자재 입고부터 전처리 완료까지 — 로트 단위 공정 이동 관리",
-  editPin: "",
+  editPin: "", // 편집 잠금 — 아는 사람만 입력/수정 가능 (설정에서 변경)
+  viewPin: "", // 보기 잠금 — 이게 있으면 링크를 열어도 이 PIN을 넣기 전엔 아무것도 안 보여요
 };
 
 function seedData() {
@@ -901,6 +903,7 @@ function InventorySystem() {
   const [master, setMaster] = useState(() => PUBLISHED_SNAPSHOT.master); // 거래처 · 품목코드 등록 정보
   const [masterModalOpen, setMasterModalOpen] = useState(false);
   const [unlocked, setUnlocked] = useState(false); // 세션에서만 유지 (보안을 위해 저장하지 않음)
+  const [viewUnlocked, setViewUnlocked] = useState(false); // 세션에서만 유지
   const canEdit = !settings.editPin || unlocked;
   // 공유 잠금이 걸려있고 아직 풀지 않은 상태 = 이 브라우저는 로컬 저장소를 전혀 쓰지 않고, 배포된
   // 스냅샷을 그대로 "보기 전용"으로 보여줘요. 잠금을 풀면(canEdit=true) 그 순간부터 이 브라우저의
@@ -910,6 +913,9 @@ function InventorySystem() {
   // data.json의 "마지막으로 읽어온 내용" — 헤더 표시(기준일)와 "초기화" 버튼의 되돌아갈 대상으로 써요.
   // 실제 화면 데이터(lots/moves 등)와는 분리해서, 보기 전용일 때만 그쪽에도 반영해요.
   const [published, setPublished] = useState(() => PUBLISHED_SNAPSHOT);
+  // 보기 잠금 — 걸려있으면 이 PIN을 맞히기 전까지는 화면 전체가 잠금 화면 하나만 보여요 (재고 데이터 자체가 안 보임).
+  // 편집 잠금(editPin)과는 별개예요: 팀원에게는 이 보기 PIN만 알려주면 되고, 편집 PIN은 관리자만 알면 돼요.
+  const viewGateEnabled = !!published.settings.viewPin;
 
   // ---------- data.json 실시간 폴링 (20초마다) ----------
   // 편집 중(useLocalStorageMode)이 아니면 화면 데이터 자체를 항상 최신 data.json으로 맞춰요.
@@ -1251,6 +1257,11 @@ function InventorySystem() {
     setSelected(next);
   };
 
+  // 보기 잠금이 걸려있고 아직 안 풀렸으면, 재고 데이터는 전혀 렌더링하지 않고 PIN 입력 화면만 보여줘요.
+  if (viewGateEnabled && !viewUnlocked) {
+    return html`<${ViewGate} correctPin=${published.settings.viewPin} title=${published.settings.title} onUnlock=${() => setViewUnlocked(true)} />`;
+  }
+
   return html`
     <div className="ivs-root" style=${ROOT_VARS}>
       <div className="ivs-header">
@@ -1538,6 +1549,33 @@ function InventorySystem() {
   `;
 }
 
+// 보기 잠금 화면 — 이 PIN을 맞히기 전엔 재고 데이터가 전혀 렌더링되지 않아요 (링크만 있는 사람이 내용을 못 봄).
+function ViewGate({ correctPin, title, onUnlock }) {
+  const [pin, setPin] = useState("");
+  const [error, setError] = useState(false);
+  const tryUnlock = () => {
+    if (pin === correctPin) onUnlock();
+    else setError(true);
+  };
+  return html`
+    <div className="ivs-root ivs-viewgate" style=${ROOT_VARS}>
+      <div className="ivs-modal ivs-modal-sm ivs-lock-screen">
+        <div className="ivs-lock-icon"><${Lock} size=${22} /></div>
+        <h3 className="ivs-lock-title">${title || "재고관리"}</h3>
+        <p className="ivs-dim" style=${{ marginBottom: 16 }}>확인하려면 비밀번호를 입력하세요.</p>
+        <input
+          type="password" className="ivs-input ivs-lock-input"
+          value=${pin} onChange=${(e) => { setPin(e.target.value); setError(false); }}
+          placeholder="PIN" onKeyDown=${(e) => e.key === "Enter" && tryUnlock()}
+          autoFocus
+        />
+        ${error ? html`<p className="ivs-move-diff loss" style=${{ marginTop: 8 }}>비밀번호가 맞지 않아요.</p>` : null}
+        <button className="ivs-btn ivs-btn-primary ivs-lock-submit" onClick=${tryUnlock}>확인</button>
+      </div>
+    </div>
+  `;
+}
+
 // ---------- 하위 컴포넌트 ----------
 function SummaryCard({ label, value, unit, accent, sub }) {
   return html`
@@ -1757,6 +1795,9 @@ function SettingsModal({ settings, unlocked, onUnlock, onSave, onClose }) {
   const [subtitleDraft, setSubtitleDraft] = useState(settings.subtitle);
   const [newPin, setNewPin] = useState("");
   const [removePinChecked, setRemovePinChecked] = useState(false);
+  const hasViewPin = !!settings.viewPin;
+  const [newViewPin, setNewViewPin] = useState("");
+  const [removeViewPinChecked, setRemoveViewPinChecked] = useState(false);
 
   const tryUnlock = () => {
     if (pinInput === settings.editPin) { onUnlock(); setPinError(false); }
@@ -1795,24 +1836,38 @@ function SettingsModal({ settings, unlocked, onUnlock, onSave, onClose }) {
           <${Field} label="팀 / 타이틀 이름"><input className="ivs-input" value=${titleDraft} onChange=${(e) => setTitleDraft(e.target.value)} /><//>
           <${Field} label="부제목"><input className="ivs-input" value=${subtitleDraft} onChange=${(e) => setSubtitleDraft(e.target.value)} /><//>
           <div className="ivs-settings-divider" />
-          <${Field} label=${hasPin ? "편집 비밀번호 변경 (비워두면 그대로 유지)" : "편집 비밀번호 설정 (선택)"}>
+          <${Field} label=${hasViewPin ? "보기 비밀번호 변경 (팀원에게 알려주는 것, 비워두면 그대로 유지)" : "보기 비밀번호 설정 (선택 — 켜두면 이 PIN 없이는 아무것도 안 보여요)"}>
+            <input
+              type="password" className="ivs-input" value=${newViewPin}
+              onChange=${(e) => setNewViewPin(e.target.value)}
+              placeholder=${hasViewPin ? "새 보기 비밀번호" : "예: 팀에 공유할 짧은 숫자"}
+            />
+          <//>
+          ${hasViewPin ? html`
+            <label className="ivs-checkbox-label">
+              <input type="checkbox" checked=${removeViewPinChecked} onChange=${(e) => setRemoveViewPinChecked(e.target.checked)} />
+              보기 잠금을 완전히 해제하기 (이후 링크만 있으면 누구나 바로 보여요)
+            </label>
+          ` : null}
+          <div className="ivs-settings-divider" />
+          <${Field} label=${hasPin ? "편집 비밀번호 변경 (관리자만 아는 것, 비워두면 그대로 유지)" : "편집 비밀번호 설정 (선택)"}>
             <input
               type="password" className="ivs-input" value=${newPin}
               onChange=${(e) => setNewPin(e.target.value)}
-              placeholder=${hasPin ? "새 비밀번호" : "예: 나만 아는 짧은 문구"}
+              placeholder=${hasPin ? "새 편집 비밀번호" : "예: 나만 아는 짧은 문구"}
             />
           <//>
           ${hasPin ? html`
             <label className="ivs-checkbox-label">
               <input type="checkbox" checked=${removePinChecked} onChange=${(e) => setRemovePinChecked(e.target.checked)} />
-              비밀번호 잠금을 완전히 해제하기 (이후 누구나 편집 가능해져요)
+              편집 잠금을 완전히 해제하기 (이후 누구나 편집 가능해져요)
             </label>
           ` : null}
           <p className="ivs-dash-note" style=${{ margin: 0 }}>
-            ⚠ 비밀번호를 설정하고 팀에 링크를 공유하면, 이 비밀번호를 모르는 사람은 항상 "마지막으로 공유된 스냅샷"만 보기 전용으로 보게 돼요
-            (제가 다시 배포하기 전까지는 그 화면이에요). 이 비밀번호로 잠금을 풀면 이 브라우저에서 자유롭게 편집할 수 있는데, 그 편집 내용은
-            이 브라우저에만 저장되고 — "팀 공유용 내보내기"로 파일을 내려받아 Claude에게 전달해야 팀원 화면에 반영돼요. 보안을 위해 잠금 해제
-            상태는 저장하지 않아서, 새로고침할 때마다 이 비밀번호를 다시 입력해야 해요 (본인 포함).
+            ⚠ 두 비밀번호는 서로 달라야 안전해요 — <b>보기 비밀번호</b>는 팀원에게 알려줘서 "링크 열면 아무것도 안 보이고 이걸 넣어야
+            재고가 보이는" 용도이고, <b>편집 비밀번호</b>는 관리자(나)만 알아서 입력/수정 권한을 여는 용도예요. 편집 잠금을 풀면 이 브라우저에서
+            자유롭게 편집할 수 있는데, 그 편집 내용은 이 브라우저에만 저장되고 — "팀 공유용 내보내기"로 파일을 내려받아 Claude에게 전달해야
+            팀원 화면에 반영돼요. 보안을 위해 두 잠금 모두 해제 상태를 저장하지 않아서, 새로고침할 때마다 다시 입력해야 해요 (본인 포함).
           </p>
         </div>
         <div className="ivs-modal-foot">
@@ -1823,6 +1878,7 @@ function SettingsModal({ settings, unlocked, onUnlock, onSave, onClose }) {
               title: titleDraft.trim() || settings.title,
               subtitle: subtitleDraft.trim() || settings.subtitle,
               editPin: removePinChecked ? "" : (newPin ? newPin : settings.editPin),
+              viewPin: removeViewPinChecked ? "" : (newViewPin ? newViewPin : settings.viewPin),
             })}
           >
             저장

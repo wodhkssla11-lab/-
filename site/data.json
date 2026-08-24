@@ -1,0 +1,20 @@
+{
+  "publishedAt": "2026-08-24",
+  "lots": [],
+  "moves": [],
+  "settings": {
+    "title": "DRT · 재고관리",
+    "subtitle": "로트 단위 공정 이동 관리",
+    "editPin": "4333"
+  },
+  "master": {
+    "vendors": [
+      { "name": "삼성에스디아이(주)", "loc": "천안SDI" },
+      { "name": "LG에너지솔루션(주)", "loc": "오창LG" },
+      { "name": "SK온(주)", "loc": "서산SK" },
+      { "name": "에코프로머티리얼즈", "loc": "포항EM" },
+      { "name": "포스코HY클린메탈", "loc": "광양PHY" },
+      { "name": "성일하이텍", "loc": "대구SY" }
+    ]
+  }
+}

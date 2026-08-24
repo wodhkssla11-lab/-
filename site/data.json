@@ -2,6 +2,23 @@
   "publishedAt": "2026-08-24",
   "lots": [
     {
+      "code": "PK0001",
+      "name": "전기차팩",
+      "categoryId": "ev_pack",
+      "vendor": "SK온(주)",
+      "shipLoc": "서산SK",
+      "lotNo": "P20260824-1",
+      "receivedDate": "2026-08-24",
+      "stage": "raw_in",
+      "qtyKg": 400,
+      "waterKg": null,
+      "excludeKg": null,
+      "tolling": false,
+      "carriedOver": false,
+      "id": "lot-1787555317761-39sp1",
+      "lastMove": null
+    },
+    {
       "code": "BM0001",
       "name": "CP",
       "categoryId": "blackmass",

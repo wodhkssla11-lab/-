@@ -116,6 +116,7 @@
   .ivs-tab.active { color: var(--text); background: var(--surface); box-shadow: var(--shadow-sm); font-weight: 600; }
 
   /* ---------- 섹션 / 카드 ---------- */
+  .ivs-half-grid { margin-bottom: 14px; }
   .ivs-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
     padding: 18px; margin-bottom: 18px; box-shadow: var(--shadow-sm); }
   .ivs-section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -130,7 +131,8 @@
   .ivs-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
     padding: 15px 16px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; }
   .ivs-kpi.accent::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--accent); }
-  .ivs-kpi-label { font-size: 12px; color: var(--text-dim); margin-bottom: 9px; display: flex; align-items: center; gap: 5px; }
+  .ivs-kpi-label { font-size: 12.5px; font-weight: 700; color: var(--text-dim); margin-bottom: 9px;
+    display: flex; align-items: center; gap: 5px; letter-spacing: -0.01em; }
   .ivs-kpi-value { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
   .ivs-kpi-value em { font-size: 13px; font-weight: 500; color: var(--text-dim); font-style: normal; margin-left: 3px; }
   .ivs-kpi-sub { font-size: 11.5px; color: var(--text-faint); margin-top: 6px; }
@@ -405,6 +407,9 @@
 
   /* ---------- 그래프 ---------- */
   .ivs-chart-label { font-size: 12px; color: var(--text-dim); font-weight: 550; margin-bottom: 12px; }
+  /* 카드 두 장을 절반씩 나란히 */
+  .ivs-half-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+  .ivs-half-grid > .ivs-card { margin-bottom: 0; height: 100%; }
   .ivs-chart-split { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: 26px; align-items: start; }
 
   .ivs-donut-wrap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
@@ -412,7 +417,7 @@
   .ivs-donut-value { font-size: 21px; font-weight: 700; fill: var(--text); font-variant-numeric: tabular-nums; }
   .ivs-donut-label { font-size: 10.5px; fill: var(--text-faint); }
   .ivs-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px;
-    min-width: 190px; flex: 1 1 190px; }
+    min-width: 190px; max-width: 360px; flex: 1 1 190px; }
   .ivs-legend-row { display: grid; grid-template-columns: 9px minmax(0, 1fr) auto auto; align-items: center;
     gap: 8px; font-size: 12px; }
   .ivs-legend-dot { width: 9px; height: 9px; border-radius: 3px; }
@@ -420,14 +425,19 @@
   .ivs-legend-pct { font-weight: 650; font-variant-numeric: tabular-nums; }
   .ivs-legend-val { color: var(--text-faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-  .ivs-columns { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 22px; overflow-x: auto; padding-bottom: 4px; }
-  .ivs-column { flex: 1 1 0; min-width: 74px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .ivs-column-val { font-size: 12.5px; font-weight: 650; font-variant-numeric: tabular-nums; }
-  .ivs-column-track { width: 100%; height: var(--chart-h, 190px); background: var(--grid); border-radius: 6px;
-    display: flex; align-items: flex-end; overflow: hidden; }
-  .ivs-column-fill { width: 100%; border-radius: 6px 6px 0 0; transition: height .2s ease; }
-  .ivs-column-labels { min-height: 34px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-  .ivs-column-name { font-size: 11.5px; color: var(--text-dim); text-align: center; line-height: 1.25; }
+  .ivs-columns { display: flex; align-items: flex-end; gap: 4px; padding-top: 22px; }
+  .ivs-column { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 9px; }
+  .ivs-column-plot { width: 100%; height: var(--chart-h, 168px); display: flex; align-items: flex-end; justify-content: center;
+    border-bottom: 1px solid var(--border-strong);
+    background-image: repeating-linear-gradient(to top, var(--grid) 0 1px, transparent 1px 25%); }
+  .ivs-column-bar { position: relative; width: 100%; max-width: 42px; min-height: 3px;
+    border-radius: 5px 5px 0 0; transition: height .25s ease; }
+  .ivs-column-val { position: absolute; left: 50%; bottom: calc(100% + 5px); transform: translateX(-50%);
+    font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--text); }
+  .ivs-column-labels { min-height: 32px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .ivs-column-name { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--text-dim);
+    text-align: center; line-height: 1.25; }
+  .ivs-column-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
   .ivs-column-sub { font-size: 10px; color: var(--accent); font-weight: 650; }
 
   .ivs-aggbars { display: flex; flex-direction: column; gap: 3px; }
@@ -458,6 +468,7 @@
   @media (max-width: 1100px) {
     .ivs-kpis, .ivs-kpis.cols-5 { grid-template-columns: repeat(2, 1fr); }
     .ivs-chart-split { grid-template-columns: 1fr; gap: 22px; }
+    .ivs-half-grid { grid-template-columns: 1fr; }
     .ivs-aggbar-row { grid-template-columns: minmax(100px, 1fr) 1fr 118px; }
     .ivs-breakdown-row { grid-template-columns: 120px 1fr 108px; }
     .ivs-rank-row { grid-template-columns: minmax(110px, 1fr) 1fr 120px; }
@@ -3203,13 +3214,13 @@ const Layers = mkIcon("layers");
 // ---------- 공정 단계 정의: 원자재(따뜻한 색) -> 처리 진행(차가운 색)으로 색이 흘러가도록 설계 ----------
 // key 값은 저장된 데이터가 참조하므로 절대 바꾸지 않아요. 화면에 보이는 label만 변경 가능해요.
 const STAGES = [
-  { key: "raw_in", label: "원자재입고", color: "#E8A34A" },
-  { key: "discharge", label: "전기방전완료", color: "#D9A653" },
-  { key: "disassemble", label: "해체완료", color: "#C6B36C" },
-  { key: "crush_wait", label: "파쇄대기", color: "#78CB9C" },
-  { key: "calcine_needed", label: "열분해필요", color: "#F2685F" },
-  { key: "usable", label: "출하대기", color: "#F2C46D" },
-  { key: "shipped", label: "출하완료", color: "#34D399" },
+  { key: "raw_in", label: "원자재입고", color: "#E9692F" },       // 주황
+  { key: "discharge", label: "전기방전완료", color: "#4C8DFF" },   // 파랑
+  { key: "disassemble", label: "해체완료", color: "#A97BF0" },     // 보라
+  { key: "crush_wait", label: "파쇄대기", color: "#17C1D9" },      // 청록
+  { key: "calcine_needed", label: "열분해필요", color: "#F0555C" }, // 빨강
+  { key: "usable", label: "출하대기", color: "#EDC22E" },          // 노랑
+  { key: "shipped", label: "출하완료", color: "#2FBF71" },         // 초록
 ];
 // 재공(현재고)에서 빠지는 "최종" 단계 — 출하완료만 해당해요.
 // (열분해필요는 아직 공정이 남아있는 재고라서 현재고에 포함돼요.)
@@ -3227,21 +3238,22 @@ const getStage = (key) =>
   };
 
 // 카테고리를 고르면 품목코드가 자동으로 정해져요. 카테고리 : 품목코드 = 1 : 1 고정 대응이에요.
+// 카테고리 색도 서로 헷갈리지 않게 색상환에 고르게 벌려놨어요 (파랑끼리·초록끼리 겹치던 걸 정리).
 const CATEGORIES = [
-  { id: "blackmass", label: "블랙매스", color: "#9AA5B8", code: "BM0001" },
-  { id: "ev_pack", label: "EV PACK", color: "#4C8DFF", code: "PK0001" },
-  { id: "ev_module", label: "EV MODULE", color: "#7FE0C0", code: "MD0001" },
-  { id: "ess", label: "ESS", color: "#B98CF2", code: "ES0001" },
-  { id: "hv_cell", label: "전기차셀", color: "#F2C46D", code: "HVC0001" },
-  { id: "mid_large_cell", label: "중대형셀", color: "#6EC6FF", code: "LIPC0001" },
-  { id: "cylindrical_cell", label: "원형셀", color: "#45D6B8", code: "ECRC0001" },
-  { id: "pouch_cell", label: "파우치셀", color: "#E3993D", code: "PC0001" },
-  { id: "small_prismatic_polymer_cell", label: "소형각형&폴리머셀", color: "#8BA4F2", code: "EPGC0001" },
-  { id: "hp_cell", label: "H.P배터리셀", color: "#F0645C", code: "HPC0001" },
-  { id: "mixed_powder", label: "혼합 분말", color: "#C9A227", code: "DRBM0001" },
-  { id: "mixed_cu_chip", label: "혼합 Cu-chip", color: "#D98850", code: "DRCC0001" },
-  { id: "mixed_al_chip", label: "혼합 Al-chip", color: "#A8B4C4", code: "DRAC0001" },
-  { id: "mixed_magnetic", label: "혼합 자력", color: "#7C8AA0", code: "DRM0001" },
+  { id: "blackmass", label: "블랙매스", color: "#94A3B8", code: "BM0001" },              // 밝은 회색
+  { id: "ev_pack", label: "EV PACK", color: "#3B82F6", code: "PK0001" },                 // 파랑
+  { id: "ev_module", label: "EV MODULE", color: "#22C55E", code: "MD0001" },             // 초록
+  { id: "ess", label: "ESS", color: "#A855F7", code: "ES0001" },                         // 보라
+  { id: "hv_cell", label: "전기차셀", color: "#F59E0B", code: "HVC0001" },                // 호박
+  { id: "mid_large_cell", label: "중대형셀", color: "#06B6D4", code: "LIPC0001" },        // 청록
+  { id: "cylindrical_cell", label: "원형셀", color: "#EC4899", code: "ECRC0001" },        // 분홍
+  { id: "pouch_cell", label: "파우치셀", color: "#F97316", code: "PC0001" },              // 주황
+  { id: "small_prismatic_polymer_cell", label: "소형각형&폴리머셀", color: "#FB7185", code: "EPGC0001" }, // 로즈
+  { id: "hp_cell", label: "H.P배터리셀", color: "#EF4444", code: "HPC0001" },             // 빨강
+  { id: "mixed_powder", label: "혼합 분말", color: "#84CC16", code: "DRBM0001" },         // 라임
+  { id: "mixed_cu_chip", label: "혼합 Cu-chip", color: "#A16207", code: "DRCC0001" },     // 구리
+  { id: "mixed_al_chip", label: "혼합 Al-chip", color: "#14B8A6", code: "DRAC0001" },     // 틸
+  { id: "mixed_magnetic", label: "혼합 자력", color: "#57534E", code: "DRM0001" },        // 진회색
 ];
 const categoryById = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
 
@@ -3412,9 +3424,9 @@ function subscribeLive(onData, onStatus) {
 let LIVE_DATA = FALLBACK_DATA;
 
 // ---------- 유틸 ----------
-const fmtKg = (n) => (n == null ? "-" : `${Number(n).toLocaleString("ko-KR")} Kg`);
+const fmtKg = (n) => (n == null ? "-" : `${Number(n).toLocaleString("ko-KR", { maximumFractionDigits: 1 })} Kg`);
 const fmtTon = (kg) =>
-  (kg / 1000).toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  (kg / 1000).toLocaleString("ko-KR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const weekLabel = (dateStr) => {
   if (!dateStr) return "-";
   const d = new Date(`${dateStr}T00:00:00`);
@@ -3873,7 +3885,7 @@ function InventorySystem() {
             value=${fmtTon(totals.totalIn)} unit="톤"
             icon=${html`<${Package} size=${13} />`}
             delta=${html`<${Delta} kg=${dayDelta.totalKg} count=${dayDelta.count} />`}
-            sub=${`전체 ${totals.count.toLocaleString("ko-KR")} lot · 어제 ${fmtTon(dayDelta.prevTotal)} 톤`}
+            sub=${`전체 ${totals.count.toLocaleString("ko-KR", { maximumFractionDigits: 1 })} lot · 어제 ${fmtTon(dayDelta.prevTotal)} 톤`}
           />
           <${SummaryCard}
             label="현재고 (재공 중)"
@@ -3898,7 +3910,7 @@ function InventorySystem() {
 
         <div className="ivs-card">
           <div className="ivs-card-head-row">
-            <h2 className="ivs-section-title">공정 파이프라인</h2>
+            <h2 className="ivs-section-title">공정별 재고현황</h2>
             <span className="ivs-section-hint">카드를 누르면 아래 표가 그 단계만 보여줘요${retiredCount > 0 ? ` · 삭제된 옛 단계로 남아있는 로트 ${retiredCount}건은 파이프라인 집계에서 제외돼요` : ""}</span>
           </div>
           <div className="ivs-pipe">
@@ -4387,12 +4399,12 @@ function MoveStageModal({ lot, onCancel, onConfirm }) {
             `)}
           </div>
           <label className="ivs-field" style=${{ marginTop: 14 }}>
-            <span>이동 후 배출 수량 (Kg) — 투입 ${lot.qtyKg.toLocaleString("ko-KR")}Kg</span>
+            <span>이동 후 배출 수량 (Kg) — 투입 ${lot.qtyKg.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg</span>
             <input type="number" className="ivs-input" value=${outputQty} onChange=${(e) => setOutputQty(e.target.value)} />
           </label>
           ${diff !== 0 ? html`
             <p className=${`ivs-move-diff ${diff < 0 ? "loss" : "mix"}`}>
-              ${diff < 0 ? `공정손실 ${Math.abs(diff).toLocaleString("ko-KR")}Kg` : `혼합증가 +${diff.toLocaleString("ko-KR")}Kg`}
+              ${diff < 0 ? `공정손실 ${Math.abs(diff).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg` : `혼합증가 +${diff.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg`}
             </p>
           ` : null}
         </div>
@@ -4607,7 +4619,7 @@ function ProductionTab({ lots, moves, canEdit, onClearMoves }) {
             <div className="ivs-prod-empty">이 날 등록된 신규 입고가 없습니다.</div>
           ` : dayReceipts.map((l) => html`
             <div className="ivs-prod-row" key=${l.id}>
-              ${l.code} · ${l.name} · ${l.lotNo} · ${Number(l.qtyKg).toLocaleString("ko-KR")}Kg${l.carriedOver ? " (이월재고)" : ""}
+              ${l.code} · ${l.name} · ${l.lotNo} · ${Number(l.qtyKg).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg${l.carriedOver ? " (이월재고)" : ""}
             </div>
           `)}
         </div>
@@ -4619,9 +4631,9 @@ function ProductionTab({ lots, moves, canEdit, onClearMoves }) {
           ` : dayMoves.map((m) => html`
             <div className="ivs-prod-row" key=${m.id}>
               ${m.code} · ${m.lotNo} · ${getStage(m.fromStage).label} → ${getStage(m.toStage).label} ·
-              투입 ${Number(m.inputQty).toLocaleString("ko-KR")}Kg → 배출 ${Number(m.outputQty).toLocaleString("ko-KR")}Kg
-              ${m.lossQty > 0 ? html`<span className="ivs-prod-tag loss">손실 ${m.lossQty.toLocaleString("ko-KR")}Kg</span>` : null}
-              ${m.mixQty > 0 ? html`<span className="ivs-prod-tag mix">혼합증가 ${m.mixQty.toLocaleString("ko-KR")}Kg</span>` : null}
+              투입 ${Number(m.inputQty).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg → 배출 ${Number(m.outputQty).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg
+              ${m.lossQty > 0 ? html`<span className="ivs-prod-tag loss">손실 ${m.lossQty.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg</span>` : null}
+              ${m.mixQty > 0 ? html`<span className="ivs-prod-tag mix">혼합증가 ${m.mixQty.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg</span>` : null}
             </div>
           `)}
         </div>
@@ -4874,7 +4886,7 @@ function RankedBarList({ rows }) {
   `;
 }
 
-const RANK_PALETTE = ["#4C8DFF", "#B98CF2", "#45D6B8", "#E3993D", "#6EC6FF", "#F2C46D", "#F0645C", "#9AA5B8"];
+const RANK_PALETTE = ["#3B82F6", "#A855F7", "#22C55E", "#F97316", "#06B6D4", "#EAB308", "#EF4444", "#EC4899", "#14B8A6", "#8B98AD"];
 
 function DashboardTab({ lots, moves, dayDelta }) {
   const availableYears = useMemo(() => {
@@ -5057,68 +5069,88 @@ function DashboardTab({ lots, moves, dayDelta }) {
           <${SummaryCard} label="재공재고 (기준일)" value=${fmtTon(snapshot.inProgress)} unit="톤" accent=${true} />
           <${SummaryCard} label="완료(출고) 합계 (기준일)" value=${fmtTon(snapshot.done)} unit="톤" />
         </div>
-        <div className="ivs-chart-label">공정 순서대로 본 단계별 재고 (톤)</div>
-        <${ColumnChart} rows=${stageChartRows} />
+      </div>
 
-        <div className="ivs-chart-split">
-          <div>
-            <div className="ivs-chart-label">재공 재고 구성비 (출하완료 제외)</div>
-            <${DonutChart}
-              rows=${stageDonutRows}
-              centerValue=${fmtTon(snapshot.inProgress)} centerLabel="톤 재공"
-              emptyMsg="기준일에 남아있는 재공 재고가 없어요."
-            />
+      <div className="ivs-half-grid">
+        <div className="ivs-card">
+          <div className="ivs-card-head-row">
+            <h2 className="ivs-section-title">공정 순서대로 본 단계별 재고</h2>
+            <span className="ivs-section-hint">기준일 ${asOfDate} · 단위 톤</span>
           </div>
-          <div>
-            <div className="ivs-chart-label">단계별 상세</div>
-            <div className="ivs-breakdown">
-              ${STAGES.map((s) => {
-                const kg = snapshot.stageTotals[s.key] || 0;
-                const pct = snapMax > 0 ? (kg / snapMax) * 100 : 0;
-                return html`
-                  <div className="ivs-breakdown-row" key=${s.key}>
-                    <div className="ivs-breakdown-name">
-                      <span className="ivs-badge-dot" style=${{ background: s.color }} />${s.label}${FINAL_STAGE_KEYS.includes(s.key) ? html`<span className="ivs-final-badge">최종</span>` : null}
-                    </div>
-                    <div className="ivs-breakdown-track">
-                      <div className="ivs-breakdown-fill" style=${{ width: `${pct}%`, "--c": s.color }} />
-                    </div>
-                    <div className="ivs-breakdown-val">${fmtTon(kg)} 톤<small>${fmtKg(kg)}</small></div>
-                  </div>
-                `;
-              })}
-            </div>
+          <${ColumnChart} rows=${stageChartRows} />
+        </div>
+
+        <div className="ivs-card">
+          <div className="ivs-card-head-row">
+            <h2 className="ivs-section-title">카테고리별 현재고</h2>
+            <span className="ivs-section-hint">실시간 · 재공 중</span>
           </div>
+          <${DonutChart}
+            rows=${categoryLive.map((c) => ({ key: c.key, label: c.label, color: c.color, value: c.kg }))}
+            centerLabel="톤 재공"
+            emptyMsg="재공 중인 재고가 없어요."
+          />
         </div>
       </div>
 
-      <${CollapsibleCard} title="카테고리별 현재고 (실시간, 재공 중)">
-        <div className="ivs-chart-split">
-          <div>
-            <div className="ivs-chart-label">구성비</div>
-            <${DonutChart}
-              rows=${categoryLive.map((c) => ({ key: c.key, label: c.label, color: c.color, value: c.kg }))}
-              centerLabel="톤 재공"
-              emptyMsg="재공 중인 재고가 없어요."
-            />
+      <div className="ivs-half-grid">
+        <div className="ivs-card">
+          <div className="ivs-card-head-row">
+            <h2 className="ivs-section-title">재공 재고 구성비</h2>
+            <span className="ivs-section-hint">기준일 ${asOfDate} · 출하완료 제외</span>
           </div>
-          <div>
-            <div className="ivs-chart-label">카테고리별 상세</div>
-            <${RankedBarList} rows=${categoryLive} />
-          </div>
+          <${DonutChart}
+            rows=${stageDonutRows}
+            centerValue=${fmtTon(snapshot.inProgress)} centerLabel="톤 재공"
+            emptyMsg="기준일에 남아있는 재공 재고가 없어요."
+          />
         </div>
-      <//>
 
-      <${CollapsibleCard} title="품목별 입고 순위 (선택 기간)">
-        <${RankedBarList} rows=${itemRank.slice(0, 12)} />
-      <//>
+        <div className="ivs-card">
+          <div className="ivs-card-head-row">
+            <h2 className="ivs-section-title">품목별 입고 순위</h2>
+            <span className="ivs-section-hint">선택 기간 · 상위 12개</span>
+          </div>
+          <${RankedBarList} rows=${itemRank.slice(0, 12)} />
+        </div>
+      </div>
 
-      <${CollapsibleCard} title="카테고리별 입고 순위 (선택 기간)">
-        <${RankedBarList} rows=${categoryRank} />
-      <//>
+      <div className="ivs-half-grid">
+        <div className="ivs-card">
+          <div className="ivs-card-head-row">
+            <h2 className="ivs-section-title">카테고리별 입고 순위</h2>
+            <span className="ivs-section-hint">선택 기간</span>
+          </div>
+          <${RankedBarList} rows=${categoryRank} />
+        </div>
 
-      <${CollapsibleCard} title="거래처별 입고 순위 (선택 기간)">
-        <${RankedBarList} rows=${vendorRank} />
+        <div className="ivs-card">
+          <div className="ivs-card-head-row">
+            <h2 className="ivs-section-title">거래처별 입고 순위</h2>
+            <span className="ivs-section-hint">선택 기간</span>
+          </div>
+          <${RankedBarList} rows=${vendorRank} />
+        </div>
+      </div>
+
+      <${CollapsibleCard} title="단계별 상세 수치 (기준일)">
+        <div className="ivs-breakdown">
+          ${STAGES.map((s) => {
+            const kg = snapshot.stageTotals[s.key] || 0;
+            const pct = snapMax > 0 ? (kg / snapMax) * 100 : 0;
+            return html`
+              <div className="ivs-breakdown-row" key=${s.key}>
+                <div className="ivs-breakdown-name">
+                  <span className="ivs-badge-dot" style=${{ background: s.color }} />${s.label}${FINAL_STAGE_KEYS.includes(s.key) ? html`<span className="ivs-final-badge">최종</span>` : null}
+                </div>
+                <div className="ivs-breakdown-track">
+                  <div className="ivs-breakdown-fill" style=${{ width: `${pct}%`, "--c": s.color }} />
+                </div>
+                <div className="ivs-breakdown-val">${fmtTon(kg)} 톤<small>${fmtKg(kg)}</small></div>
+              </div>
+            `;
+          })}
+        </div>
       <//>
     </div>
   `;
@@ -5181,21 +5213,23 @@ function DonutChart({ rows, centerValue, centerLabel, emptyMsg = "표시할 데�
 }
 
 // 세로 막대: 순서(공정 흐름)가 중요한 값에 써요.
-function ColumnChart({ rows, height = 190, valueLabel = "톤" }) {
+// 큰 회색 상자 대신, 옅은 눈금선 위에 가는 막대만 세워서 값 차이가 바로 읽히도록 했어요.
+function ColumnChart({ rows, height = 168, valueLabel = "톤" }) {
   const max = Math.max(...rows.map((r) => Number(r.value) || 0), 0);
   if (max <= 0) return html`<div className="ivs-prod-empty center">표시할 데이터가 없어요.</div>`;
   return html`
     <div className="ivs-columns" style=${{ "--chart-h": `${height}px` }}>
       ${rows.map((r) => {
-        const h = max > 0 ? Math.max(2, (r.value / max) * 100) : 0;
+        const h = Math.max(1.5, (r.value / max) * 100);
         return html`
           <div className="ivs-column" key=${r.key} title=${`${r.label} · ${fmtTon(r.value)} ${valueLabel}`}>
-            <div className="ivs-column-val">${fmtTon(r.value)}</div>
-            <div className="ivs-column-track">
-              <div className="ivs-column-fill" style=${{ height: `${h}%`, background: r.color }} />
+            <div className="ivs-column-plot">
+              <div className="ivs-column-bar" style=${{ height: `${h}%`, background: r.color }}>
+                <span className="ivs-column-val">${fmtTon(r.value)}</span>
+              </div>
             </div>
             <div className="ivs-column-labels">
-              <div className="ivs-column-name">${r.label}</div>
+              <div className="ivs-column-name"><span className="ivs-column-dot" style=${{ background: r.color }} />${r.label}</div>
               ${r.sub ? html`<div className="ivs-column-sub">${r.sub}</div>` : null}
             </div>
           </div>
@@ -5271,7 +5305,7 @@ function LabelModal({ lots, manager, onClose }) {
                     <div>
                       <div className="ivs-label-lot">${l.lotNo}</div>
                       <div className="ivs-label-name">${l.name}</div>
-                      <div className="ivs-label-kg">${Number(l.qtyKg).toLocaleString("ko-KR")}<em>kg</em></div>
+                      <div className="ivs-label-kg">${Number(l.qtyKg).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}<em>kg</em></div>
                     </div>
                     <div className="ivs-label-meta">
                       <div>품목 <b>${l.code}</b></div>

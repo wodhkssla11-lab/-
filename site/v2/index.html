@@ -4124,7 +4124,7 @@ function InventorySystem() {
             <${Search} size=${15} className="ivs-search-icon" />
             <input
               className="ivs-input ivs-search-input"
-              placeholder="검색: 여러 단어 입력 시 모두 포함된 것만 (예: 양극스크랩 삼성)"
+              placeholder="검색: 여러 단어 입력 시 모두 포함된 것만"
               value=${filters.search}
               onChange=${(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
             />
@@ -4511,9 +4511,9 @@ function MasterModal({ master, lots, onSave, onClose }) {
         </div>
         <div className="ivs-modal-body">
           <div className="ivs-master-form">
-            <input className="ivs-input" placeholder="거래처명 (예: 삼성에스디아이(주))" value=${vName}
+            <input className="ivs-input" placeholder="거래처명" value=${vName}
               onChange=${(e) => setVName(e.target.value)} onKeyDown=${(e) => e.key === "Enter" && addVendor()} />
-            <input className="ivs-input" placeholder="기본 출고지 (예: 천안SDI)" value=${vLoc}
+            <input className="ivs-input" placeholder="기본 출고지" value=${vLoc}
               onChange=${(e) => setVLoc(e.target.value)} onKeyDown=${(e) => e.key === "Enter" && addVendor()} />
             <button className="ivs-btn ivs-btn-primary" onClick=${addVendor}><${Plus} size=${13} /> 등록</button>
           </div>

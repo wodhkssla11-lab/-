@@ -3274,7 +3274,7 @@ const DEFAULT_VENDORS = [
 ];
 const VENDORS = DEFAULT_VENDORS; // 샘플 데이터 생성용
 
-const DEFAULT_MASTER = { vendors: DEFAULT_VENDORS };
+const DEFAULT_MASTER = { configured: true, vendors: DEFAULT_VENDORS };
 const DEFAULT_SETTINGS = {
   title: "리사이클링팀 · 재고관리",
   subtitle: "원자재 입고부터 전처리 완료까지 — 로트 단위 공정 이동 관리",
@@ -3379,13 +3379,26 @@ const FALLBACK_DATA = {
   lots: [], moves: [],
   settings: { ...DEFAULT_SETTINGS }, master: { ...DEFAULT_MASTER },
 };
+// Firebase는 배열을 가끔 {0:…, 1:…} 형태의 객체로 돌려줘요. 어느 쪽이 와도 배열로 맞춰줘요.
+function normalizeVendors(raw) {
+  const list = Array.isArray(raw) ? raw : (raw && typeof raw === "object" ? Object.values(raw) : []);
+  return list.filter((x) => x && typeof x === "object" && x.name);
+}
+function normalizeMaster(raw) {
+  const m = raw && typeof raw === "object" ? raw : null;
+  const vendors = normalizeVendors(m && m.vendors);
+  // 거래처가 하나도 없을 때: "저장한 적 있음" 표시가 있으면 사용자가 다 지운 것이니 빈 채로 두고,
+  // 표시가 없으면 아직 한 번도 설정한 적 없는 새 저장소이니 기본 거래처를 넣어줘요.
+  const useDefaults = vendors.length === 0 && !(m && m.configured);
+  return { configured: true, vendors: useDefaults ? DEFAULT_VENDORS.map((v) => ({ ...v })) : vendors };
+}
 function normalizeLive(data) {
   if (!data || typeof data !== "object") return { ...FALLBACK_DATA };
   return {
     lots: Array.isArray(data.lots) ? data.lots : [],
     moves: Array.isArray(data.moves) ? data.moves : [],
     settings: { ...DEFAULT_SETTINGS, ...(data.settings || {}) },
-    master: { ...DEFAULT_MASTER, ...(data.master || {}) },
+    master: normalizeMaster(data.master),
   };
 }
 async function fetchLive() {
@@ -3629,10 +3642,17 @@ function downloadFile(filename, content, mime) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-const emptyForm = {
-  code: CATEGORIES[0].code, name: "", categoryId: CATEGORIES[0].id, vendor: VENDORS[0].name,
-  shipLoc: VENDORS[0].loc, lotNo: "", receivedDate: new Date().toISOString().slice(0, 10),
-  stage: "raw_in", qtyKg: "", waterKg: "", excludeKg: "", tolling: false, carriedOver: false,
+// 새 로트 폼의 초기값 — 거래처는 코드에 박아두지 않고, 지금 등록돼 있는 목록에서 가져와요.
+// (예전에는 기본 목록의 첫 거래처가 박혀 있어서, 등록 관리에서 지워도 계속 다시 나타났어요.)
+const newLotForm = (master) => {
+  const vendors = (master && master.vendors) || [];
+  const first = vendors[0];
+  return {
+    code: CATEGORIES[0].code, name: "", categoryId: CATEGORIES[0].id,
+    vendor: first ? first.name : "", shipLoc: first ? (first.loc || "") : "",
+    lotNo: "", receivedDate: new Date().toISOString().slice(0, 10),
+    stage: "raw_in", qtyKg: "", waterKg: "", excludeKg: "", tolling: false, carriedOver: false,
+  };
 };
 
 // 색은 전부 스타일시트의 .ivs-root[data-theme="dark"|"light"] 토큰에서 와요 (인라인 변수 없음).
@@ -4022,7 +4042,7 @@ function InventorySystem() {
             <button className="ivs-btn" onClick=${() => setResetConfirm(true)} title="전체 데이터 초기화 (모두에게 실시간 반영)">
               <${RotateCcw} size=${14} /> 초기화
             </button>
-            <button className="ivs-btn ivs-btn-primary" onClick=${() => setFormModal({ mode: "add", values: { ...emptyForm } })}>
+            <button className="ivs-btn ivs-btn-primary" onClick=${() => setFormModal({ mode: "add", values: newLotForm(master) })}>
               <${Plus} size=${14} /> 새 로트 추가
             </button>
           ` : null}
@@ -4268,6 +4288,7 @@ function InventorySystem() {
       ${masterModalOpen ? html`
         <${MasterModal}
           master=${master}
+          lots=${lots}
           onSave=${(next, msg) => persistMaster(next, msg)}
           onClose=${() => setMasterModalOpen(false)}
         />
@@ -4431,7 +4452,9 @@ function LotFormModal({ mode, initial, master, onCancel, onSave, onOpenMaster })
           <${Field} label="품목명"><input className="ivs-input" value=${v.name} onChange=${set("name")} /><//>
           <${Field} label="거래처">
             <select className="ivs-select ivs-select-full" value=${v.vendor} onChange=${onVendorChange}>
-              ${!vendors.some((x) => x.name === v.vendor) && v.vendor ? html`<option value=${v.vendor}>${v.vendor}</option>` : null}
+              ${vendors.length === 0 ? html`<option value="">(등록된 거래처 없음 — 아래에서 등록하세요)</option>` : null}
+              ${mode === "edit" && v.vendor && !vendors.some((x) => x.name === v.vendor)
+                ? html`<option value=${v.vendor}>${v.vendor} (삭제된 거래처)</option>` : null}
               ${vendors.map((x) => html`<option key=${x.name} value=${x.name}>${x.name}</option>`)}
               <option value="__manage__">+ 거래처 등록·관리…</option>
             </select>
@@ -4462,8 +4485,9 @@ function LotFormModal({ mode, initial, master, onCancel, onSave, onOpenMaster })
 }
 
 // 거래처 · 품목코드를 등록/삭제하는 화면. 여기서 등록한 항목이 "새 로트 추가" 폼의 선택지가 돼요.
-function MasterModal({ master, onSave, onClose }) {
+function MasterModal({ master, lots, onSave, onClose }) {
   const vendors = master.vendors || [];
+  const usedCount = (name) => (lots || []).filter((l) => l.vendor === name).length;
   const [vName, setVName] = useState("");
   const [vLoc, setVLoc] = useState("");
   const [error, setError] = useState("");
@@ -4500,7 +4524,10 @@ function MasterModal({ master, onSave, onClose }) {
           <div className="ivs-master-list">
             ${vendors.length === 0 ? html`<div className="ivs-prod-empty">등록된 거래처가 없어요.</div>` : vendors.map((x) => html`
               <div className="ivs-master-row" key=${x.name}>
-                <div><strong>${x.name}</strong>${x.loc ? html`<span className="ivs-dim"> · ${x.loc}</span>` : null}</div>
+                <div>
+                  <strong>${x.name}</strong>${x.loc ? html`<span className="ivs-dim"> · ${x.loc}</span>` : null}
+                  ${usedCount(x.name) > 0 ? html`<span className="ivs-dim"> · 사용 중 ${usedCount(x.name)}건</span>` : null}
+                </div>
                 <button className="ivs-icon-btn ivs-menu-danger" onClick=${() => removeVendor(x.name)} title="삭제"><${Trash2} size=${13} /></button>
               </div>
             `)}

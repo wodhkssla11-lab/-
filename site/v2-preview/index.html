@@ -381,7 +381,7 @@
   @media print {
     body { background: #FFFFFF !important; }
     .ivs-root { padding: 0 !important; background: #FFFFFF !important; min-height: 0 !important; }
-    .ivs-print-hide, .ivs-tabs, .ivs-header, .ivs-overlay > .ivs-modal > .ivs-modal-head,
+    .ivs-print-hide, .ivs-tabs, .ivs-header, .ivs-qrbar, .ivs-overlay > .ivs-modal > .ivs-modal-head,
     .ivs-overlay > .ivs-modal > .ivs-modal-foot, .ivs-label-toolbar, .ivs-toast { display: none !important; }
     .ivs-overlay { position: static !important; padding: 0 !important; background: none !important;
       backdrop-filter: none !important; display: block !important; }
@@ -392,6 +392,58 @@
     .ivs-label { border: none !important; border-radius: 0 !important; break-inside: avoid; page-break-inside: avoid; }
     .ivs-label + .ivs-label { break-before: page; page-break-before: always; }
   }
+
+  /* ---------- QR 라벨 선택 바 ---------- */
+  .ivs-qrbar { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: var(--radius); padding: 12px 15px; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+  .ivs-qrbar-main { display: flex; align-items: flex-start; gap: 11px; min-width: 0; }
+  .ivs-qrbar-icon { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;
+    border-radius: 8px; background: var(--accent-soft); color: var(--accent); flex-shrink: 0; }
+  .ivs-qrbar-title { font-size: 13.5px; font-weight: 650; margin-bottom: 2px; }
+  .ivs-qrbar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  /* ---------- 그래프 ---------- */
+  .ivs-chart-label { font-size: 12px; color: var(--text-dim); font-weight: 550; margin-bottom: 12px; }
+  .ivs-chart-split { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: 26px; align-items: start; }
+
+  .ivs-donut-wrap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .ivs-donut { flex-shrink: 0; }
+  .ivs-donut-value { font-size: 21px; font-weight: 700; fill: var(--text); font-variant-numeric: tabular-nums; }
+  .ivs-donut-label { font-size: 10.5px; fill: var(--text-faint); }
+  .ivs-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px;
+    min-width: 190px; flex: 1 1 190px; }
+  .ivs-legend-row { display: grid; grid-template-columns: 9px minmax(0, 1fr) auto auto; align-items: center;
+    gap: 8px; font-size: 12px; }
+  .ivs-legend-dot { width: 9px; height: 9px; border-radius: 3px; }
+  .ivs-legend-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-dim); }
+  .ivs-legend-pct { font-weight: 650; font-variant-numeric: tabular-nums; }
+  .ivs-legend-val { color: var(--text-faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .ivs-columns { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 22px; overflow-x: auto; padding-bottom: 4px; }
+  .ivs-column { flex: 1 1 0; min-width: 74px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .ivs-column-val { font-size: 12.5px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .ivs-column-track { width: 100%; height: var(--chart-h, 190px); background: var(--grid); border-radius: 6px;
+    display: flex; align-items: flex-end; overflow: hidden; }
+  .ivs-column-fill { width: 100%; border-radius: 6px 6px 0 0; transition: height .2s ease; }
+  .ivs-column-labels { min-height: 34px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .ivs-column-name { font-size: 11.5px; color: var(--text-dim); text-align: center; line-height: 1.25; }
+  .ivs-column-sub { font-size: 10px; color: var(--accent); font-weight: 650; }
+
+  .ivs-aggbars { display: flex; flex-direction: column; gap: 3px; }
+  .ivs-aggbars-legend { display: flex; gap: 16px; font-size: 11.5px; color: var(--text-faint); margin-bottom: 8px; }
+  .ivs-aggbars-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .ivs-legend-swatch { width: 11px; height: 8px; border-radius: 2px; display: inline-block; }
+  .ivs-legend-swatch.soft { opacity: .3; }
+  .ivs-aggbar-row { display: grid; grid-template-columns: minmax(120px, 1.3fr) 1fr 132px; align-items: center;
+    gap: 14px; padding: 7px 8px; border-radius: var(--radius-sm); }
+  .ivs-aggbar-row:hover { background: var(--surface-2); }
+  .ivs-aggbar-name { font-size: 12.5px; font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ivs-aggbar-track { position: relative; height: 14px; background: var(--grid); border-radius: 999px; }
+  .ivs-aggbar-in { position: absolute; inset: 0 auto 0 0; border-radius: 999px; opacity: .3; min-width: 2px; }
+  .ivs-aggbar-prog { position: absolute; inset: 0 auto 0 0; border-radius: 999px; }
+  .ivs-aggbar-val { text-align: right; font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .ivs-aggbar-val small { display: block; font-size: 11px; color: var(--text-faint); font-weight: 400; }
 
   /* ---------- 레이아웃 래퍼 · 기타 ---------- */
   .ivs-dash, .ivs-prod, .ivs-tolling { display: block; }
@@ -405,6 +457,8 @@
   /* ---------- 반응형 ---------- */
   @media (max-width: 1100px) {
     .ivs-kpis, .ivs-kpis.cols-5 { grid-template-columns: repeat(2, 1fr); }
+    .ivs-chart-split { grid-template-columns: 1fr; gap: 22px; }
+    .ivs-aggbar-row { grid-template-columns: minmax(100px, 1fr) 1fr 118px; }
     .ivs-breakdown-row { grid-template-columns: 120px 1fr 108px; }
     .ivs-rank-row { grid-template-columns: minmax(110px, 1fr) 1fr 120px; }
   }
@@ -412,8 +466,11 @@
     .ivs-root { padding: 16px 14px 32px; }
     .ivs-kpis, .ivs-kpis.cols-3, .ivs-kpis.cols-5 { grid-template-columns: 1fr; }
     .ivs-form-grid { grid-template-columns: 1fr; }
-    .ivs-breakdown-row, .ivs-rank-row { grid-template-columns: 1fr auto; }
-    .ivs-breakdown-track, .ivs-rank-bar-track { display: none; }
+    .ivs-breakdown-row, .ivs-rank-row, .ivs-aggbar-row { grid-template-columns: 1fr auto; }
+    .ivs-breakdown-track, .ivs-rank-bar-track, .ivs-aggbar-track { display: none; }
+    .ivs-qrbar { align-items: stretch; }
+    .ivs-qrbar-actions { justify-content: space-between; }
+    .ivs-column { min-width: 62px; }
   }
 </style>
 
@@ -3150,11 +3207,13 @@ const STAGES = [
   { key: "discharge", label: "전기방전완료", color: "#D9A653" },
   { key: "disassemble", label: "해체완료", color: "#C6B36C" },
   { key: "crush_wait", label: "파쇄대기", color: "#78CB9C" },
-  { key: "calcine_needed", label: "소성필요", color: "#F2685F" },
+  { key: "calcine_needed", label: "열분해필요", color: "#F2685F" },
   { key: "usable", label: "출하대기", color: "#F2C46D" },
   { key: "shipped", label: "출하완료", color: "#34D399" },
 ];
-const FINAL_STAGE_KEYS = ["calcine_needed", "shipped"];
+// 재공(현재고)에서 빠지는 "최종" 단계 — 출하완료만 해당해요.
+// (열분해필요는 아직 공정이 남아있는 재고라서 현재고에 포함돼요.)
+const FINAL_STAGE_KEYS = ["shipped"];
 const stageByKey = Object.fromEntries(STAGES.map((s) => [s.key, s]));
 // 단계 목록에서 빠진 옛 단계(예: 삭제된 셀분리완료/파쇄완료)로 저장된 로트가 있어도 화면이 깨지지 않게,
 // 항상 이 함수로 단계 정보를 꺼내요. 없는 단계는 회색으로 "(옛 단계)"라고 표시하고 데이터는 그대로 둬요.
@@ -3423,7 +3482,7 @@ function InventorySystem() {
   // 부트스트랩(bootstrap())이 렌더 전에 Firebase에서 한 번 읽어온 값으로 시작해요. 그 뒤로는
   // 실시간 구독(subscribeLive)이 변경분을 계속 밀어줘요 — 별도의 "로컬 저장" 개념이 아예 없어요.
   const [lots, setLots] = useState(() => LIVE_DATA.lots);
-  const [moves, setMoves] = useState(() => LIVE_DATA.moves); // 공정이동(단계 이동) 이력 — 생산 탭에서 분석용으로 사용
+  const [moves, setMoves] = useState(() => LIVE_DATA.moves); // 공정이동(후속공정) 이력 — 생산 탭에서 분석용으로 사용
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -3728,6 +3787,9 @@ function InventorySystem() {
   };
 
 
+  // QR 라벨은 "체크한 LOT"을 기준으로 뽑아요. 표 필터를 바꿔도 체크는 유지되니, 여러 단계에서 골라 한 번에 뽑을 수 있어요.
+  const selectedLots = useMemo(() => lots.filter((l) => selected.has(l.id)), [lots, selected]);
+
   const allVisibleSelected = filtered.length > 0 && filtered.every((l) => selected.has(l.id));
   const toggleSelectAll = () => {
     if (allVisibleSelected) setSelected(new Set());
@@ -3818,7 +3880,7 @@ function InventorySystem() {
             value=${fmtTon(totals.inProgress)} unit="톤" accent=${true}
             icon=${html`<${Layers} size=${13} />`}
             delta=${html`<${Delta} kg=${dayDelta.inProgKg} />`}
-            sub=${`최종단계(소성필요·출하완료) 제외 · 어제 ${fmtTon(dayDelta.prevInProg)} 톤`}
+            sub=${`출하완료 제외 (열분해필요 포함) · 어제 ${fmtTon(dayDelta.prevInProg)} 톤`}
           />
           <${SummaryCard}
             label="출하대기"
@@ -3910,23 +3972,31 @@ function InventorySystem() {
           </div>
         </div>
 
-        ${filters.stage === "usable" ? html`
-          <div className="ivs-bulkbar">
-            <${QrCode} size=${14} />
-            <span>출하대기 ${filtered.length} lot · ${fmtTon(filtered.reduce((a, l) => a + (Number(l.qtyKg) || 0), 0))} 톤 — 출하 라벨을 뽑을 수 있어요.</span>
-            <div className="ivs-spacer" />
-            <button className="ivs-btn ivs-btn-primary" onClick=${() => setLabelLots(filtered)} disabled=${filtered.length === 0}>
-              <${QrCode} size=${13} /> QR 라벨 출력 (${filtered.length}건)
+        <div className="ivs-qrbar">
+          <div className="ivs-qrbar-main">
+            <span className="ivs-qrbar-icon"><${QrCode} size=${16} /></span>
+            <div>
+              <div className="ivs-qrbar-title">QR 라벨 출력</div>
+              <div className="ivs-section-hint">
+                표 왼쪽 체크박스로 라벨을 뽑을 LOT을 고른 뒤 오른쪽 버튼을 누르면, 고른 LOT의 라벨이 한 번에 나와요.
+                ${filters.stage === "usable" ? " (지금 출하대기 단계만 보고 있어요)" : ""}
+              </div>
+            </div>
+          </div>
+          <div className="ivs-qrbar-actions">
+            <span className=${`ivs-chip ${selectedLots.length ? "accent" : "neutral"}`}>${selectedLots.length}건 선택됨</span>
+            <button className="ivs-btn ivs-btn-sm" onClick=${toggleSelectAll} disabled=${filtered.length === 0}>
+              ${allVisibleSelected ? "선택 해제" : `표시된 ${filtered.length}건 모두 선택`}
+            </button>
+            <button className="ivs-btn ivs-btn-primary" onClick=${() => setLabelLots(selectedLots)} disabled=${selectedLots.length === 0}>
+              <${QrCode} size=${13} /> 선택한 ${selectedLots.length}건 라벨 출력
             </button>
           </div>
-        ` : null}
+        </div>
 
-        ${selected.size > 0 ? html`
+        ${canEdit && selected.size > 0 ? html`
           <div className="ivs-bulkbar">
             <span>${selected.size}건 선택됨</span>
-            <button className="ivs-btn" onClick=${() => setLabelLots(filtered.filter((l) => selected.has(l.id)))}>
-              <${QrCode} size=${13} /> QR 라벨 출력
-            </button>
             <button className="ivs-btn ivs-btn-danger" onClick=${() => setDeleteTarget("bulk")}>
               <${Trash2} size=${13} /> 선택 삭제
             </button>
@@ -3939,7 +4009,7 @@ function InventorySystem() {
             <thead>
               <tr>
                 <th className="ivs-th-check">
-                  ${canEdit ? html`<input type="checkbox" checked=${allVisibleSelected} onChange=${toggleSelectAll} />` : null}
+                  <input type="checkbox" checked=${allVisibleSelected} onChange=${toggleSelectAll} title="표시된 행 전체 선택" />
                 </th>
                 <${Th} label="품목코드" sortKey="code" sort=${sort} onSort=${toggleSort} />
                 <th>품목명</th>
@@ -3965,7 +4035,7 @@ function InventorySystem() {
                 const stage = getStage(l.stage);
                 return html`
                   <tr key=${l.id}>
-                    <td>${canEdit ? html`<input type="checkbox" checked=${selected.has(l.id)} onChange=${() => toggleSelectOne(l.id)} />` : null}</td>
+                    <td><input type="checkbox" checked=${selected.has(l.id)} onChange=${() => toggleSelectOne(l.id)} /></td>
                     <td className="ivs-mono">${l.code}</td>
                     <td>${l.name}</td>
                     <td>${cat ? html`<span className="ivs-badge" style=${{ "--c": cat.color }}>${cat.label}</span>` : null}</td>
@@ -3992,10 +4062,7 @@ function InventorySystem() {
                               <${Pencil} size=${13} /> 수정
                             </button>
                             <button onClick=${() => { setMoveModal(l); setOpenMenuId(null); }}>
-                              <${ArrowRightCircle} size=${13} /> 단계 이동
-                            </button>
-                            <button onClick=${() => { setLabelLots([l]); setOpenMenuId(null); }}>
-                              <${QrCode} size=${13} /> QR 라벨 출력
+                              <${ArrowRightCircle} size=${13} /> 후속공정
                             </button>
                             <button className="ivs-menu-danger" onClick=${() => { setDeleteTarget(l); setOpenMenuId(null); }}>
                               <${Trash2} size=${13} /> 삭제
@@ -4300,7 +4367,7 @@ function MoveStageModal({ lot, onCancel, onConfirm }) {
     <div className="ivs-overlay" onClick=${onCancel}>
       <div className="ivs-modal ivs-modal-sm" onClick=${(e) => e.stopPropagation()}>
         <div className="ivs-modal-head">
-          <h3>단계 이동 · ${lot.lotNo}</h3>
+          <h3>후속공정 · ${lot.lotNo}</h3>
           <button className="ivs-icon-btn" onClick=${onCancel}><${X} size=${16} /></button>
         </div>
         <div className="ivs-modal-body">
@@ -4631,7 +4698,9 @@ function TollingTab({ lots }) {
       row.in += l.qtyKg;
       if (!FINAL_STAGE_KEYS.includes(l.stage)) row.prog += l.qtyKg;
     });
-    return Array.from(map.values()).sort((a, b) => b.in - a.in);
+    return Array.from(map.values())
+      .sort((a, b) => b.in - a.in)
+      .map((r, i) => ({ ...r, color: RANK_PALETTE[i % RANK_PALETTE.length] }));
   };
 
   const byLoc = useMemo(() => groupBy((l) => l.shipLoc, (l) => ({ label: l.shipLoc })), [tollingLots]);
@@ -4653,25 +4722,40 @@ function TollingTab({ lots }) {
       row.in += l.qtyKg;
       if (!FINAL_STAGE_KEYS.includes(l.stage)) row.prog += l.qtyKg;
     });
-    return Array.from(map.values()).sort((a, b) => b.in - a.in);
+    return Array.from(map.values())
+      .sort((a, b) => b.in - a.in)
+      .map((r, i) => ({ ...r, color: RANK_PALETTE[i % RANK_PALETTE.length] }));
   }, [tollingLots, selectedLoc]);
 
   const locOptions = useMemo(() => Array.from(new Set(tollingLots.map((l) => l.shipLoc))).sort(), [tollingLots]);
 
-  const AggList = ({ rows, emptyMsg }) =>
-    rows.length === 0 ? html`<div className="ivs-prod-empty center">${emptyMsg}</div>` : html`
-      <div className="ivs-agg-list">
+  // 나열 대신 막대로 — 입고량(연한 막대) 위에 재공 현재고(진한 막대)를 겹쳐 그려서
+  // "얼마나 들어왔고, 그중 얼마가 아직 남아있는지"가 한눈에 보이게 했어요.
+  const AggList = ({ rows, emptyMsg }) => {
+    if (rows.length === 0) return html`<div className="ivs-prod-empty center">${emptyMsg}</div>`;
+    const max = Math.max(...rows.map((r) => r.in), 1);
+    const color = "var(--text-dim)";
+    return html`
+      <div className="ivs-aggbars">
+        <div className="ivs-aggbars-legend">
+          <span><i className="ivs-legend-swatch soft" style=${{ background: "var(--text-dim)" }} /> 입고량 (연한 막대)</span>
+          <span><i className="ivs-legend-swatch" style=${{ background: "var(--text-dim)" }} /> 재공 현재고 (진한 막대)</span>
+        </div>
         ${rows.map((r) => html`
-          <div className="ivs-agg-row" key=${r.key}>
-            <div className="ivs-agg-name">${r.label}</div>
-            <div className="ivs-agg-pair">
-              <div className="ivs-agg-stat"><span>${fmtTon(r.in)} 톤</span><small>입고량</small></div>
-              <div className="ivs-agg-stat"><span>${fmtTon(r.prog)} 톤</span><small>재공 현재고</small></div>
+          <div className="ivs-aggbar-row" key=${r.key}>
+            <div className="ivs-aggbar-name" title=${r.label}>${r.label}</div>
+            <div className="ivs-aggbar-track" title=${`입고 ${fmtTon(r.in)} 톤 · 재공 ${fmtTon(r.prog)} 톤`}>
+              <div className="ivs-aggbar-in" style=${{ width: `${(r.in / max) * 100}%`, background: r.color || color }} />
+              <div className="ivs-aggbar-prog" style=${{ width: `${(r.prog / max) * 100}%`, background: r.color || color }} />
+            </div>
+            <div className="ivs-aggbar-val">
+              ${fmtTon(r.in)} 톤<small>재공 ${fmtTon(r.prog)} 톤</small>
             </div>
           </div>
         `)}
       </div>
     `;
+  };
 
   return html`
     <div className="ivs-tolling">
@@ -4687,8 +4771,24 @@ function TollingTab({ lots }) {
       </div>
 
       <div className="ivs-card">
-        <div className="ivs-card-label">출고지별 입고량 / 재공 현재고 (톤)</div>
-        <${AggList} rows=${byLoc} emptyMsg="등록된 톨링품이 없습니다." />
+        <div className="ivs-card-head-row">
+          <h2 className="ivs-section-title">출고지별 입고량 / 재공 현재고</h2>
+          <span className="ivs-section-hint">단위: 톤</span>
+        </div>
+        <div className="ivs-chart-split">
+          <div>
+            <div className="ivs-chart-label">출고지 재공 구성비</div>
+            <${DonutChart}
+              rows=${byLoc.map((r) => ({ key: r.key, label: r.label, value: r.prog, color: r.color }))}
+              centerLabel="톤 재공"
+              emptyMsg="재공 중인 톨링품이 없어요."
+            />
+          </div>
+          <div>
+            <div className="ivs-chart-label">출고지별 상세</div>
+            <${AggList} rows=${byLoc} emptyMsg="등록된 톨링품이 없습니다." />
+          </div>
+        </div>
       </div>
 
       <div className="ivs-card">
@@ -4713,8 +4813,24 @@ function TollingTab({ lots }) {
       </div>
 
       <div className="ivs-card">
-        <div className="ivs-card-label">품목별 입고량 / 재공 현재고 (톤)</div>
-        <${AggList} rows=${byItem} emptyMsg="등록된 톨링품이 없습니다." />
+        <div className="ivs-card-head-row">
+          <h2 className="ivs-section-title">품목별 입고량 / 재공 현재고</h2>
+          <span className="ivs-section-hint">단위: 톤</span>
+        </div>
+        <div className="ivs-chart-split">
+          <div>
+            <div className="ivs-chart-label">품목 재공 구성비</div>
+            <${DonutChart}
+              rows=${byItem.map((r) => ({ key: r.key, label: r.label, value: r.prog, color: r.color }))}
+              centerLabel="톤 재공"
+              emptyMsg="재공 중인 톨링품이 없어요."
+            />
+          </div>
+          <div>
+            <div className="ivs-chart-label">품목별 상세</div>
+            <${AggList} rows=${byItem} emptyMsg="등록된 톨링품이 없습니다." />
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -4827,6 +4943,14 @@ function DashboardTab({ lots, moves, dayDelta }) {
 
   const snapMax = useMemo(() => Math.max(...STAGES.map((s) => snapshot.stageTotals[s.key] || 0), 0), [snapshot]);
 
+  // 그래프용 데이터 — 세로 막대는 공정 순서 그대로, 도넛은 재공(출하완료 제외) 구성비만.
+  const stageChartRows = useMemo(() => STAGES.map((s) => ({
+    key: s.key, label: s.label, color: s.color,
+    value: snapshot.stageTotals[s.key] || 0,
+    sub: FINAL_STAGE_KEYS.includes(s.key) ? "최종" : null,
+  })), [snapshot]);
+  const stageDonutRows = useMemo(() => stageChartRows.filter((r) => !FINAL_STAGE_KEYS.includes(r.key)), [stageChartRows]);
+
   // ---------- 카테고리별 현재고 (실시간, 재공 중) ----------
   const categoryLive = useMemo(() => {
     const map = new Map();
@@ -4902,7 +5026,7 @@ function DashboardTab({ lots, moves, dayDelta }) {
       <div className="ivs-kpis cols-5">
         <${SummaryCard} label="총 입고량 (선택 기간)" value=${fmtTon(totalInKg)} unit="톤" sub=${`물중량 제외 ${fmtTon(totalNetKg)} 톤`} />
         <${SummaryCard} label="출하대기 (선택 기간)" value=${fmtTon(readyKg)} unit="톤" />
-        <${SummaryCard} label="소성필요 (선택 기간)" value=${fmtTon(calcineKg)} unit="톤" />
+        <${SummaryCard} label="열분해필요 (선택 기간)" value=${fmtTon(calcineKg)} unit="톤" />
         <${SummaryCard} label="출하완료 (선택 기간)" value=${fmtTon(shippedKg)} unit="톤" />
         <${SummaryCard}
           label="현재고 (실시간)"
@@ -4914,8 +5038,9 @@ function DashboardTab({ lots, moves, dayDelta }) {
       </div>
 
       <p className="ivs-dash-note">
-        ※ "총 입고량"과 단계별 카드(출하대기 · 소성필요 · 출하완료)는 선택한 기간에 입고된 로트 기준이고,
+        ※ "총 입고량"과 단계별 카드(출하대기 · 열분해필요 · 출하완료)는 선택한 기간에 입고된 로트 기준이고,
         "현재고"는 기간과 무관하게 지금 이 순간의 실시간 수량이에요.
+        재공(현재고)에서 빠지는 최종 단계는 "출하완료" 하나예요 — 열분해필요는 아직 공정이 남아있어서 현재고에 포함돼요.
       </p>
 
       <div className="ivs-card">
@@ -4932,27 +5057,56 @@ function DashboardTab({ lots, moves, dayDelta }) {
           <${SummaryCard} label="재공재고 (기준일)" value=${fmtTon(snapshot.inProgress)} unit="톤" accent=${true} />
           <${SummaryCard} label="완료(출고) 합계 (기준일)" value=${fmtTon(snapshot.done)} unit="톤" />
         </div>
-        <div className="ivs-breakdown">
-          ${STAGES.map((s) => {
-            const kg = snapshot.stageTotals[s.key] || 0;
-            const pct = snapMax > 0 ? (kg / snapMax) * 100 : 0;
-            return html`
-              <div className="ivs-breakdown-row" key=${s.key}>
-                <div className="ivs-breakdown-name">
-                  <span className="ivs-badge-dot" style=${{ background: s.color }} />${s.label}${FINAL_STAGE_KEYS.includes(s.key) ? html`<span className="ivs-final-badge">최종</span>` : null}
-                </div>
-                <div className="ivs-breakdown-track">
-                  <div className="ivs-breakdown-fill" style=${{ width: `${pct}%`, "--c": s.color }} />
-                </div>
-                <div className="ivs-breakdown-val">${fmtTon(kg)} 톤<small>${fmtKg(kg)}</small></div>
-              </div>
-            `;
-          })}
+        <div className="ivs-chart-label">공정 순서대로 본 단계별 재고 (톤)</div>
+        <${ColumnChart} rows=${stageChartRows} />
+
+        <div className="ivs-chart-split">
+          <div>
+            <div className="ivs-chart-label">재공 재고 구성비 (출하완료 제외)</div>
+            <${DonutChart}
+              rows=${stageDonutRows}
+              centerValue=${fmtTon(snapshot.inProgress)} centerLabel="톤 재공"
+              emptyMsg="기준일에 남아있는 재공 재고가 없어요."
+            />
+          </div>
+          <div>
+            <div className="ivs-chart-label">단계별 상세</div>
+            <div className="ivs-breakdown">
+              ${STAGES.map((s) => {
+                const kg = snapshot.stageTotals[s.key] || 0;
+                const pct = snapMax > 0 ? (kg / snapMax) * 100 : 0;
+                return html`
+                  <div className="ivs-breakdown-row" key=${s.key}>
+                    <div className="ivs-breakdown-name">
+                      <span className="ivs-badge-dot" style=${{ background: s.color }} />${s.label}${FINAL_STAGE_KEYS.includes(s.key) ? html`<span className="ivs-final-badge">최종</span>` : null}
+                    </div>
+                    <div className="ivs-breakdown-track">
+                      <div className="ivs-breakdown-fill" style=${{ width: `${pct}%`, "--c": s.color }} />
+                    </div>
+                    <div className="ivs-breakdown-val">${fmtTon(kg)} 톤<small>${fmtKg(kg)}</small></div>
+                  </div>
+                `;
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
       <${CollapsibleCard} title="카테고리별 현재고 (실시간, 재공 중)">
-        <${RankedBarList} rows=${categoryLive} />
+        <div className="ivs-chart-split">
+          <div>
+            <div className="ivs-chart-label">구성비</div>
+            <${DonutChart}
+              rows=${categoryLive.map((c) => ({ key: c.key, label: c.label, color: c.color, value: c.kg }))}
+              centerLabel="톤 재공"
+              emptyMsg="재공 중인 재고가 없어요."
+            />
+          </div>
+          <div>
+            <div className="ivs-chart-label">카테고리별 상세</div>
+            <${RankedBarList} rows=${categoryLive} />
+          </div>
+        </div>
       <//>
 
       <${CollapsibleCard} title="품목별 입고 순위 (선택 기간)">
@@ -4966,6 +5120,87 @@ function DashboardTab({ lots, moves, dayDelta }) {
       <${CollapsibleCard} title="거래처별 입고 순위 (선택 기간)">
         <${RankedBarList} rows=${vendorRank} />
       <//>
+    </div>
+  `;
+}
+
+// ---------- 그래프 (외부 라이브러리 없이 SVG로 직접 그려요) ----------
+// rows: [{ key, label, value, color }] — value는 Kg 기준
+const chartTotal = (rows) => rows.reduce((a, r) => a + (Number(r.value) || 0), 0);
+const pctText = (v, total) => (total > 0 ? `${((v / total) * 100).toFixed(1)}%` : "0%");
+
+// 도넛: 비중이 한눈에 보이게. 가운데에는 합계를 크게 적어요.
+function Donut({ rows, size = 176, thickness = 26, centerValue, centerLabel }) {
+  const total = chartTotal(rows);
+  const r = (size - thickness) / 2;
+  const circ = 2 * Math.PI * r;
+  const half = size / 2;
+  let acc = 0;
+  const slices = total > 0 ? rows.filter((row) => row.value > 0).map((row) => {
+    const frac = row.value / total;
+    const seg = html`<circle
+      key=${row.key} cx=${half} cy=${half} r=${r} fill="none"
+      stroke=${row.color} strokeWidth=${thickness}
+      strokeDasharray=${`${circ * frac} ${circ * (1 - frac)}`}
+      strokeDashoffset=${-circ * acc}
+      transform=${`rotate(-90 ${half} ${half})`}
+    ><title>${`${row.label} · ${fmtTon(row.value)} 톤 (${pctText(row.value, total)})`}</title></circle>`;
+    acc += frac;
+    return seg;
+  }) : null;
+  return html`
+    <svg className="ivs-donut" width=${size} height=${size} viewBox=${`0 0 ${size} ${size}`} role="img">
+      <circle cx=${half} cy=${half} r=${r} fill="none" stroke="var(--grid)" strokeWidth=${thickness} />
+      ${slices}
+      <text x=${half} y=${half - 4} textAnchor="middle" className="ivs-donut-value">${centerValue != null ? centerValue : fmtTon(total)}</text>
+      <text x=${half} y=${half + 16} textAnchor="middle" className="ivs-donut-label">${centerLabel || "톤"}</text>
+    </svg>
+  `;
+}
+
+// 도넛 + 범례를 한 덩어리로. 값이 하나도 없으면 안내 문구만 보여줘요.
+function DonutChart({ rows, centerValue, centerLabel, emptyMsg = "표시할 데이터가 없어요." }) {
+  const total = chartTotal(rows);
+  if (total <= 0) return html`<div className="ivs-prod-empty center">${emptyMsg}</div>`;
+  const shown = rows.filter((r) => r.value > 0).sort((a, b) => b.value - a.value);
+  return html`
+    <div className="ivs-donut-wrap">
+      <${Donut} rows=${shown} centerValue=${centerValue} centerLabel=${centerLabel} />
+      <ul className="ivs-legend">
+        ${shown.map((r) => html`
+          <li className="ivs-legend-row" key=${r.key}>
+            <span className="ivs-legend-dot" style=${{ background: r.color }} />
+            <span className="ivs-legend-name">${r.label}</span>
+            <span className="ivs-legend-pct">${pctText(r.value, total)}</span>
+            <span className="ivs-legend-val">${fmtTon(r.value)} 톤</span>
+          </li>
+        `)}
+      </ul>
+    </div>
+  `;
+}
+
+// 세로 막대: 순서(공정 흐름)가 중요한 값에 써요.
+function ColumnChart({ rows, height = 190, valueLabel = "톤" }) {
+  const max = Math.max(...rows.map((r) => Number(r.value) || 0), 0);
+  if (max <= 0) return html`<div className="ivs-prod-empty center">표시할 데이터가 없어요.</div>`;
+  return html`
+    <div className="ivs-columns" style=${{ "--chart-h": `${height}px` }}>
+      ${rows.map((r) => {
+        const h = max > 0 ? Math.max(2, (r.value / max) * 100) : 0;
+        return html`
+          <div className="ivs-column" key=${r.key} title=${`${r.label} · ${fmtTon(r.value)} ${valueLabel}`}>
+            <div className="ivs-column-val">${fmtTon(r.value)}</div>
+            <div className="ivs-column-track">
+              <div className="ivs-column-fill" style=${{ height: `${h}%`, background: r.color }} />
+            </div>
+            <div className="ivs-column-labels">
+              <div className="ivs-column-name">${r.label}</div>
+              ${r.sub ? html`<div className="ivs-column-sub">${r.sub}</div>` : null}
+            </div>
+          </div>
+        `;
+      })}
     </div>
   `;
 }

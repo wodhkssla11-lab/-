@@ -4656,14 +4656,14 @@ function SettingsModal({ settings, unlocked, onUnlock, onSave, onClose }) {
           <${Field} label="팀 / 타이틀 이름"><input className="ivs-input" value=${titleDraft} onChange=${(e) => setTitleDraft(e.target.value)} /><//>
           <${Field} label="부제목"><input className="ivs-input" value=${subtitleDraft} onChange=${(e) => setSubtitleDraft(e.target.value)} /><//>
           <${Field} label="QR 라벨 담당자 (라벨에 인쇄돼요)">
-            <input className="ivs-input" value=${managerDraft} onChange=${(e) => setManagerDraft(e.target.value)} placeholder="예: DRT-김재완" />
+            <input className="ivs-input" value=${managerDraft} onChange=${(e) => setManagerDraft(e.target.value)} placeholder="담당자" />
           <//>
           <div className="ivs-settings-divider" />
           <${Field} label=${hasViewPin ? "보기 비밀번호 변경 (팀원에게 알려주는 것, 비워두면 그대로 유지)" : "보기 비밀번호 설정 (선택 — 켜두면 이 PIN 없이는 아무것도 안 보여요)"}>
             <input
               type="password" className="ivs-input" value=${newViewPin}
               onChange=${(e) => setNewViewPin(e.target.value)}
-              placeholder=${hasViewPin ? "새 보기 비밀번호" : "예: 팀에 공유할 짧은 숫자"}
+              placeholder=${hasViewPin ? "새 보기 비밀번호" : "보기 비밀번호"}
             />
           <//>
           ${hasViewPin ? html`
@@ -4677,7 +4677,7 @@ function SettingsModal({ settings, unlocked, onUnlock, onSave, onClose }) {
             <input
               type="password" className="ivs-input" value=${newPin}
               onChange=${(e) => setNewPin(e.target.value)}
-              placeholder=${hasPin ? "새 편집 비밀번호" : "예: 나만 아는 짧은 문구"}
+              placeholder=${hasPin ? "새 편집 비밀번호" : "편집 비밀번호"}
             />
           <//>
           ${hasPin ? html`

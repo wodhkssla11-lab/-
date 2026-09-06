@@ -159,6 +159,8 @@
   .ivs-pipe-val { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
   .ivs-pipe-val em { font-size: 11.5px; font-weight: 500; color: var(--text-dim); font-style: normal; margin-left: 2px; }
   .ivs-pipe-sub { font-size: 11.5px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .ivs-pipe .ivs-delta { margin-top: 1px; align-self: flex-start; font-size: 11px; padding: 1px 6px; gap: 3px; }
+  .ivs-pipe .ivs-delta span { font-size: 10px; }
   .ivs-pipe-bar { height: 3px; border-radius: 999px; background: var(--grid); overflow: hidden; }
   .ivs-pipe-bar i { display: block; height: 100%; border-radius: 999px; background: var(--c); }
   .ivs-pipe-flag { font-size: 10px; font-weight: 700; color: var(--accent); background: var(--accent-soft);
@@ -344,6 +346,7 @@
   .ivs-agg-stat span { display: block; font-size: 14.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .ivs-agg-stat small { font-size: 11px; color: var(--text-faint); }
   .ivs-card-head-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+  .ivs-card-head-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
   .ivs-loading { display: flex; align-items: center; gap: 9px; justify-content: center; padding: 64px 0; color: var(--text-dim); }
   .ivs-spin { animation: ivs-spin .8s linear infinite; }
@@ -415,7 +418,7 @@
   .ivs-donut-wrap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
   .ivs-donut { flex-shrink: 0; }
   .ivs-donut-value { font-size: 21px; font-weight: 700; fill: var(--text); font-variant-numeric: tabular-nums; }
-  .ivs-donut-label { font-size: 10.5px; fill: var(--text-faint); }
+  .ivs-donut-label { font-size: 10px; fill: var(--text-faint); }
   .ivs-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px;
     min-width: 190px; max-width: 360px; flex: 1 1 190px; }
   .ivs-legend-row { display: grid; grid-template-columns: 9px minmax(0, 1fr) auto auto; align-items: center;
@@ -3459,13 +3462,13 @@ function reconstructLotState(lot, lotMoves, asOfDate) {
   const applicable = sorted.filter((m) => m.date <= asOfDate);
   if (applicable.length > 0) {
     const last = applicable[applicable.length - 1];
-    return { stage: last.toStage, qtyKg: last.outputQty };
+    return { stage: last.toStage, qtyKg: last.outputQty, lastMove: last.date };
   }
   if (sorted.length > 0) {
     const first = sorted[0];
-    return { stage: first.fromStage, qtyKg: first.inputQty }; // 아직 첫 이동 전이면 이동 전 상태
+    return { stage: first.fromStage, qtyKg: first.inputQty, lastMove: null }; // 아직 첫 이동 전이면 이동 전 상태
   }
-  return { stage: lot.stage, qtyKg: lot.qtyKg }; // 이동 이력이 없으면 입고 이후 그대로라고 가정
+  return { stage: lot.stage, qtyKg: lot.qtyKg, lastMove: null }; // 이동 이력이 없으면 입고 이후 그대로라고 가정
 }
 
 // ---------- 파일 내려받기 (일반 웹사이트라서 브라우저 다운로드를 바로 써요) ----------
@@ -3767,6 +3770,8 @@ function InventorySystem() {
       movesByLot.get(key).push(m);
     });
     let prevTotal = 0, prevInProg = 0, prevCount = 0;
+    // 단계별로도 어제 값을 모아둬요 — 공정별 재고현황 카드마다 증감을 보여주려고요.
+    const prevByStage = Object.fromEntries(STAGES.map((st) => [st.key, { kg: 0, count: 0 }]));
     lots.forEach((l) => {
       const lotMoves = movesByLot.get(l.id) || movesByLot.get(l.lotNo) || [];
       const st = reconstructLotState(l, lotMoves, asOf);
@@ -3775,15 +3780,22 @@ function InventorySystem() {
       prevTotal += kg;
       prevCount += 1;
       if (!FINAL_STAGE_KEYS.includes(st.stage)) prevInProg += kg;
+      const bucket = prevByStage[st.stage];
+      if (bucket) { bucket.kg += kg; bucket.count += 1; }
     });
+    const byStage = Object.fromEntries(STAGES.map((st) => {
+      const now = stageTotals[st.key] || { kg: 0, count: 0 };
+      const was = prevByStage[st.key];
+      return [st.key, { kg: now.kg - was.kg, count: now.count - was.count, prevKg: was.kg }];
+    }));
     return {
-      asOf,
+      asOf, byStage,
       totalKg: totals.totalIn - prevTotal,
       inProgKg: totals.inProgress - prevInProg,
       count: lots.length - prevCount,
       prevTotal, prevInProg, prevCount,
     };
-  }, [lots, moves, totals]);
+  }, [lots, moves, totals, stageTotals]);
 
   // ---------- CSV 내보내기 (원본의 엑셀 내보내기 자리) ----------
   const exportCsv = () => {
@@ -3911,11 +3923,12 @@ function InventorySystem() {
         <div className="ivs-card">
           <div className="ivs-card-head-row">
             <h2 className="ivs-section-title">공정별 재고현황</h2>
-            <span className="ivs-section-hint">카드를 누르면 아래 표가 그 단계만 보여줘요${retiredCount > 0 ? ` · 삭제된 옛 단계로 남아있는 로트 ${retiredCount}건은 파이프라인 집계에서 제외돼요` : ""}</span>
+            <span className="ivs-section-hint">카드를 누르면 아래 표가 그 단계만 보여줘요 · 증감은 어제 같은 시각 대비예요${retiredCount > 0 ? ` · 삭제된 옛 단계로 남아있는 로트 ${retiredCount}건은 파이프라인 집계에서 제외돼요` : ""}</span>
           </div>
           <div className="ivs-pipe">
             ${STAGES.map((s, i) => {
               const t = stageTotals[s.key];
+              const d = dayDelta.byStage[s.key] || { kg: 0, count: 0 };
               const pct = pipeMax > 0 ? (t.kg / pipeMax) * 100 : 0;
               return html`
                 <${Fragment} key=${s.key}>
@@ -3931,6 +3944,7 @@ function InventorySystem() {
                     </div>
                     <div className="ivs-pipe-val">${fmtTon(t.kg)}<em>톤</em></div>
                     <div className="ivs-pipe-sub">${t.count} lot · ${fmtKg(t.kg)}</div>
+                    <${Delta} kg=${d.kg} count=${d.count} label="전일" />
                     <div className="ivs-pipe-bar"><i style=${{ width: `${pct}%` }} /></div>
                   </button>
                   ${i < STAGES.length - 1 ? html`<div className="ivs-pipe-sep">›</div>` : null}
@@ -4805,6 +4819,25 @@ function TollingTab({ lots }) {
 
       <div className="ivs-card">
         <div className="ivs-card-head-row">
+          <h2 className="ivs-section-title">품목별 입고량 / 재공 현재고</h2>
+          <span className="ivs-section-hint">단위: 톤</span>
+        </div>
+        <div className="ivs-chart-split">
+          <div>
+            <div className="ivs-chart-label">품목 재공 구성비</div>
+            <${DonutChart}
+              rows=${byItem.map((r) => ({ key: r.key, label: r.label, value: r.prog, color: r.color }))}
+              centerLabel="톤 재공"
+              emptyMsg="재공 중인 톨링품이 없어요."
+            />
+          </div>
+          <div>
+            <div className="ivs-chart-label">품목별 상세</div>
+            <${AggList} rows=${byItem} emptyMsg="등록된 톨링품이 없습니다." />
+          </div>
+        </div>
+      <div className="ivs-card">
+        <div className="ivs-card-head-row">
           <div className="ivs-card-label" style=${{ marginBottom: 0 }}>출고지 선택 → 품목 × 주차/월차별 입고량 / 재공 현재고 (톤)</div>
           <select className="ivs-select" value=${selectedLoc} onChange=${(e) => setSelectedLoc(e.target.value)}>
             <option value="">출고지를 선택하세요</option>
@@ -4824,25 +4857,6 @@ function TollingTab({ lots }) {
         <${AggList} rows=${byItemVendor} emptyMsg="등록된 톨링품이 없습니다." />
       </div>
 
-      <div className="ivs-card">
-        <div className="ivs-card-head-row">
-          <h2 className="ivs-section-title">품목별 입고량 / 재공 현재고</h2>
-          <span className="ivs-section-hint">단위: 톤</span>
-        </div>
-        <div className="ivs-chart-split">
-          <div>
-            <div className="ivs-chart-label">품목 재공 구성비</div>
-            <${DonutChart}
-              rows=${byItem.map((r) => ({ key: r.key, label: r.label, value: r.prog, color: r.color }))}
-              centerLabel="톤 재공"
-              emptyMsg="재공 중인 톨링품이 없어요."
-            />
-          </div>
-          <div>
-            <div className="ivs-chart-label">품목별 상세</div>
-            <${AggList} rows=${byItem} emptyMsg="등록된 톨링품이 없습니다." />
-          </div>
-        </div>
       </div>
     </div>
   `;
@@ -4861,31 +4875,8 @@ function CollapsibleCard({ title, children }) {
   `;
 }
 
-function RankedBarList({ rows }) {
-  if (!rows || rows.length === 0) return html`<div className="ivs-prod-empty">데이터가 없습니다.</div>`;
-  const max = Math.max(...rows.map((r) => r.kg), 1);
-  return html`
-    <div className="ivs-rank-list">
-      ${rows.map((r) => html`
-        <div className="ivs-rank-row" key=${r.key}>
-          <div className="ivs-rank-left">
-            ${r.color ? html`<span className="ivs-rank-dot" style=${{ background: r.color }} />` : null}
-            <span className="ivs-rank-label">${r.label}</span>
-            <span className="ivs-rank-count">· ${r.count}건</span>
-          </div>
-          <div className="ivs-rank-bar-track">
-            <div className="ivs-rank-bar-fill" style=${{ width: `${Math.max(4, (r.kg / max) * 100)}%`, background: r.color || "var(--accent)" }} />
-          </div>
-          <div className="ivs-rank-value">
-            ${fmtTon(r.kg)} 톤
-            ${r.netKg != null ? html`<span className="ivs-rank-net">제외 ${fmtTon(r.netKg)} 톤</span>` : null}
-          </div>
-        </div>
-      `)}
-    </div>
-  `;
-}
-
+// 순위 그래프는 상위 7개까지만 — 조각이 많아지면 도넛이 오히려 안 읽혀요.
+const top7 = (rows) => (rows || []).slice(0, 7);
 const RANK_PALETTE = ["#3B82F6", "#A855F7", "#22C55E", "#F97316", "#06B6D4", "#EAB308", "#EF4444", "#EC4899", "#14B8A6", "#8B98AD"];
 
 function DashboardTab({ lots, moves, dayDelta }) {
@@ -4953,8 +4944,6 @@ function DashboardTab({ lots, moves, dayDelta }) {
     return { stageTotals, inProgress, done };
   }, [lots, movesByLot, asOfDate]);
 
-  const snapMax = useMemo(() => Math.max(...STAGES.map((s) => snapshot.stageTotals[s.key] || 0), 0), [snapshot]);
-
   // 그래프용 데이터 — 세로 막대는 공정 순서 그대로, 도넛은 재공(출하완료 제외) 구성비만.
   const stageChartRows = useMemo(() => STAGES.map((s) => ({
     key: s.key, label: s.label, color: s.color,
@@ -5013,6 +5002,47 @@ function DashboardTab({ lots, moves, dayDelta }) {
     return Array.from(map.values()).sort((a, b) => b.kg - a.kg).map((r, i) => ({ ...r, color: RANK_PALETTE[i % RANK_PALETTE.length] }));
   }, [periodLots]);
 
+  // 기준일 시점의 재공재고 장부 — 이동이력으로 되돌린 "그날의 재고"를 로트 한 줄씩 뽑아요.
+  const snapshotLedger = useMemo(() => {
+    const rows = [];
+    lots.forEach((l) => {
+      const lotMoves = movesByLot.get(l.id) || movesByLot.get(l.lotNo) || [];
+      const st = reconstructLotState(l, lotMoves, asOfDate);
+      if (!st) return;                                  // 기준일에는 아직 입고 전
+      if (FINAL_STAGE_KEYS.includes(st.stage)) return;  // 이미 출하완료된 건 재공재고가 아니에요
+      rows.push({ lot: l, state: st });
+    });
+    // 단계(공정 순서) → 입고일 순으로 정렬해서 장부처럼 읽히게 해요.
+    const order = Object.fromEntries(STAGES.map((x, i) => [x.key, i]));
+    rows.sort((a, b) =>
+      (order[a.state.stage] ?? 99) - (order[b.state.stage] ?? 99) ||
+      String(a.lot.receivedDate).localeCompare(String(b.lot.receivedDate))
+    );
+    return rows;
+  }, [lots, movesByLot, asOfDate]);
+
+  const ledgerTotalKg = useMemo(
+    () => snapshotLedger.reduce((sum, r) => sum + (Number(r.state.qtyKg) || 0), 0),
+    [snapshotLedger]
+  );
+
+  const downloadLedger = () => {
+    const headers = [
+      "기준일", "공정단계", "품목코드", "품목명", "카테고리", "거래처", "출고지", "로트번호",
+      "입고일", "주차", "기준일 수량(Kg)", "물중량(Kg)", "제외무게(Kg)", "최종 공정이동일", "톨링품", "이월",
+    ];
+    const rows = snapshotLedger.map(({ lot, state }) => [
+      asOfDate, getStage(state.stage).label, lot.code, lot.name,
+      categoryById[lot.categoryId]?.label || "", lot.vendor, lot.shipLoc, lot.lotNo,
+      lot.receivedDate, weekLabel(lot.receivedDate), state.qtyKg,
+      lot.waterKg ?? "", lot.excludeKg ?? "", state.lastMove ?? "",
+      lot.tolling ? "Y" : "", lot.carriedOver ? "Y" : "",
+    ]);
+    const total = ["합계", "", "", "", "", "", "", `${rows.length}건`, "", "", ledgerTotalKg, "", "", "", "", ""];
+    const csv = "\uFEFF" + [headers, ...rows, total].map((r) => r.map(csvEscape).join(",")).join("\r\n");
+    downloadFile(`재공재고장부_${asOfDate}.csv`, csv, "text/csv;charset=utf-8");
+  };
+
   return html`
     <div className="ivs-dash">
       <div className="ivs-section-head">
@@ -5058,7 +5088,13 @@ function DashboardTab({ lots, moves, dayDelta }) {
       <div className="ivs-card">
         <div className="ivs-card-head-row">
           <h2 className="ivs-section-title"><${Calendar} size=${13} style=${{ verticalAlign: -2, marginRight: 5 }} />월마감(기준일) 재고 스냅샷</h2>
-          <span className="ivs-section-hint">기준일 ${asOfDate}</span>
+          <div className="ivs-card-head-actions">
+            <span className="ivs-section-hint">기준일 ${asOfDate}</span>
+            <button className="ivs-btn ivs-btn-sm" onClick=${downloadLedger} disabled=${snapshotLedger.length === 0}
+              title="기준일 시점의 재공재고를 로트 단위로 정리한 장부를 내려받아요 (엑셀에서 바로 열려요)">
+              <${Download} size=${13} /> 재공재고 장부 내려받기 (${snapshotLedger.length}건)
+            </button>
+          </div>
         </div>
         <p className="ivs-dash-note">
           위에서 "일"까지 선택하면 그 날짜 기준, "일"을 비워두면 선택한 달의 말일 기준 재고를 보여줍니다 (연간 전체면 그 해 12/31 기준).
@@ -5069,6 +5105,10 @@ function DashboardTab({ lots, moves, dayDelta }) {
           <${SummaryCard} label="재공재고 (기준일)" value=${fmtTon(snapshot.inProgress)} unit="톤" accent=${true} />
           <${SummaryCard} label="완료(출고) 합계 (기준일)" value=${fmtTon(snapshot.done)} unit="톤" />
         </div>
+        <p className="ivs-dash-note">
+          기간을 바꾸면 기준일도 함께 바뀌고, "재공재고 장부 내려받기"는 그 기준일 시점의 재공재고를
+          로트 한 줄씩(단계 · 로트번호 · 수량 · 입고일 순) 정리해서 내려줘요. 엑셀에서 바로 열립니다.
+        </p>
       </div>
 
       <div className="ivs-half-grid">
@@ -5082,20 +5122,6 @@ function DashboardTab({ lots, moves, dayDelta }) {
 
         <div className="ivs-card">
           <div className="ivs-card-head-row">
-            <h2 className="ivs-section-title">카테고리별 현재고</h2>
-            <span className="ivs-section-hint">실시간 · 재공 중</span>
-          </div>
-          <${DonutChart}
-            rows=${categoryLive.map((c) => ({ key: c.key, label: c.label, color: c.color, value: c.kg }))}
-            centerLabel="톤 재공"
-            emptyMsg="재공 중인 재고가 없어요."
-          />
-        </div>
-      </div>
-
-      <div className="ivs-half-grid">
-        <div className="ivs-card">
-          <div className="ivs-card-head-row">
             <h2 className="ivs-section-title">재공 재고 구성비</h2>
             <span className="ivs-section-hint">기준일 ${asOfDate} · 출하완료 제외</span>
           </div>
@@ -5105,53 +5131,59 @@ function DashboardTab({ lots, moves, dayDelta }) {
             emptyMsg="기준일에 남아있는 재공 재고가 없어요."
           />
         </div>
+      </div>
+
+      <div className="ivs-half-grid">
+        <div className="ivs-card">
+          <div className="ivs-card-head-row">
+            <h2 className="ivs-section-title">카테고리별 현재고</h2>
+            <span className="ivs-section-hint">실시간 · 재공 중</span>
+          </div>
+          <${DonutChart}
+            rows=${categoryLive.map((c) => ({ key: c.key, label: c.label, color: c.color, value: c.kg }))}
+            centerLabel="톤 재공"
+            emptyMsg="재공 중인 재고가 없어요."
+          />
+        </div>
 
         <div className="ivs-card">
           <div className="ivs-card-head-row">
-            <h2 className="ivs-section-title">품목별 입고 순위</h2>
-            <span className="ivs-section-hint">선택 기간 · 상위 12개</span>
+            <h2 className="ivs-section-title">카테고리별 입고 순위 Top 7</h2>
+            <span className="ivs-section-hint">선택 기간</span>
           </div>
-          <${RankedBarList} rows=${itemRank.slice(0, 12)} />
+          <${DonutChart}
+            rows=${top7(categoryRank).map((r) => ({ key: r.key, label: r.label, color: r.color, value: r.kg }))}
+            centerLabel="톤 · Top 7 합계"
+            emptyMsg="선택한 기간에 입고된 로트가 없어요."
+          />
         </div>
       </div>
 
       <div className="ivs-half-grid">
         <div className="ivs-card">
           <div className="ivs-card-head-row">
-            <h2 className="ivs-section-title">카테고리별 입고 순위</h2>
+            <h2 className="ivs-section-title">품목별 입고 순위 Top 7</h2>
             <span className="ivs-section-hint">선택 기간</span>
           </div>
-          <${RankedBarList} rows=${categoryRank} />
+          <${DonutChart}
+            rows=${top7(itemRank).map((r) => ({ key: r.key, label: r.label, color: r.color, value: r.kg }))}
+            centerLabel="톤 · Top 7 합계"
+            emptyMsg="선택한 기간에 입고된 로트가 없어요."
+          />
         </div>
 
         <div className="ivs-card">
           <div className="ivs-card-head-row">
-            <h2 className="ivs-section-title">거래처별 입고 순위</h2>
+            <h2 className="ivs-section-title">거래처별 입고 순위 Top 7</h2>
             <span className="ivs-section-hint">선택 기간</span>
           </div>
-          <${RankedBarList} rows=${vendorRank} />
+          <${DonutChart}
+            rows=${top7(vendorRank).map((r) => ({ key: r.key, label: r.label, color: r.color, value: r.kg }))}
+            centerLabel="톤 · Top 7 합계"
+            emptyMsg="선택한 기간에 입고된 로트가 없어요."
+          />
         </div>
       </div>
-
-      <${CollapsibleCard} title="단계별 상세 수치 (기준일)">
-        <div className="ivs-breakdown">
-          ${STAGES.map((s) => {
-            const kg = snapshot.stageTotals[s.key] || 0;
-            const pct = snapMax > 0 ? (kg / snapMax) * 100 : 0;
-            return html`
-              <div className="ivs-breakdown-row" key=${s.key}>
-                <div className="ivs-breakdown-name">
-                  <span className="ivs-badge-dot" style=${{ background: s.color }} />${s.label}${FINAL_STAGE_KEYS.includes(s.key) ? html`<span className="ivs-final-badge">최종</span>` : null}
-                </div>
-                <div className="ivs-breakdown-track">
-                  <div className="ivs-breakdown-fill" style=${{ width: `${pct}%`, "--c": s.color }} />
-                </div>
-                <div className="ivs-breakdown-val">${fmtTon(kg)} 톤<small>${fmtKg(kg)}</small></div>
-              </div>
-            `;
-          })}
-        </div>
-      <//>
     </div>
   `;
 }

@@ -3439,10 +3439,6 @@ const weekLabel = (dateStr) => {
 const uid = () => `lot-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 const sumBy = (arr, key) => arr.reduce((s, x) => s + (Number(x[key]) || 0), 0);
 const pad2 = (n) => String(n).padStart(2, "0");
-const csvEscape = (v) => {
-  const s = v == null ? "" : String(v);
-  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-};
 
 // 대시보드 "월마감 스냅샷": 선택한 연/월/일로 기준일을 계산해요.
 // 일까지 고르면 그 날짜, 월만 고르면 그 달 말일, 연도만 고르면 그 해 12/31.
@@ -3469,6 +3465,152 @@ function reconstructLotState(lot, lotMoves, asOfDate) {
     return { stage: first.fromStage, qtyKg: first.inputQty, lastMove: null }; // 아직 첫 이동 전이면 이동 전 상태
   }
   return { stage: lot.stage, qtyKg: lot.qtyKg, lastMove: null }; // 이동 이력이 없으면 입고 이후 그대로라고 가정
+}
+
+
+// ---------- 엑셀(.xlsx) 파일 만들기 ----------
+// CSV로 내보내면 한국어 윈도우의 엑셀이 파일 인코딩을 CP949로 잘못 짐작해서 한글이 깨지는 일이 있어요
+// (UTF-8 BOM을 넣어도 환경에 따라 무시돼요). 그래서 아예 진짜 엑셀 파일(.xlsx)을 만들어서 내보내요.
+// .xlsx는 XML 몇 개를 담은 zip이라, 외부 라이브러리 없이 여기서 직접 조립해요.
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[i] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(bytes) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+const utf8Bytes = (str) => new TextEncoder().encode(str);
+
+// 압축 없이(stored) 담는 zip — 장부 파일은 작아서 압축이 필요 없고, 구현이 단순해 깨질 여지가 없어요.
+function makeZip(files) {
+  const u16 = (n) => [n & 0xFF, (n >>> 8) & 0xFF];
+  const u32 = (n) => [n & 0xFF, (n >>> 8) & 0xFF, (n >>> 16) & 0xFF, (n >>> 24) & 0xFF];
+  const DOS_DATE = ((2024 - 1980) << 9) | (1 << 5) | 1; // 고정 날짜 (파일마다 결과가 같도록)
+  const entries = files.map((f) => {
+    const name = utf8Bytes(f.name);
+    const data = utf8Bytes(f.content);
+    return { name, data, crc: crc32(data) };
+  });
+  const parts = [];
+  const central = [];
+  let offset = 0;
+  entries.forEach((f) => {
+    const header = [].concat(
+      u32(0x04034b50), u16(20), u16(0x0800), u16(0), u16(0), u16(DOS_DATE),
+      u32(f.crc), u32(f.data.length), u32(f.data.length), u16(f.name.length), u16(0)
+    );
+    parts.push(new Uint8Array(header), f.name, f.data);
+    central.push(new Uint8Array([].concat(
+      u32(0x02014b50), u16(20), u16(20), u16(0x0800), u16(0), u16(0), u16(DOS_DATE),
+      u32(f.crc), u32(f.data.length), u32(f.data.length),
+      u16(f.name.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset)
+    )));
+    offset += header.length + f.name.length + f.data.length;
+  });
+  const cdOffset = offset;
+  let cdSize = 0;
+  central.forEach((c, i) => {
+    parts.push(c, entries[i].name);
+    cdSize += c.length + entries[i].name.length;
+  });
+  parts.push(new Uint8Array([].concat(
+    u32(0x06054b50), u16(0), u16(0), u16(entries.length), u16(entries.length),
+    u32(cdSize), u32(cdOffset), u16(0)
+  )));
+  const out = new Uint8Array(parts.reduce((sum, x) => sum + x.length, 0));
+  let pos = 0;
+  parts.forEach((x) => { out.set(x, pos); pos += x.length; });
+  return out;
+}
+
+const xmlEsc = (v) => String(v)
+  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const colLetter = (i) => {
+  let s = "", n = i + 1;
+  while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); }
+  return s;
+};
+
+// rows: 2차원 배열. 숫자는 숫자 셀로 넣어서 엑셀에서 바로 합계/정렬이 돼요.
+// 첫 줄은 머리글로 굵게 칠하고 틀고정(스크롤해도 안 사라짐)까지 해둬요.
+function sheetXml(rows, widths) {
+  const cols = widths && widths.length
+    ? `<cols>${widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols>`
+    : "";
+  const body = rows.map((cells, r) => {
+    const rn = r + 1;
+    const style = r === 0 ? ' s="1"' : "";
+    const cs = cells.map((v, c) => {
+      const ref = `${colLetter(c)}${rn}`;
+      if (v === null || v === undefined || v === "") return `<c r="${ref}"${style}/>`;
+      if (typeof v === "number" && isFinite(v)) return `<c r="${ref}"${style}><v>${v}</v></c>`;
+      return `<c r="${ref}"${style} t="inlineStr"><is><t xml:space="preserve">${xmlEsc(v)}</t></is></c>`;
+    }).join("");
+    return `<row r="${rn}">${cs}</row>`;
+  }).join("");
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+    `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
+    `<sheetViews><sheetView workbookViewId="0">` +
+    `<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>` +
+    `${cols}<sheetData>${body}</sheetData></worksheet>`;
+}
+
+const XLSX_STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+  `<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
+  `<fonts count="2"><font><sz val="11"/><name val="맑은 고딕"/></font>` +
+  `<font><b/><sz val="11"/><name val="맑은 고딕"/></font></fonts>` +
+  `<fills count="3"><fill><patternFill patternType="none"/></fill>` +
+  `<fill><patternFill patternType="gray125"/></fill>` +
+  `<fill><patternFill patternType="solid"><fgColor rgb="FFEDF1F7"/><bgColor indexed="64"/></patternFill></fill></fills>` +
+  `<borders count="1"><border/></borders>` +
+  `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
+  `<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>` +
+  `<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/></cellXfs>` +
+  `<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+
+function buildXlsx(sheetName, rows, widths) {
+  const safeName = String(sheetName).replace(/[\\\\\/\?\*\[\]:]/g, " ").slice(0, 31) || "Sheet1";
+  return makeZip([
+    { name: "[Content_Types].xml", content:
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+      `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+      `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+      `<Default Extension="xml" ContentType="application/xml"/>` +
+      `<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>` +
+      `<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>` +
+      `<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>` +
+      `</Types>` },
+    { name: "_rels/.rels", content:
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+      `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+      `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>` +
+      `</Relationships>` },
+    { name: "xl/workbook.xml", content:
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+      `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ` +
+      `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">` +
+      `<sheets><sheet name="${xmlEsc(safeName)}" sheetId="1" r:id="rId1"/></sheets></workbook>` },
+    { name: "xl/_rels/workbook.xml.rels", content:
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+      `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+      `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>` +
+      `<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+      `</Relationships>` },
+    { name: "xl/styles.xml", content: XLSX_STYLES },
+    { name: "xl/worksheets/sheet1.xml", content: sheetXml(rows, widths) },
+  ]);
+}
+
+function downloadXlsx(filename, sheetName, rows, widths) {
+  downloadFile(filename, buildXlsx(sheetName, rows, widths),
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 }
 
 // ---------- 파일 내려받기 (일반 웹사이트라서 브라우저 다운로드를 바로 써요) ----------
@@ -3797,7 +3939,7 @@ function InventorySystem() {
     };
   }, [lots, moves, totals, stageTotals]);
 
-  // ---------- CSV 내보내기 (원본의 엑셀 내보내기 자리) ----------
+  // ---------- 엑셀(.xlsx)로 내보내기 ----------
   const exportCsv = () => {
     const headers = ["품목코드", "품목명", "카테고리", "거래처", "출고지", "로트번호", "주차", "현재단계", "수량(Kg)", "물중량(Kg)", "제외무게(Kg)", "입고일", "공정이동", "톨링품", "이월"];
     const rows = filtered.map((l) => [
@@ -3805,9 +3947,10 @@ function InventorySystem() {
       getStage(l.stage).label, l.qtyKg, l.waterKg ?? "", l.excludeKg ?? "", l.receivedDate, l.lastMove ?? "",
       l.tolling ? "Y" : "", l.carriedOver ? "Y" : "",
     ]);
-    const csv = "﻿" + [headers, ...rows].map((r) => r.map(csvEscape).join(",")).join("\r\n");
-    downloadFile(`재고현황_${new Date().toISOString().slice(0, 10)}.csv`, csv, "text/csv;charset=utf-8");
-    showToast("CSV 파일로 내보냈어요.", "success");
+    const today = new Date().toISOString().slice(0, 10);
+    const widths = [11, 20, 14, 20, 11, 16, 18, 13, 14, 13, 14, 12, 13, 9, 7];
+    downloadXlsx(`재고현황_${today}.xlsx`, `재고현황 ${today}`, [headers, ...rows], widths);
+    showToast("엑셀 파일로 내보냈어요.", "success");
   };
 
 
@@ -3994,7 +4137,7 @@ function InventorySystem() {
             </select>
             <button className="ivs-btn" onClick=${resetFilters}><${RotateCcw} size=${13} /> 필터 초기화</button>
             <div className="ivs-spacer" />
-            <button className="ivs-btn" onClick=${exportCsv}><${Download} size=${13} /> CSV로 내보내기</button>
+            <button className="ivs-btn" onClick=${exportCsv}><${Download} size=${13} /> 엑셀로 내보내기</button>
           </div>
         </div>
 
@@ -5039,8 +5182,8 @@ function DashboardTab({ lots, moves, dayDelta }) {
       lot.tolling ? "Y" : "", lot.carriedOver ? "Y" : "",
     ]);
     const total = ["합계", "", "", "", "", "", "", `${rows.length}건`, "", "", ledgerTotalKg, "", "", "", "", ""];
-    const csv = "\uFEFF" + [headers, ...rows, total].map((r) => r.map(csvEscape).join(",")).join("\r\n");
-    downloadFile(`재공재고장부_${asOfDate}.csv`, csv, "text/csv;charset=utf-8");
+    const widths = [12, 13, 11, 20, 14, 20, 11, 16, 12, 18, 15, 13, 14, 15, 9, 7];
+    downloadXlsx(`재공재고장부_${asOfDate}.xlsx`, `재공재고 ${asOfDate}`, [headers, ...rows, total], widths);
   };
 
   return html`
@@ -5091,8 +5234,8 @@ function DashboardTab({ lots, moves, dayDelta }) {
           <div className="ivs-card-head-actions">
             <span className="ivs-section-hint">기준일 ${asOfDate}</span>
             <button className="ivs-btn ivs-btn-sm" onClick=${downloadLedger} disabled=${snapshotLedger.length === 0}
-              title="기준일 시점의 재공재고를 로트 단위로 정리한 장부를 내려받아요 (엑셀에서 바로 열려요)">
-              <${Download} size=${13} /> 재공재고 장부 내려받기 (${snapshotLedger.length}건)
+              title="기준일 시점의 재공재고를 로트 단위로 정리한 장부를 엑셀 파일(.xlsx)로 내려받아요">
+              <${Download} size=${13} /> 재공재고 장부 엑셀 내려받기 (${snapshotLedger.length}건)
             </button>
           </div>
         </div>
@@ -5107,7 +5250,8 @@ function DashboardTab({ lots, moves, dayDelta }) {
         </div>
         <p className="ivs-dash-note">
           기간을 바꾸면 기준일도 함께 바뀌고, "재공재고 장부 내려받기"는 그 기준일 시점의 재공재고를
-          로트 한 줄씩(단계 · 로트번호 · 수량 · 입고일 순) 정리해서 내려줘요. 엑셀에서 바로 열립니다.
+          로트 한 줄씩(단계 · 로트번호 · 수량 · 입고일 순) 정리해서 내려줘요.
+          엑셀 파일(.xlsx)이라 더블클릭하면 바로 열리고, 한글이 깨지지 않아요.
         </p>
       </div>
 

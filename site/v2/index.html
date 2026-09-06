@@ -5024,7 +5024,6 @@ function TollingTab({ lots }) {
         ${!selectedLoc ? html`
           <div className="ivs-prod-empty center">
             위에서 출고지를 선택하면 해당 출고지의 품목·주차/월차별 입고량과 재공현재고가 표시됩니다.
-            (예: 천안SDI 선택 시 "양극스크랩 · 8월 1주차"처럼 나뉘어 보여요)
           </div>
         ` : html`<${AggList} rows=${byLocDrill} emptyMsg=${`${selectedLoc}의 톨링품 데이터가 없습니다.`} />`}
       </div>

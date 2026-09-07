@@ -3539,6 +3539,19 @@ function reconstructLotState(lot, lotMoves, asOfDate) {
 }
 
 
+// ---------- 창(모달) 바깥 클릭으로 닫기 ----------
+// 어두운 배경을 "진짜로 클릭"했을 때만 닫아요.
+// 입력칸 안에서 마우스를 누른 채 글자를 끌어서 고르다가 창 바깥에서 손을 떼면, 브라우저는 click을
+// 눌렀던 곳과 뗀 곳의 공통 부모(=어두운 배경)에서 발생시켜요. 그래서 글자만 고르려던 건데
+// 창이 그냥 닫혀버렸어요. 이제 "누른 곳도 배경이었는지"까지 확인해서 그 경우만 닫습니다.
+let overlayPressedSelf = false;
+const overlayDown = (e) => { overlayPressedSelf = e.target === e.currentTarget; };
+const overlayClick = (e, onClose) => {
+  const closes = e.target === e.currentTarget && overlayPressedSelf;
+  overlayPressedSelf = false;
+  if (closes) onClose();
+};
+
 // ---------- 엑셀 / CSV / QR 스캐너 파일 읽기 (입고 Lot 한 번에 올리기) ----------
 // 브라우저 표준 기능만 써요. .xlsx는 zip이라 압축 해제가 필요한데, 요즘 브라우저에 있는
 // DecompressionStream("deflate-raw")을 쓰면 별도 라이브러리 없이 풀 수 있어요.
@@ -4734,7 +4747,7 @@ function LotFormModal({ mode, initial, master, onCancel, onSave, onOpenMaster })
     setV((prev) => ({ ...prev, categoryId: cat.id, code: cat.code }));
   };
   return html`
-    <div className="ivs-overlay" onClick=${onCancel}>
+    <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onCancel)}>
       <div className="ivs-modal" onClick=${(e) => e.stopPropagation()}>
         <div className="ivs-modal-head">
           <h3>${mode === "add" ? "새 로트 추가" : "로트 수정"}</h3>
@@ -4804,7 +4817,7 @@ function MasterModal({ master, lots, onSave, onClose }) {
     onSave({ ...master, vendors: vendors.filter((x) => x.name !== name) }, `거래처 "${name}"을(를) 삭제했어요.`);
 
   return html`
-    <div className="ivs-overlay" onClick=${onClose}>
+    <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onClose)}>
       <div className="ivs-modal" onClick=${(e) => e.stopPropagation()}>
         <div className="ivs-modal-head">
           <h3>거래처 등록 관리</h3>
@@ -4863,7 +4876,7 @@ function MoveStageModal({ lot, onCancel, onConfirm }) {
   const outNum = Number(outputQty) || 0;
   const diff = outNum - lot.qtyKg;
   return html`
-    <div className="ivs-overlay" onClick=${onCancel}>
+    <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onCancel)}>
       <div className="ivs-modal ivs-modal-sm" onClick=${(e) => e.stopPropagation()}>
         <div className="ivs-modal-head">
           <h3>후속공정 · ${lot.lotNo}</h3>
@@ -5055,7 +5068,7 @@ function ImportLotsModal({ lots, master, onCancel, onConfirm }) {
   const badRows = (rows || []).filter((r) => r.errs.length > 0);
 
   return html`
-    <div className="ivs-overlay" onClick=${onCancel}>
+    <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onCancel)}>
       <div className="ivs-modal ivs-modal-xl" onClick=${(e) => e.stopPropagation()}>
         <div className="ivs-modal-head">
           <h3><${FileText} size=${16} style=${{ verticalAlign: -3, marginRight: 6 }} /> 파일로 입고 Lot 한 번에 추가</h3>
@@ -5150,7 +5163,7 @@ function BulkMoveModal({ lots, onCancel, onConfirm }) {
   const badRow = movable.some((l) => { const n = Number(qty[l.id]); return !Number.isFinite(n) || n <= 0; });
 
   return html`
-    <div className="ivs-overlay" onClick=${onCancel}>
+    <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onCancel)}>
       <div className="ivs-modal ivs-modal-xl" onClick=${(e) => e.stopPropagation()}>
         <div className="ivs-modal-head">
           <h3><${ArrowRightCircle} size=${16} style=${{ verticalAlign: -3, marginRight: 6 }} /> 선택 공정이동 · ${lots.length}건</h3>
@@ -5265,7 +5278,7 @@ function SettingsModal({ settings, unlocked, onUnlock, onSave, onClose }) {
 
   if (!canEditNow) {
     return html`
-      <div className="ivs-overlay" onClick=${onClose}>
+      <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onClose)}>
         <div className="ivs-modal ivs-modal-sm ivs-lock-screen" onClick=${(e) => e.stopPropagation()}>
           <button className="ivs-icon-btn ivs-lock-close" onClick=${onClose}><${X} size=${16} /></button>
           <div className="ivs-lock-icon"><${Lock} size=${22} /></div>
@@ -5285,7 +5298,7 @@ function SettingsModal({ settings, unlocked, onUnlock, onSave, onClose }) {
   }
 
   return html`
-    <div className="ivs-overlay" onClick=${onClose}>
+    <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onClose)}>
       <div className="ivs-modal" onClick=${(e) => e.stopPropagation()}>
         <div className="ivs-modal-head">
           <h3>설정</h3>
@@ -6181,7 +6194,7 @@ function LabelModal({ lots, manager, onClose }) {
 
   const rows = lots || [];
   return html`
-    <div className="ivs-overlay" onClick=${onClose}>
+    <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onClose)}>
       <div className="ivs-modal ivs-modal-lg" onClick=${(e) => e.stopPropagation()}>
         <div className="ivs-modal-head">
           <h3><${QrCode} size=${16} style=${{ verticalAlign: -3, marginRight: 6 }} /> QR 라벨 출력 · ${rows.length}건</h3>
@@ -6229,7 +6242,7 @@ function LabelModal({ lots, manager, onClose }) {
 
 function ConfirmModal({ icon, title, body, confirmLabel, danger, onCancel, onConfirm }) {
   return html`
-    <div className="ivs-overlay" onClick=${onCancel}>
+    <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onCancel)}>
       <div className="ivs-modal ivs-modal-sm" onClick=${(e) => e.stopPropagation()}>
         <div className="ivs-modal-body ivs-confirm-body">
           <div className=${`ivs-confirm-icon ${danger ? "danger" : ""}`}>${icon}</div>

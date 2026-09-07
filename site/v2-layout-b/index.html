@@ -594,6 +594,26 @@
     .ivs-cal-pad { display: none; }
   }
 
+  /* ---------- 생산실적 ---------- */
+  .ivs-run-inputs { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .ivs-chiprow { display: flex; flex-wrap: wrap; gap: 7px; }
+  .ivs-lotchip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px;
+    padding: 5px 10px; color: var(--text-dim); white-space: nowrap; }
+  .ivs-lotchip b { color: var(--text); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .ivs-lotchip-x { border: none; background: none; padding: 0; margin-left: 2px; cursor: pointer;
+    color: var(--text-faint); display: inline-flex; }
+  .ivs-lotchip-x:hover { color: var(--bad); }
+  .ivs-linkbtn { border: none; background: none; padding: 0; font: inherit; cursor: pointer;
+    color: var(--accent); font-weight: 650; }
+  .ivs-linkbtn:hover { text-decoration: underline; }
+  .ivs-trace-row td { background: var(--surface-2); }
+  .ivs-trace { display: flex; align-items: flex-start; gap: 18px; padding: 6px 2px; flex-wrap: wrap; }
+  .ivs-trace > div { min-width: 0; }
+  .ivs-trace-arrow { align-self: center; color: var(--text-faint); font-size: 18px; }
+  .ivs-rank-net.ivs-diff-mix { color: var(--good); }
+  .ivs-rank-net.ivs-diff-loss { color: var(--bad); }
+
   /* ---------- 레이아웃 래퍼 · 기타 ---------- */
   .ivs-dash, .ivs-prod, .ivs-tolling, .ivs-plan { display: block; }
   .ivs-collapse-body { padding-top: 4px; }
@@ -3359,12 +3379,15 @@ const STAGES = [
   { key: "disassemble", label: "해체완료", color: "#A97BF0" },     // 보라
   { key: "crush_wait", label: "파쇄대기", color: "#17C1D9" },      // 청록
   { key: "calcine_needed", label: "열분해대기", color: "#F0555C" }, // 빨강
+  { key: "consumed", label: "생산투입완료", color: "#64748B" },     // 청회색 (투입되어 소진된 로트)
   { key: "usable", label: "출하대기", color: "#EDC22E" },          // 노랑
   { key: "shipped", label: "출하완료", color: "#2FBF71" },         // 초록
 ];
-// 재공(현재고)에서 빠지는 "최종" 단계 — 출하완료만 해당해요.
-// (열분해대기는 아직 공정이 남아있는 재고라서 현재고에 포함돼요.)
-const FINAL_STAGE_KEYS = ["shipped"];
+// 재공(현재고)에서 빠지는 "최종" 단계.
+//  - 출하완료: 팔려나간 것
+//  - 생산투입완료: 생산에 투입되어 소진된 입고 로트. 그 무게는 새로 만들어진 생산 로트로 옮겨갔으니
+//    여기서 빼지 않으면 같은 물량을 두 번 세게 돼요 (투입 40톤 + 산출 30톤 = 70톤이 되어버림).
+const FINAL_STAGE_KEYS = ["consumed", "shipped"];
 const stageByKey = Object.fromEntries(STAGES.map((s) => [s.key, s]));
 // 단계 목록에서 빠진 옛 단계(예: 삭제된 셀분리완료/파쇄완료)로 저장된 로트가 있어도 화면이 깨지지 않게,
 // 항상 이 함수로 단계 정보를 꺼내요. 없는 단계는 회색으로 "(옛 단계)"라고 표시하고 데이터는 그대로 둬요.
@@ -3421,7 +3444,7 @@ const DEFAULT_SETTINGS = {
 // 테마(다크/화이트) 선택은 사람마다 다르니 공유 데이터가 아니라 각자 브라우저에 저장해요.
 const THEME_KEY = "ivs_theme";
 
-// 화면 배치: "sidebar"(왼쪽 메뉴) 또는 "tabs"(위쪽 탭). 페이지에서 window.IVS_LAYOUT으로 정해요.
+// 화면 배치는 왼쪽 사이드바로 확정했어요. (비교용으로 window.IVS_LAYOUT="tabs"도 남겨둠)
 const LAYOUT = (typeof window !== "undefined" && window.IVS_LAYOUT === "tabs") ? "tabs" : "sidebar";
 
 // 메뉴는 세 묶음으로 나눠요 — 재고 / 생산 / 분석.
@@ -3633,6 +3656,14 @@ const DOW_KR = ["일", "월", "화", "수", "목", "금", "토"];
 const dowOf = (dateStr) => DOW_KR[new Date(`${dateStr}T00:00:00`).getDay()];
 const CREW_COLOR = { A: "#3B82F6", B: "#A855F7", C: "#22C55E" };
 
+// 열분해 산출물 4종 — 생산실적에서 투입량 대비 회수량·회수율을 이 순서로 봐요.
+const OUTPUT_KINDS = [
+  { key: "bm", label: "BM", categoryId: "mixed_powder", code: "DRBM0001", color: "#84CC16" },
+  { key: "cu", label: "Cu-chip", categoryId: "mixed_cu_chip", code: "DRCC0001", color: "#A16207" },
+  { key: "al", label: "Al-chip", categoryId: "mixed_al_chip", code: "DRAC0001", color: "#14B8A6" },
+  { key: "cd", label: "응축액", categoryId: "condensate", code: "CD0001", color: "#0EA5E9" },
+];
+
 // ---------- 팀 공유 데이터: Firebase Realtime Database에 실시간으로 읽고 써요 ----------
 // (2안) 1안(GitHub Pages + data.json)과 달리, 이건 브라우저가 Firebase와 직접 통신해요.
 // 그래서 누가 입력하면 "Claude에게 파일 전달 → 재배포" 절차 없이, 열려있는 모든 화면에 곧바로(1초 이내) 반영돼요.
@@ -3644,7 +3675,7 @@ const DB_BASE = "https://drt-stock-status-default-rtdb.firebaseio.com";
 const DATA_PATH = "/inventory.json";
 const FALLBACK_DATA = {
   lots: [], moves: [],
-  settings: { ...DEFAULT_SETTINGS }, master: { ...DEFAULT_MASTER }, mes: { ...DEFAULT_MES },
+  settings: { ...DEFAULT_SETTINGS }, master: { ...DEFAULT_MASTER }, mes: { ...DEFAULT_MES }, runs: [],
 };
 
 // 생산관리 설정 — 저장된 값이 없거나 일부만 있어도 기본값으로 채워요.
@@ -3681,6 +3712,7 @@ function normalizeLive(data) {
     settings: { ...DEFAULT_SETTINGS, ...(data.settings || {}) },
     master: normalizeMaster(data.master),
     mes: normalizeMes(data.mes),
+    runs: Array.isArray(data.runs) ? data.runs : [],
   };
 }
 async function fetchLive() {
@@ -4161,6 +4193,7 @@ function InventorySystem() {
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [master, setMaster] = useState(() => LIVE_DATA.master); // 거래처 · 품목코드 등록 정보
   const [mes, setMes] = useState(() => LIVE_DATA.mes); // 생산관리(계획·교대·설비) 설정
+  const [runs, setRuns] = useState(() => LIVE_DATA.runs); // 생산실적 (투입↔산출 Lot 연결 포함)
   const [masterModalOpen, setMasterModalOpen] = useState(false);
   const [unlocked, setUnlocked] = useState(false); // 세션에서만 유지 (보안을 위해 저장하지 않음)
   const [viewUnlocked, setViewUnlocked] = useState(false); // 세션에서만 유지
@@ -4193,6 +4226,7 @@ function InventorySystem() {
       setSettingsState(data.settings);
       setMaster(data.master);
       setMes(data.mes);
+      setRuns(data.runs);
     }, setLiveStatus);
     return unsubscribe;
   }, []);
@@ -4212,6 +4246,7 @@ function InventorySystem() {
     setSettingsState(data.settings);
     setMaster(data.master);
     setMes(data.mes);
+    setRuns(data.runs);
     showToast("최신 데이터로 새로고침했어요.", "success");
   }, [showToast]);
 
@@ -4233,34 +4268,34 @@ function InventorySystem() {
   const persist = useCallback(async (nextLots) => {
     if (!canEdit) return;
     setLots(nextLots);
-    await writeAll({ lots: nextLots, moves, settings, master, mes });
-  }, [canEdit, moves, settings, master, mes, writeAll]);
+    await writeAll({ lots: nextLots, moves, settings, master, mes, runs });
+  }, [canEdit, moves, settings, master, mes, runs, writeAll]);
 
   const persistMoves = useCallback(async (nextMoves) => {
     if (!canEdit) return;
     setMoves(nextMoves);
-    await writeAll({ lots, moves: nextMoves, settings, master, mes });
-  }, [canEdit, lots, settings, master, mes, writeAll]);
+    await writeAll({ lots, moves: nextMoves, settings, master, mes, runs });
+  }, [canEdit, lots, settings, master, mes, runs, writeAll]);
 
   const persistMaster = useCallback(async (nextMaster, msg) => {
     if (!canEdit) return;
     setMaster(nextMaster);
-    await writeAll({ lots, moves, settings, master: nextMaster, mes });
+    await writeAll({ lots, moves, settings, master: nextMaster, mes, runs });
     if (msg) showToast(msg, "success");
-  }, [canEdit, lots, moves, settings, mes, writeAll, showToast]);
+  }, [canEdit, lots, moves, settings, mes, runs, writeAll, showToast]);
 
   const persistMes = useCallback(async (nextMes, msg) => {
     if (!canEdit) return;
     setMes(nextMes);
-    await writeAll({ lots, moves, settings, master, mes: nextMes });
+    await writeAll({ lots, moves, settings, master, mes: nextMes, runs });
     if (msg) showToast(msg, "success");
-  }, [canEdit, lots, moves, settings, master, writeAll, showToast]);
+  }, [canEdit, lots, moves, settings, master, runs, writeAll, showToast]);
 
   const persistSettings = useCallback(async (nextSettings) => {
     setSettingsState(nextSettings);
-    await writeAll({ lots, moves, settings: nextSettings, master, mes });
+    await writeAll({ lots, moves, settings: nextSettings, master, mes, runs });
     showToast("설정을 저장했어요.", "success");
-  }, [lots, moves, master, mes, writeAll, showToast]);
+  }, [lots, moves, master, mes, runs, writeAll, showToast]);
 
   // ---------- CRUD ----------
   const handleSaveForm = async (values) => {
@@ -4324,7 +4359,7 @@ function InventorySystem() {
     ];
     setLots(nextLots);
     setMoves(nextMoves);
-    await writeAll({ lots: nextLots, moves: nextMoves, settings, master, mes });
+    await writeAll({ lots: nextLots, moves: nextMoves, settings, master, mes, runs });
     showToast(`${lot.lotNo} → "${getStage(targetStage).label}"로 이동했어요.`, "success");
     setMoveModal(null);
   };
@@ -4356,10 +4391,98 @@ function InventorySystem() {
     const nextMoves = [...newMoves, ...moves];
     setLots(nextLots);
     setMoves(nextMoves);
-    await writeAll({ lots: nextLots, moves: nextMoves, settings, master, mes });
+    await writeAll({ lots: nextLots, moves: nextMoves, settings, master, mes, runs });
     showToast(`${targets.length}건을 "${getStage(targetStage).label}"로 이동했어요.`, "success");
     setBulkMoveOpen(false);
     setSelected(new Set());
+  };
+
+  // ---------- 생산실적 등록 ----------
+  // 한 번의 저장으로 네 가지가 동시에 일어나요:
+  //  1) 투입한 입고 Lot → "생산투입완료"로 (현재고에서 빠짐, 데이터는 남음)
+  //  2) 산출물별로 새 생산 Lot 생성 → "출하대기"
+  //  3) 투입↔산출을 서로 기억하게 해서 Lot 추적이 되게
+  //  4) 공정이동 이력에도 기록 (생산 탭 통계와 어긋나지 않게)
+  const handleSaveRun = async (draft) => {
+    if (!canEdit) return;
+    const date = draft.date;
+    const inputLots = lots.filter((l) => draft.inputIds.includes(l.id));
+    if (inputLots.length === 0) { showToast("투입할 입고 Lot을 골라주세요.", "error"); return; }
+    const inputKg = inputLots.reduce((a, l) => a + (Number(l.qtyKg) || 0), 0);
+
+    const runId = `run-${Date.now()}`;
+    const stamp = date.replace(/-/g, "").slice(2); // YYMMDD
+    const usedLotNos = new Set(lots.map((l) => l.lotNo));
+    const outputs = [];
+    OUTPUT_KINDS.forEach((k) => {
+      const qty = Number(draft.outputs[k.key]);
+      if (!Number.isFinite(qty) || qty <= 0) return;
+      const cat = categoryById[k.categoryId];
+      let seq = 1, lotNo = "";
+      do { lotNo = `${k.code}-${stamp}-${seq}`; seq += 1; } while (usedLotNos.has(lotNo));
+      usedLotNos.add(lotNo);
+      outputs.push({
+        id: `lot-${Date.now()}-${k.key}-${Math.random().toString(36).slice(2, 6)}`,
+        code: k.code, name: cat ? cat.label : k.label, categoryId: k.categoryId,
+        vendor: inputLots[0].vendor || "", shipLoc: inputLots[0].shipLoc || "",
+        lotNo, receivedDate: date, stage: "usable", qtyKg: qty,
+        waterKg: null, excludeKg: null, tolling: false, carriedOver: false,
+        lastMove: date,
+        origin: "production", // 외부에서 사온 게 아니라 우리가 만든 Lot
+        runId, parentLotNos: inputLots.map((l) => l.lotNo), // ← Lot 추적 (역추적)
+      });
+    });
+    if (outputs.length === 0) { showToast("산출량을 하나 이상 입력해주세요.", "error"); return; }
+
+    const inputIdSet = new Set(draft.inputIds);
+    const nextLots = [
+      ...outputs,
+      ...lots.map((l) => (inputIdSet.has(l.id)
+        ? { ...l, stage: "consumed", lastMove: date, runId } // ← Lot 추적 (정추적)
+        : l)),
+    ];
+    const nextMoves = [
+      ...inputLots.map((l, i) => ({
+        id: `move-${Date.now()}-in${i}`, date, code: l.code, name: l.name, lotNo: l.lotNo, lotId: l.id,
+        fromStage: l.stage, toStage: "consumed", inputQty: Number(l.qtyKg) || 0, outputQty: Number(l.qtyKg) || 0,
+        lossQty: 0, mixQty: 0, runId,
+      })),
+      ...moves,
+    ];
+    const run = {
+      id: runId, date, shift: draft.shift, crew: draft.crew, workers: Number(draft.workers) || 0,
+      note: draft.note || "",
+      inputs: inputLots.map((l) => ({ lotId: l.id, lotNo: l.lotNo, code: l.code, name: l.name, qtyKg: Number(l.qtyKg) || 0 })),
+      inputKg,
+      outputs: outputs.map((o) => {
+        const kind = OUTPUT_KINDS.find((k) => k.code === o.code);
+        return { kind: kind.key, lotId: o.id, lotNo: o.lotNo, code: o.code, qtyKg: o.qtyKg };
+      }),
+    };
+    const nextRuns = [run, ...runs];
+    setLots(nextLots); setMoves(nextMoves); setRuns(nextRuns);
+    await writeAll({ lots: nextLots, moves: nextMoves, settings, master, mes, runs: nextRuns });
+    showToast(`생산실적을 등록했어요 — 투입 ${inputLots.length}건 → 생산 Lot ${outputs.length}건 생성`, "success");
+  };
+
+  // 생산실적 삭제 — 되돌리기. 만들었던 생산 Lot을 지우고, 투입했던 Lot을 원래 공정으로 되돌려요.
+  const handleDeleteRun = async (runId) => {
+    if (!canEdit) return;
+    const run = runs.find((r) => r.id === runId);
+    if (!run) return;
+    const madeIds = new Set(run.outputs.map((o) => o.lotId));
+    const backTo = new Map();
+    moves.filter((m) => m.runId === runId && m.toStage === "consumed").forEach((m) => backTo.set(m.lotId, m.fromStage));
+    const nextLots = lots
+      .filter((l) => !madeIds.has(l.id))
+      .map((l) => (backTo.has(l.id)
+        ? { ...l, stage: backTo.get(l.id), runId: undefined, lastMove: null }
+        : l));
+    const nextMoves = moves.filter((m) => m.runId !== runId);
+    const nextRuns = runs.filter((r) => r.id !== runId);
+    setLots(nextLots); setMoves(nextMoves); setRuns(nextRuns);
+    await writeAll({ lots: nextLots, moves: nextMoves, settings, master, mes, runs: nextRuns });
+    showToast("생산실적을 취소하고 투입 Lot을 되돌렸어요.", "success");
   };
 
   // "초기화"는 지금 팀 전체가 실시간으로 보고 있는 데이터 자체를 비우는 거예요 — 되돌릴 수 없어요.
@@ -4367,7 +4490,8 @@ function InventorySystem() {
     if (!canEdit) return;
     setLots([]);
     setMoves([]);
-    await writeAll({ lots: [], moves: [], settings, master, mes });
+    setRuns([]);
+    await writeAll({ lots: [], moves: [], settings, master, mes, runs: [] });
     setSelected(new Set());
     showToast("전체 데이터를 초기화했어요.", "success");
     setResetConfirm(false);
@@ -4453,10 +4577,12 @@ function InventorySystem() {
   }, [stageTotals]);
 
   const totals = useMemo(() => {
-    const totalIn = lots.reduce((sum, l) => sum + (Number(l.qtyKg) || 0), 0);
+    // "총 입고량"은 밖에서 사온 것만 세요. 우리가 만든 생산 Lot까지 더하면 같은 물량을 두 번 세게 돼요.
+    const totalIn = lots.filter((l) => l.origin !== "production").reduce((sum, l) => sum + (Number(l.qtyKg) || 0), 0);
+    const produced = lots.filter((l) => l.origin === "production").reduce((sum, l) => sum + (Number(l.qtyKg) || 0), 0);
     const inProgress = lots.filter((l) => !FINAL_STAGE_KEYS.includes(l.stage)).reduce((s, l) => s + (Number(l.qtyKg) || 0), 0);
     const done = lots.filter((l) => FINAL_STAGE_KEYS.includes(l.stage)).reduce((s, l) => s + (Number(l.qtyKg) || 0), 0);
-    return { totalIn, inProgress, done, count: lots.length };
+    return { totalIn, produced, inProgress, done, count: lots.length };
   }, [lots]);
 
   // ---------- 전일 대비 증감 ----------
@@ -4645,7 +4771,7 @@ function InventorySystem() {
             value=${fmtTon(totals.totalIn)} unit="톤"
             icon=${html`<${Package} size=${13} />`}
             delta=${html`<${Delta} kg=${dayDelta.totalKg} count=${dayDelta.count} />`}
-            sub=${`전체 ${totals.count.toLocaleString("ko-KR", { maximumFractionDigits: 1 })} lot · 어제 ${fmtTon(dayDelta.prevTotal)} 톤`}
+            sub=${`외부 입고분 · 우리가 만든 생산 Lot ${fmtTon(totals.produced)} 톤은 따로예요`}
           />
           <${SummaryCard}
             label="현재고"
@@ -4859,13 +4985,8 @@ function InventorySystem() {
         : activeTab === "tolling" ? html`<${TollingTab} lots=${lots} />`
         : activeTab === "dashboard" ? html`<${DashboardTab} lots=${lots} moves=${moves} dayDelta=${dayDelta} />`
         : activeTab === "plan" ? html`<${PlanTab} mes=${mes} canEdit=${canEdit} onSave=${persistMes} />`
-        : activeTab === "act" ? html`<${SoonTab} title="생산실적" step="3단계" lines=${[
-            "생산실적 입력 (일자 · 주/야 · 교대조 · 작업인원 · 투입품목 · 투입량)",
-            "투입 Lot을 골라 생산하면 새 생산 Lot이 만들어지고 서로 연결돼요 (Lot 추적)",
-            "BM · Cu-chip · Al-chip · 응축액 회수량과 회수율(투입량 대비) 자동 계산",
-            "조별 인당 생산성 비교 · 계획 대비 달성율 · 설비 가동율",
-            "일 · 주 · 월 집계 + 작업일보 인쇄 (지금 생산이력 탭이 여기로 합쳐져요)",
-          ]} />`
+        : activeTab === "act" ? html`<${ActualTab} lots=${lots} runs=${runs} mes=${mes} canEdit=${canEdit}
+            onSave=${handleSaveRun} onDelete=${handleDeleteRun} />`
         : activeTab === "util" ? html`<${SoonTab} title="가동율 현황" step="2단계" lines=${[
             "공정 Flow 순서대로 설비를 늘어놓고 설비별 가동율 확인",
             "시간가동율(계획시간 대비 실가동)과 성능가동율(capa 대비 실투입) 분리",
@@ -5677,6 +5798,415 @@ function SoonTab({ title, step, lines }) {
       <ul className="ivs-soon-list">
         ${(lines || []).map((t, i) => html`<li key=${i}><${Check} size=${13} />${t}</li>`)}
       </ul>
+    </div>
+  `;
+}
+
+// ---------- 생산실적 ----------
+function ActualTab({ lots, runs, mes, canEdit, onSave, onDelete }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [ym, setYm] = useState(today.slice(0, 7));
+  const [form, setForm] = useState(() => ({
+    date: today, shift: "day", workers: "", note: "",
+    inputIds: [], outputs: { bm: "", cu: "", al: "", cd: "" },
+  }));
+  const [pickOpen, setPickOpen] = useState(false);
+  const [trace, setTrace] = useState(null); // Lot 추적으로 펼쳐본 실적
+  const [delTarget, setDelTarget] = useState(null);
+
+  // 그 날 그 교대의 담당 조는 패턴에서 자동으로 정해져요.
+  const crew = shiftCrews(form.date, mes.shiftAnchor)[form.shift];
+  // 투입할 수 있는 로트 = 아직 소진·출하되지 않은 것
+  const pickable = useMemo(
+    () => lots.filter((l) => !FINAL_STAGE_KEYS.includes(l.stage)).sort((a, b) => (a.receivedDate < b.receivedDate ? 1 : -1)),
+    [lots]);
+  const chosen = useMemo(() => lots.filter((l) => form.inputIds.includes(l.id)), [lots, form.inputIds]);
+  const inputKg = chosen.reduce((a, l) => a + (Number(l.qtyKg) || 0), 0);
+  const outSum = OUTPUT_KINDS.reduce((a, k) => a + (Number(form.outputs[k.key]) || 0), 0);
+
+  const monthRuns = useMemo(() => runs.filter((r) => r.date.slice(0, 7) === ym), [runs, ym]);
+  const months = useMemo(() => {
+    const set = new Set(runs.map((r) => r.date.slice(0, 7)));
+    set.add(today.slice(0, 7));
+    return Array.from(set).sort().reverse();
+  }, [runs, today]);
+
+  // 일자별로 계획과 견줘서 달성율·회수율을 뽑아요.
+  const daily = useMemo(() => {
+    const map = new Map();
+    monthRuns.forEach((r) => {
+      if (!map.has(r.date)) map.set(r.date, { date: r.date, inputKg: 0, workers: 0, shifts: 0, out: { bm: 0, cu: 0, al: 0, cd: 0 } });
+      const d = map.get(r.date);
+      d.inputKg += r.inputKg || 0;
+      d.workers += Number(r.workers) || 0;
+      d.shifts += 1;
+      (r.outputs || []).forEach((o) => { d.out[o.kind] = (d.out[o.kind] || 0) + (Number(o.qtyKg) || 0); });
+    });
+    return Array.from(map.values()).sort((a, b) => (a.date < b.date ? -1 : 1)).map((d) => {
+      const plan = planForDay(mes, d.date).totalKg;
+      return { ...d, planKg: plan, achieve: plan > 0 ? (d.inputKg / plan) * 100 : null,
+        perCap: d.workers > 0 ? d.inputKg / d.workers : null };
+    });
+  }, [monthRuns, mes]);
+
+  const tot = useMemo(() => {
+    const a = { inputKg: 0, planKg: 0, workers: 0, out: { bm: 0, cu: 0, al: 0, cd: 0 } };
+    daily.forEach((d) => {
+      a.inputKg += d.inputKg; a.planKg += d.planKg; a.workers += d.workers;
+      OUTPUT_KINDS.forEach((k) => { a.out[k.key] += d.out[k.key] || 0; });
+    });
+    a.achieve = a.planKg > 0 ? (a.inputKg / a.planKg) * 100 : null;
+    a.perCap = a.workers > 0 ? a.inputKg / a.workers : null;
+    return a;
+  }, [daily]);
+
+  // 조별 인당 생산성 (증감은 그 달 평균 대비)
+  const byCrew = useMemo(() => {
+    const m = new Map(CREWS.map((c) => [c, { crew: c, inputKg: 0, workers: 0, shifts: 0 }]));
+    monthRuns.forEach((r) => {
+      const o = m.get(r.crew); if (!o) return;
+      o.inputKg += r.inputKg || 0; o.workers += Number(r.workers) || 0; o.shifts += 1;
+    });
+    const rows = Array.from(m.values()).map((o) => ({ ...o, perCap: o.workers > 0 ? o.inputKg / o.workers : null }));
+    const avg = tot.perCap;
+    return rows.map((r) => ({ ...r, delta: r.perCap != null && avg ? r.perCap - avg : null }));
+  }, [monthRuns, tot]);
+
+  const rate = (v) => (tot.inputKg > 0 ? (v / tot.inputKg) * 100 : null);
+  const toggleInput = (id) => setForm((f) => ({
+    ...f, inputIds: f.inputIds.includes(id) ? f.inputIds.filter((x) => x !== id) : [...f.inputIds, id] }));
+
+  const submit = async () => {
+    await onSave({ ...form, crew });
+    setForm({ date: form.date, shift: form.shift, workers: form.workers, note: "",
+      inputIds: [], outputs: { bm: "", cu: "", al: "", cd: "" } });
+  };
+
+  return html`
+    <div className="ivs-prod">
+      <div className="ivs-section-head">
+        <h2 className="ivs-section-title">생산실적</h2>
+        <span className="ivs-section-hint">투입한 입고 Lot이 새 생산 Lot으로 바뀌고, 서로 연결돼서 추적할 수 있어요</span>
+      </div>
+
+      <div className="ivs-kpis cols-5">
+        <${SummaryCard} label="투입량" value=${fmtTon(tot.inputKg)} unit="톤"
+          icon=${html`<${Layers} size=${13} />`}
+          sub=${`계획 ${fmtTon(tot.planKg)} 톤`} accent=${true} />
+        <${SummaryCard} label="계획 대비 달성율"
+          value=${tot.achieve == null ? "-" : tot.achieve.toFixed(1)} unit="%"
+          icon=${html`<${TrendingUp} size=${13} />`}
+          sub=${`${ym} 누계`} />
+        ${OUTPUT_KINDS.slice(0, 3).map((k) => html`
+          <${SummaryCard} key=${k.key} label=${`${k.label} 회수`}
+            value=${fmtTon(tot.out[k.key])} unit="톤"
+            icon=${html`<span className="ivs-badge-dot" style=${{ background: k.color }} />`}
+            sub=${`회수율 ${rate(tot.out[k.key]) == null ? "-" : rate(tot.out[k.key]).toFixed(1)}%`} />
+        `)}
+      </div>
+
+      ${canEdit ? html`
+        <div className="ivs-card">
+          <div className="ivs-card-head-row">
+            <h2 className="ivs-section-title">생산실적 입력</h2>
+            <span className="ivs-section-hint">교대조는 근무 패턴에서 자동으로 정해져요</span>
+          </div>
+          <div className="ivs-form-grid">
+            <${Field} label="작업일">
+              <input type="date" className="ivs-input" value=${form.date}
+                onChange=${(e) => setForm({ ...form, date: e.target.value })} />
+            <//>
+            <${Field} label="주간 / 야간">
+              <select className="ivs-select ivs-select-full" value=${form.shift}
+                onChange=${(e) => setForm({ ...form, shift: e.target.value })}>
+                <option value="day">주간</option>
+                <option value="night">야간</option>
+              </select>
+            <//>
+            <${Field} label="담당 교대조 (자동)">
+              <input className="ivs-input ivs-input-auto" readOnly tabIndex=${-1}
+                value=${crew ? `${crew}조${(mes.crewMembers[crew] || []).length ? ` · ${(mes.crewMembers[crew] || []).length}명 등록` : ""}` : "-"} />
+            <//>
+            <${Field} label="작업인원 (명)">
+              <input type="number" className="ivs-input" value=${form.workers}
+                onChange=${(e) => setForm({ ...form, workers: e.target.value })} />
+            <//>
+          </div>
+
+          <div className="ivs-run-inputs">
+            <div className="ivs-card-head-row" style=${{ marginBottom: 8 }}>
+              <div className="ivs-chart-label" style=${{ marginBottom: 0 }}>
+                투입 Lot ${chosen.length}건 · ${fmtKg(inputKg)}
+              </div>
+              <button className="ivs-btn ivs-btn-sm" onClick=${() => setPickOpen(true)}>
+                <${Plus} size=${12} /> 입고 Lot 고르기
+              </button>
+            </div>
+            ${chosen.length === 0 ? html`
+              <div className="ivs-prod-empty">아직 고른 Lot이 없어요. 위 버튼으로 투입할 입고 Lot을 고르세요.</div>
+            ` : html`
+              <div className="ivs-chiprow">
+                ${chosen.map((l) => html`
+                  <span className="ivs-lotchip" key=${l.id}>
+                    <span className="ivs-badge-dot" style=${{ background: getStage(l.stage).color }} />
+                    <b>${l.lotNo}</b> ${l.code} · ${fmtKg(l.qtyKg)}
+                    <button className="ivs-lotchip-x" onClick=${() => toggleInput(l.id)}><${X} size=${11} /></button>
+                  </span>
+                `)}
+              </div>
+            `}
+          </div>
+
+          <div className="ivs-chart-label" style=${{ marginTop: 16 }}>산출량 (Kg) — 넣은 항목마다 새 생산 Lot이 만들어져요</div>
+          <div className="ivs-form-grid">
+            ${OUTPUT_KINDS.map((k) => {
+              const v = Number(form.outputs[k.key]);
+              const r = inputKg > 0 && Number.isFinite(v) && v > 0 ? (v / inputKg) * 100 : null;
+              return html`
+                <${Field} key=${k.key} label=${`${k.label} 회수량${r == null ? "" : ` · ${r.toFixed(1)}%`}`}>
+                  <input type="number" className="ivs-input" value=${form.outputs[k.key]}
+                    onChange=${(e) => setForm({ ...form, outputs: { ...form.outputs, [k.key]: e.target.value } })} />
+                <//>
+              `;
+            })}
+          </div>
+          <div className="ivs-bulk-sum" style=${{ marginTop: 12 }}>
+            <span>투입 <b>${fmtKg(inputKg)}</b></span>
+            <span>산출 <b>${fmtKg(outSum)}</b></span>
+            <span className=${inputKg > 0 && outSum > inputKg ? "ivs-diff-loss" : "ivs-dim"}>
+              ${inputKg <= 0 ? "투입 Lot을 고르면 회수율이 계산돼요"
+                : outSum > inputKg ? `\u26A0 산출이 투입보다 많아요 (${((outSum / inputKg) * 100).toFixed(1)}%) — 수량을 확인해주세요`
+                : `총 회수율 ${((outSum / inputKg) * 100).toFixed(1)}% · 공정손실 ${fmtKg(inputKg - outSum)}`}
+            </span>
+            <div className="ivs-spacer" />
+            <button className="ivs-btn ivs-btn-primary" onClick=${submit}
+              disabled=${chosen.length === 0 || outSum <= 0}>생산실적 등록</button>
+          </div>
+        </div>
+      ` : null}
+
+      <div className="ivs-prod-periodbar">
+        <span className="ivs-dim">집계 월</span>
+        ${months.slice(0, 6).map((m) => html`
+          <button key=${m} type="button" className=${`ivs-btn ivs-btn-sm ${m === ym ? "ivs-btn-primary" : ""}`}
+            onClick=${() => setYm(m)}>${m}</button>
+        `)}
+      </div>
+
+      <div className="ivs-half-grid">
+        <div className="ivs-card">
+          <div className="ivs-card-head-row">
+            <h2 className="ivs-section-title">회수 구성</h2>
+            <span className="ivs-section-hint">${ym} · 투입 ${fmtTon(tot.inputKg)} 톤 대비</span>
+          </div>
+          <${DonutChart}
+            rows=${OUTPUT_KINDS.map((k) => ({ key: k.key, label: k.label, color: k.color, value: tot.out[k.key] }))}
+            centerLabel="톤 회수" emptyMsg="이 달 등록된 생산실적이 없어요." />
+        </div>
+        <div className="ivs-card">
+          <div className="ivs-card-head-row">
+            <h2 className="ivs-section-title">교대조별 인당 생산성</h2>
+            <span className="ivs-section-hint">투입량 ÷ 작업인원 · 월평균 대비 증감</span>
+          </div>
+          ${byCrew.every((c) => c.shifts === 0) ? html`
+            <div className="ivs-prod-empty">이 달 등록된 생산실적이 없어요.</div>
+          ` : html`
+            <div className="ivs-rank-list">
+              ${byCrew.map((c) => html`
+                <div className="ivs-rank-row" key=${c.crew}>
+                  <div className="ivs-rank-left">
+                    <span className="ivs-rank-dot" style=${{ background: CREW_COLOR[c.crew] }} />
+                    <span className="ivs-rank-label">${c.crew}조</span>
+                    <span className="ivs-rank-count">· ${c.shifts}교대 · ${c.workers}명</span>
+                  </div>
+                  <div className="ivs-rank-bar-track">
+                    <div className="ivs-rank-bar-fill" style=${{
+                      width: `${Math.max(4, ((c.perCap || 0) / Math.max(...byCrew.map((x) => x.perCap || 0), 1)) * 100)}%`,
+                      background: CREW_COLOR[c.crew] }} />
+                  </div>
+                  <div className="ivs-rank-value">
+                    ${c.perCap == null ? "-" : `${Math.round(c.perCap).toLocaleString("ko-KR")} kg`}
+                    ${c.delta == null ? null : html`
+                      <span className=${`ivs-rank-net ${c.delta >= 0 ? "ivs-diff-mix" : "ivs-diff-loss"}`}>
+                        ${c.delta >= 0 ? "+" : ""}${Math.round(c.delta).toLocaleString("ko-KR")} kg
+                      </span>`}
+                  </div>
+                </div>
+              `)}
+            </div>
+          `}
+        </div>
+      </div>
+
+      <div className="ivs-card">
+        <div className="ivs-card-head-row">
+          <h2 className="ivs-section-title">일별 투입 · 계획 대비</h2>
+          <span className="ivs-section-hint">단위 톤 · ${ym}</span>
+        </div>
+        ${daily.length === 0 ? html`<div className="ivs-prod-empty">이 달 등록된 생산실적이 없어요.</div>` : html`
+          <${ColumnChart} rows=${daily.map((d) => ({
+            key: d.date, label: d.date.slice(5), value: d.inputKg,
+            color: d.achieve != null && d.achieve >= 100 ? "#2FBF71" : d.achieve != null && d.achieve >= 90 ? "#EDC22E" : "#E9692F",
+            sub: d.achieve == null ? null : `${d.achieve.toFixed(0)}%`,
+          }))} />
+        `}
+      </div>
+
+      <div className="ivs-card">
+        <div className="ivs-card-head-row">
+          <h2 className="ivs-section-title">생산실적 원장 (${monthRuns.length}건)</h2>
+          <span className="ivs-section-hint">Lot 번호를 누르면 어떤 입고 Lot에서 나왔는지 펼쳐져요</span>
+        </div>
+        ${monthRuns.length === 0 ? html`<div className="ivs-prod-empty">이 달 등록된 생산실적이 없어요.</div>` : html`
+          <div className="ivs-table-wrap">
+            <table className="ivs-table" style=${{ minWidth: 900 }}>
+              <thead>
+                <tr>
+                  <th>작업일</th><th>교대</th><th>조</th><th className="ivs-right">인원</th>
+                  <th className="ivs-right">투입(Kg)</th><th>투입 Lot</th>
+                  ${OUTPUT_KINDS.map((k) => html`<th key=${k.key} className="ivs-right">${k.label}</th>`)}
+                  <th className="ivs-right">회수율</th><th className="ivs-th-actions"></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${monthRuns.map((r) => {
+                  const outKg = (r.outputs || []).reduce((a, o) => a + (Number(o.qtyKg) || 0), 0);
+                  const get = (k) => (r.outputs || []).filter((o) => o.kind === k).reduce((a, o) => a + o.qtyKg, 0);
+                  return html`
+                    <${Fragment} key=${r.id}>
+                      <tr>
+                        <td className="ivs-mono">${r.date}</td>
+                        <td><span className=${`ivs-cal-tag ${r.shift}`}>${SHIFT_LABEL[r.shift]}</span></td>
+                        <td><span className="ivs-badge" style=${{ "--c": CREW_COLOR[r.crew] || "#8494AC" }}>${r.crew}조</span></td>
+                        <td className="ivs-mono ivs-right">${r.workers || "-"}</td>
+                        <td className="ivs-mono ivs-right">${fmtKg(r.inputKg)}</td>
+                        <td>
+                          <button className="ivs-linkbtn" onClick=${() => setTrace(trace === r.id ? null : r.id)}>
+                            ${r.inputs.length}건 ${trace === r.id ? "▴" : "▾"}
+                          </button>
+                        </td>
+                        ${OUTPUT_KINDS.map((k) => html`<td key=${k.key} className="ivs-mono ivs-right">${get(k.key) ? fmtKg(get(k.key)) : "-"}</td>`)}
+                        <td className="ivs-mono ivs-right"><b>${r.inputKg > 0 ? `${((outKg / r.inputKg) * 100).toFixed(1)}%` : "-"}</b></td>
+                        <td className="ivs-row-menu-cell">
+                          ${canEdit ? html`
+                            <button className="ivs-icon-btn ivs-menu-danger" title="이 실적을 취소하고 투입 Lot을 되돌려요"
+                              onClick=${() => setDelTarget(r)}><${Trash2} size=${14} /></button>
+                          ` : null}
+                        </td>
+                      </tr>
+                      ${trace === r.id ? html`
+                        <tr className="ivs-trace-row">
+                          <td colSpan=${11 + OUTPUT_KINDS.length}>
+                            <div className="ivs-trace">
+                              <div>
+                                <div className="ivs-chart-label">투입한 입고 Lot</div>
+                                <div className="ivs-chiprow">
+                                  ${r.inputs.map((i) => html`
+                                    <span className="ivs-lotchip" key=${i.lotId}><b>${i.lotNo}</b> ${i.code} · ${fmtKg(i.qtyKg)}</span>
+                                  `)}
+                                </div>
+                              </div>
+                              <div className="ivs-trace-arrow">→</div>
+                              <div>
+                                <div className="ivs-chart-label">만들어진 생산 Lot</div>
+                                <div className="ivs-chiprow">
+                                  ${r.outputs.map((o) => {
+                                    const k = OUTPUT_KINDS.find((x) => x.key === o.kind);
+                                    return html`
+                                      <span className="ivs-lotchip" key=${o.lotId}>
+                                        <span className="ivs-badge-dot" style=${{ background: k ? k.color : "#8494AC" }} />
+                                        <b>${o.lotNo}</b> ${k ? k.label : o.code} · ${fmtKg(o.qtyKg)}
+                                      </span>`;
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      ` : null}
+                    <//>
+                  `;
+                })}
+              </tbody>
+            </table>
+          </div>
+        `}
+      </div>
+
+      ${pickOpen ? html`
+        <${LotPickerModal} lots=${pickable} selected=${form.inputIds}
+          onToggle=${toggleInput} onClose=${() => setPickOpen(false)} />
+      ` : null}
+      ${delTarget ? html`
+        <${ConfirmModal}
+          icon=${html`<${AlertTriangle} size=${18} />`}
+          title=${`${delTarget.date} ${SHIFT_LABEL[delTarget.shift]} 실적을 취소할까요?`}
+          body="이 실적으로 만들어진 생산 Lot이 지워지고, 투입했던 입고 Lot이 원래 공정으로 되돌아가요."
+          confirmLabel="실적 취소"
+          danger=${true}
+          onCancel=${() => setDelTarget(null)}
+          onConfirm=${() => { onDelete(delTarget.id); setDelTarget(null); }}
+        />
+      ` : null}
+    </div>
+  `;
+}
+
+// 투입할 입고 Lot 고르기
+function LotPickerModal({ lots, selected, onToggle, onClose }) {
+  const [q, setQ] = useState("");
+  const rows = useMemo(() => {
+    const w = q.trim().toLowerCase();
+    if (!w) return lots;
+    return lots.filter((l) => [l.lotNo, l.code, l.name, l.vendor].join(" ").toLowerCase().includes(w));
+  }, [lots, q]);
+  const pickedKg = lots.filter((l) => selected.includes(l.id)).reduce((a, l) => a + (Number(l.qtyKg) || 0), 0);
+  return html`
+    <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onClose)}>
+      <div className="ivs-modal ivs-modal-xl" onClick=${(e) => e.stopPropagation()}>
+        <div className="ivs-modal-head">
+          <h3>투입할 입고 Lot 고르기</h3>
+          <button className="ivs-icon-btn" onClick=${onClose}><${X} size=${16} /></button>
+        </div>
+        <div className="ivs-modal-body">
+          <div className="ivs-search" style=${{ marginBottom: 12 }}>
+            <${Search} size=${15} className="ivs-search-icon" />
+            <input className="ivs-input ivs-search-input" placeholder="입고 Lot · 품목 · 거래처로 찾기"
+              value=${q} onChange=${(e) => setQ(e.target.value)} autoFocus />
+          </div>
+          <div className="ivs-table-wrap" style=${{ maxHeight: 380 }}>
+            <table className="ivs-table" style=${{ minWidth: 0 }}>
+              <thead>
+                <tr>
+                  <th className="ivs-th-check"></th><th>입고 Lot</th><th>품목</th><th>거래처</th>
+                  <th>현재공정</th><th>입고일</th><th className="ivs-right">수량(Kg)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.length === 0 ? html`
+                  <tr><td colSpan=${7} className="ivs-empty">고를 수 있는 입고 Lot이 없어요.</td></tr>
+                ` : rows.map((l) => html`
+                  <tr key=${l.id}>
+                    <td><input type="checkbox" checked=${selected.includes(l.id)} onChange=${() => onToggle(l.id)} /></td>
+                    <td className="ivs-mono">${l.lotNo}</td>
+                    <td>${l.code} · ${l.name}</td>
+                    <td>${l.vendor || "-"}</td>
+                    <td><span className="ivs-badge" style=${{ "--c": getStage(l.stage).color }}>${getStage(l.stage).label}</span></td>
+                    <td className="ivs-mono">${l.receivedDate}</td>
+                    <td className="ivs-mono ivs-right">${fmtKg(l.qtyKg)}</td>
+                  </tr>
+                `)}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="ivs-modal-foot">
+          <span className="ivs-section-hint" style=${{ marginRight: "auto" }}>
+            ${selected.length}건 선택 · ${fmtKg(pickedKg)}
+          </span>
+          <button className="ivs-btn ivs-btn-primary" onClick=${onClose}>선택 완료</button>
+        </div>
+      </div>
     </div>
   `;
 }

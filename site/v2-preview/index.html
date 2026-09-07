@@ -234,6 +234,11 @@
     max-width: 500px; max-height: 88vh; display: flex; flex-direction: column; box-shadow: var(--shadow); }
   .ivs-modal-sm { max-width: 390px; }
   .ivs-modal-lg { max-width: 760px; }
+  /* 표가 들어가는 창은 더 넓게 — 가로로 잘려서 스크롤하지 않아도 되게. */
+  .ivs-modal-xl { max-width: 1100px; }
+  .ivs-import-st { width: 170px; }
+  .ivs-import-st + td, td.ivs-import-st { white-space: normal; }
+  .ivs-modal-xl .ivs-table th, .ivs-modal-xl .ivs-table td { padding-left: 9px; padding-right: 9px; }
   .ivs-modal-head { display: flex; justify-content: space-between; align-items: center; gap: 10px;
     padding: 16px 18px; border-bottom: 1px solid var(--border); }
   .ivs-modal-head h3 { margin: 0; font-size: 15px; font-weight: 650; }
@@ -308,6 +313,7 @@
   .ivs-prod-report-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .ivs-prod-listlabel { font-size: 12px; color: var(--text-dim); margin: 16px 0 7px; font-weight: 500; }
   .ivs-prod-list { max-height: 170px; overflow-y: auto; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+  .ivs-prod-row { display: flex; align-items: flex-start; gap: 8px; }
   .ivs-prod-row { padding: 8px 13px; font-size: 12.5px; font-family: ui-monospace, "SF Mono", Menlo, monospace;
     border-bottom: 1px solid var(--border); }
   .ivs-prod-row:last-child { border-bottom: none; }
@@ -475,6 +481,39 @@
   .ivs-aggbar-prog { position: absolute; inset: 0 auto 0 0; border-radius: 999px; }
   .ivs-aggbar-val { text-align: right; font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; }
   .ivs-aggbar-val small { display: block; font-size: 11px; color: var(--text-faint); font-weight: 400; }
+
+  /* ---------- 여러 건 공정이동 ---------- */
+  .ivs-qty-cell { width: 96px; text-align: right; padding: 5px 8px; font-size: 12.5px; }
+  .ivs-qty-cell.bad { border-color: var(--bad); outline: 1px solid var(--bad); }
+  .ivs-diff-loss { color: var(--bad); }
+  .ivs-diff-mix { color: var(--good); }
+  .ivs-bulk-sum { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-top: 12px;
+    padding: 11px 14px; background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .ivs-bulk-sum b { font-weight: 700; }
+
+  /* ---------- 생산 이력 선택 삭제 ---------- */
+  .ivs-prod-listhead { display: flex; justify-content: space-between; align-items: center;
+    gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .ivs-prod-listactions { display: flex; gap: 7px; flex-wrap: wrap; }
+  .ivs-prod-check { flex-shrink: 0; margin-right: 2px; }
+  .ivs-prod-row.picked { background: var(--accent-soft);
+    box-shadow: inset 3px 0 0 var(--accent); }
+
+  /* ---------- 파일로 한 번에 추가 ---------- */
+  .ivs-import-drop { display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    padding: 14px; border: 1px dashed var(--border-strong); border-radius: var(--radius-sm);
+    background: var(--surface-2); margin-bottom: 14px; }
+  /* 파일 고르기 — 숨긴 input + label 조합은 브라우저마다 동작이 달라서, 그냥 보이는 입력칸으로 뒀어요. */
+  .ivs-import-input { flex: 1 1 260px; min-width: 220px; background: var(--surface); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; font-size: 12.5px;
+    font-family: inherit; cursor: pointer; }
+  .ivs-import-input::file-selector-button { background: var(--accent); color: var(--accent-ink); border: none;
+    border-radius: 6px; padding: 6px 12px; margin-right: 10px; font-weight: 650; font-size: 12.5px;
+    font-family: inherit; cursor: pointer; }
+  .ivs-import-sum { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .ivs-row-bad td { background: color-mix(in srgb, var(--bad) 8%, transparent); }
+  .ivs-row-bad .ivs-chip.bad { white-space: normal; }
 
   /* ---------- 레이아웃 래퍼 · 기타 ---------- */
   .ivs-dash, .ivs-prod, .ivs-tolling { display: block; }
@@ -3239,12 +3278,12 @@ const STAGES = [
   { key: "discharge", label: "전기방전완료", color: "#4C8DFF" },   // 파랑
   { key: "disassemble", label: "해체완료", color: "#A97BF0" },     // 보라
   { key: "crush_wait", label: "파쇄대기", color: "#17C1D9" },      // 청록
-  { key: "calcine_needed", label: "열분해필요", color: "#F0555C" }, // 빨강
+  { key: "calcine_needed", label: "열분해대기", color: "#F0555C" }, // 빨강
   { key: "usable", label: "출하대기", color: "#EDC22E" },          // 노랑
   { key: "shipped", label: "출하완료", color: "#2FBF71" },         // 초록
 ];
 // 재공(현재고)에서 빠지는 "최종" 단계 — 출하완료만 해당해요.
-// (열분해필요는 아직 공정이 남아있는 재고라서 현재고에 포함돼요.)
+// (열분해대기는 아직 공정이 남아있는 재고라서 현재고에 포함돼요.)
 const FINAL_STAGE_KEYS = ["shipped"];
 const stageByKey = Object.fromEntries(STAGES.map((s) => [s.key, s]));
 // 단계 목록에서 빠진 옛 단계(예: 삭제된 셀분리완료/파쇄완료)로 저장된 로트가 있어도 화면이 깨지지 않게,
@@ -3499,6 +3538,187 @@ function reconstructLotState(lot, lotMoves, asOfDate) {
 }
 
 
+// ---------- 엑셀 / CSV / QR 스캐너 파일 읽기 (입고 Lot 한 번에 올리기) ----------
+// 브라우저 표준 기능만 써요. .xlsx는 zip이라 압축 해제가 필요한데, 요즘 브라우저에 있는
+// DecompressionStream("deflate-raw")을 쓰면 별도 라이브러리 없이 풀 수 있어요.
+async function inflateRaw(bytes) {
+  if (typeof DecompressionStream !== "function") throw new Error("이 브라우저에서는 엑셀 파일을 열 수 없어요. CSV로 올려주세요.");
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+// zip의 중앙 디렉터리를 훑어서 안에 든 파일 목록과 내용을 꺼내요.
+async function readZip(buffer) {
+  const u8 = new Uint8Array(buffer);
+  const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+  let eocd = -1;
+  for (let i = u8.length - 22; i >= 0 && i > u8.length - 22 - 65536; i--) {
+    if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error("엑셀(.xlsx) 파일이 아닌 것 같아요.");
+  const count = dv.getUint16(eocd + 10, true);
+  let off = dv.getUint32(eocd + 16, true);
+  const files = {};
+  for (let i = 0; i < count; i++) {
+    if (off + 46 > u8.length || dv.getUint32(off, true) !== 0x02014b50) break;
+    const method = dv.getUint16(off + 10, true);
+    const compSize = dv.getUint32(off + 20, true);
+    const nameLen = dv.getUint16(off + 28, true);
+    const extraLen = dv.getUint16(off + 30, true);
+    const commentLen = dv.getUint16(off + 32, true);
+    const localOff = dv.getUint32(off + 42, true);
+    const name = new TextDecoder().decode(u8.subarray(off + 46, off + 46 + nameLen));
+    const lNameLen = dv.getUint16(localOff + 26, true);
+    const lExtraLen = dv.getUint16(localOff + 28, true);
+    const start = localOff + 30 + lNameLen + lExtraLen;
+    files[name] = { method, data: u8.subarray(start, start + compSize) };
+    off += 46 + nameLen + extraLen + commentLen;
+  }
+  return {
+    has: (n) => !!files[n],
+    names: () => Object.keys(files),
+    async text(n) {
+      const f = files[n];
+      if (!f) return null;
+      const raw = f.method === 0 ? f.data : await inflateRaw(f.data);
+      return new TextDecoder("utf-8").decode(raw);
+    },
+  };
+}
+
+const unescapeXml = (t) => String(t)
+  .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"')
+  .replace(/&apos;/g, "'").replace(/&#(\d+);/g, (_, d) => String.fromCharCode(Number(d)))
+  .replace(/&amp;/g, "&");
+
+const refToCol = (ref) => {
+  const m = /^([A-Z]+)/.exec(ref);
+  if (!m) return 0;
+  let n = 0;
+  for (const ch of m[1]) n = n * 26 + (ch.charCodeAt(0) - 64);
+  return n - 1;
+};
+
+function parseSharedStrings(xml) {
+  if (!xml) return [];
+  return Array.from(xml.matchAll(/<si>([\s\S]*?)<\/si>/g)).map((m) =>
+    Array.from(m[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)).map((x) => unescapeXml(x[1])).join("")
+  );
+}
+
+function parseSheetXml(xml, shared) {
+  const rows = [];
+  for (const rm of xml.matchAll(/<row[^>]*?>([\s\S]*?)<\/row>/g)) {
+    const cells = [];
+    for (const cm of rm[1].matchAll(/<c\s([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
+      const attrs = cm[1], body = cm[2] || "";
+      const refM = /r="([A-Z]+\d+)"/.exec(attrs);
+      const idx = refM ? refToCol(refM[1]) : cells.length;
+      const t = (/t="([^"]+)"/.exec(attrs) || [])[1];
+      let val = "";
+      if (t === "inlineStr") {
+        val = Array.from(body.matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)).map((x) => unescapeXml(x[1])).join("");
+      } else {
+        const v = /<v>([\s\S]*?)<\/v>/.exec(body);
+        if (v) val = t === "s" ? (shared[Number(v[1])] ?? "") : unescapeXml(v[1]);
+      }
+      cells[idx] = val;
+    }
+    rows.push(Array.from({ length: cells.length }, (_, i) => cells[i] ?? ""));
+  }
+  return rows;
+}
+
+async function readXlsxRows(buffer) {
+  const zip = await readZip(buffer);
+  const shared = parseSharedStrings(await zip.text("xl/sharedStrings.xml"));
+  // 첫 번째 시트를 읽어요.
+  const sheetName = zip.names().filter((n) => /^xl\/worksheets\/sheet\d+\.xml$/.test(n)).sort()[0];
+  if (!sheetName) throw new Error("엑셀 파일 안에서 시트를 찾지 못했어요.");
+  return parseSheetXml(await zip.text(sheetName), shared);
+}
+
+// 텍스트 파일: UTF-8로 먼저 읽고, 글자가 깨지면 한국어 윈도우 인코딩(EUC-KR)으로 다시 읽어요.
+function decodeText(buffer) {
+  const u8 = new Uint8Array(buffer);
+  const body = (u8[0] === 0xEF && u8[1] === 0xBB && u8[2] === 0xBF) ? u8.subarray(3) : u8;
+  const utf8 = new TextDecoder("utf-8").decode(body);
+  if (!utf8.includes("�")) return utf8;
+  try { return new TextDecoder("euc-kr").decode(body); } catch (e) { return utf8; }
+}
+
+function parseDelimited(text, delim) {
+  const rows = [];
+  let row = [], cell = "", quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (quoted) {
+      if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else quoted = false; }
+      else cell += ch;
+    } else if (ch === '"') quoted = true;
+    else if (ch === delim) { row.push(cell); cell = ""; }
+    else if (ch === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; }
+    else if (ch !== "\r") cell += ch;
+  }
+  if (cell !== "" || row.length > 0) { row.push(cell); rows.push(row); }
+  return rows.filter((r) => r.some((c) => String(c).trim() !== ""));
+}
+
+// ---------- 표의 열을 우리 항목에 맞춰 짝지어요 ----------
+const norm = (t) => String(t || "").replace(/[\s()（）·.]/g, "").toLowerCase();
+const COLUMN_ALIASES = {
+  lotNo:        ["입고lot", "로트번호", "롯트번호", "lot", "lotno", "로트", "lot번호"],
+  code:         ["품목코드", "코드", "code", "itemcode"],
+  name:         ["품목명", "품명", "name", "item"],
+  categoryId:   ["카테고리", "분류", "category"],
+  vendor:       ["거래처", "업체", "vendor", "공급사"],
+  shipLoc:      ["출고지", "출하지", "shiploc", "location"],
+  receivedDate: ["입고일", "입고일자", "날짜", "date"],
+  stage:        ["현재공정", "현재단계", "공정", "단계", "stage"],
+  qtyKg:        ["수량kg", "수량", "중량kg", "중량", "qty", "weight", "수량포함"],
+  waterKg:      ["물중량kg", "물중량", "수분"],
+  excludeKg:    ["제외무게kg", "제외무게", "제외중량"],
+  tolling:      ["톨링품", "톨링", "tolling"],
+  carriedOver:  ["이월", "이월재고", "carryover"],
+};
+function mapHeader(headerRow) {
+  const map = {};
+  headerRow.forEach((h, i) => {
+    const key = norm(h);
+    if (!key) return;
+    for (const [field, aliases] of Object.entries(COLUMN_ALIASES)) {
+      if (map[field] !== undefined) continue;
+      if (aliases.some((a) => key === a || key.startsWith(a))) { map[field] = i; return; }
+    }
+  });
+  return map;
+}
+
+// 엑셀 날짜는 숫자(1900-01-01부터의 일수)로 들어오기도 해요.
+function toDateStr(v) {
+  const raw = String(v == null ? "" : v).trim();
+  if (!raw) return "";
+  const n = Number(raw);
+  if (Number.isFinite(n) && n > 20000 && n < 80000) {
+    return new Date(Date.UTC(1899, 11, 30) + Math.round(n) * 86400000).toISOString().slice(0, 10);
+  }
+  const m = /^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/.exec(raw);
+  if (m) return `${m[1]}-${pad2(m[2])}-${pad2(m[3])}`;
+  const m2 = /^(\d{4})(\d{2})(\d{2})$/.exec(raw);
+  if (m2) return `${m2[1]}-${m2[2]}-${m2[3]}`;
+  return raw;
+}
+const truthy = (v) => ["y", "yes", "o", "true", "1", "예", "네", "톨링", "이월"].includes(String(v || "").trim().toLowerCase());
+
+// QR 라벨기로 찍은 파일: 라벨에 심어둔 "DRT|입고Lot|품목코드|중량kg|입고일|생산일" 한 줄씩.
+const SCAN_RE = /^DRT\|([^|]*)\|([^|]*)\|([^|]*)\|([^|]*)\|?(.*)$/;
+function parseScanLines(text) {
+  return text.split(/\r?\n/).map((l) => l.trim()).filter((l) => SCAN_RE.test(l)).map((l) => {
+    const m = SCAN_RE.exec(l);
+    return { lotNo: m[1], code: m[2], qtyKg: String(m[3]).replace(/kg$/i, ""), receivedDate: m[4] };
+  });
+}
+
 // ---------- 엑셀(.xlsx) 파일 만들기 ----------
 // CSV로 내보내면 한국어 윈도우의 엑셀이 파일 인코딩을 CP949로 잘못 짐작해서 한글이 깨지는 일이 있어요
 // (UTF-8 BOM을 넣어도 환경에 따라 무시돼요). 그래서 아예 진짜 엑셀 파일(.xlsx)을 만들어서 내보내요.
@@ -3691,6 +3911,8 @@ function InventorySystem() {
 
   const [formModal, setFormModal] = useState(null); // { mode: 'add'|'edit', values }
   const [moveModal, setMoveModal] = useState(null); // lot
+  const [bulkMoveOpen, setBulkMoveOpen] = useState(false); // 여러 로트를 한 번에 공정이동
+  const [importOpen, setImportOpen] = useState(false); // 파일로 입고 Lot 한 번에 추가
   const [deleteTarget, setDeleteTarget] = useState(null); // lot | 'bulk'
   const [resetConfirm, setResetConfirm] = useState(false);
   const [clearMovesConfirm, setClearMovesConfirm] = useState(false);
@@ -3793,7 +4015,7 @@ function InventorySystem() {
   const handleSaveForm = async (values) => {
     const qtyKg = Number(values.qtyKg);
     if (!values.code || !values.lotNo || !qtyKg) {
-      showToast("품목코드 · 로트번호 · 수량은 필수예요.", "error");
+      showToast("품목코드 · 입고 Lot · 수량은 필수예요.", "error");
       return;
     }
     const payload = {
@@ -3811,6 +4033,14 @@ function InventorySystem() {
       showToast("로트 정보를 수정했어요.", "success");
     }
     setFormModal(null);
+  };
+
+  const handleImportLots = async (newLots) => {
+    if (!canEdit || newLots.length === 0) return;
+    const stamped = newLots.map((l, i) => ({ ...l, id: `lot-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`, lastMove: null }));
+    await persist([...stamped, ...lots]);
+    showToast(`${stamped.length}건을 추가했어요.`, "success");
+    setImportOpen(false);
   };
 
   const handleDelete = async () => {
@@ -3848,6 +4078,39 @@ function InventorySystem() {
     setMoveModal(null);
   };
 
+  // 여러 로트를 한 번에 다음 공정으로 — 로트마다 배출 수량을 따로 넣을 수 있어요.
+  // 단건 이동과 똑같이 lots와 moves를 한 번의 writeAll로 합쳐서 써요.
+  const handleBulkMove = async (targetStage, qtyByLotId) => {
+    if (!canEdit) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const targets = lots.filter((l) => selected.has(l.id) && l.stage !== targetStage);
+    if (targets.length === 0) { setBulkMoveOpen(false); return; }
+    const byId = new Map(targets.map((l) => [l.id, l]));
+    const nextLots = lots.map((l) => {
+      if (!byId.has(l.id)) return l;
+      const out = Number(qtyByLotId[l.id]);
+      return { ...l, stage: targetStage, qtyKg: Number.isFinite(out) && out > 0 ? out : l.qtyKg, lastMove: today };
+    });
+    const newMoves = targets.map((l, i) => {
+      const inputQty = Number(l.qtyKg) || 0;
+      const parsed = Number(qtyByLotId[l.id]);
+      const outputQty = Number.isFinite(parsed) && parsed > 0 ? parsed : inputQty;
+      const diff = outputQty - inputQty;
+      return {
+        id: `move-${Date.now()}-${i}`, date: today, code: l.code, name: l.name, lotNo: l.lotNo, lotId: l.id,
+        fromStage: l.stage, toStage: targetStage, inputQty, outputQty,
+        lossQty: diff < 0 ? -diff : 0, mixQty: diff > 0 ? diff : 0,
+      };
+    });
+    const nextMoves = [...newMoves, ...moves];
+    setLots(nextLots);
+    setMoves(nextMoves);
+    await writeAll({ lots: nextLots, moves: nextMoves, settings, master });
+    showToast(`${targets.length}건을 "${getStage(targetStage).label}"로 이동했어요.`, "success");
+    setBulkMoveOpen(false);
+    setSelected(new Set());
+  };
+
   // "초기화"는 지금 팀 전체가 실시간으로 보고 있는 데이터 자체를 비우는 거예요 — 되돌릴 수 없어요.
   const handleReset = async () => {
     if (!canEdit) return;
@@ -3865,6 +4128,15 @@ function InventorySystem() {
     await persistMoves([]);
     showToast("공정이동 이력을 모두 지웠어요.", "success");
     setClearMovesConfirm(false);
+  };
+
+  // 이력 중 고른 것만 삭제 — 로트(재고현황)는 그대로 두고 기록만 지워요.
+  // 이미 반영된 로트의 단계·수량은 되돌리지 않아요 (기록만 없어져요).
+  const handleDeleteMoves = async (ids) => {
+    if (!canEdit || !ids || ids.length === 0) return;
+    const drop = new Set(ids);
+    await persistMoves(moves.filter((m) => !drop.has(m.id)));
+    showToast(`공정이동 이력 ${ids.length}건을 지웠어요.`, "success");
   };
 
   // ---------- 필터/정렬 ----------
@@ -3979,7 +4251,7 @@ function InventorySystem() {
 
   // ---------- 엑셀(.xlsx)로 내보내기 ----------
   const exportCsv = () => {
-    const headers = ["품목코드", "품목명", "카테고리", "거래처", "출고지", "로트번호", "주차", "현재단계", "수량(Kg)", "물중량(Kg)", "제외무게(Kg)", "입고일", "공정이동", "톨링품", "이월"];
+    const headers = ["품목코드", "품목명", "카테고리", "거래처", "출고지", "입고 Lot", "주차", "현재공정", "수량(Kg)", "물중량(Kg)", "제외무게(Kg)", "입고일", "공정이동", "톨링품", "이월"];
     const rows = filtered.map((l) => [
       l.code, l.name, categoryById[l.categoryId]?.label || "", l.vendor, l.shipLoc, l.lotNo, weekLabel(l.receivedDate),
       getStage(l.stage).label, l.qtyKg, l.waterKg ?? "", l.excludeKg ?? "", l.receivedDate, l.lastMove ?? "",
@@ -4057,6 +4329,9 @@ function InventorySystem() {
             <button className="ivs-btn" onClick=${() => setResetConfirm(true)} title="전체 데이터 초기화 (모두에게 실시간 반영)">
               <${RotateCcw} size=${14} /> 초기화
             </button>
+            <button className="ivs-btn" onClick=${() => setImportOpen(true)} title="엑셀·CSV·QR 라벨기 파일로 여러 건을 한 번에 추가해요">
+              <${FileText} size=${14} /> 파일로 한 번에 추가
+            </button>
             <button className="ivs-btn ivs-btn-primary" onClick=${() => setFormModal({ mode: "add", values: newLotForm(master) })}>
               <${Plus} size=${14} /> 새 로트 추가
             </button>
@@ -4085,7 +4360,7 @@ function InventorySystem() {
             value=${fmtTon(totals.inProgress)} unit="톤" accent=${true}
             icon=${html`<${Layers} size=${13} />`}
             delta=${html`<${Delta} kg=${dayDelta.inProgKg} />`}
-            sub=${`출하완료 제외 (열분해필요 포함) · 어제 ${fmtTon(dayDelta.prevInProg)} 톤`}
+            sub=${`출하완료 제외 (열분해대기 포함) · 어제 ${fmtTon(dayDelta.prevInProg)} 톤`}
           />
           <${SummaryCard}
             label="출하대기"
@@ -4204,6 +4479,9 @@ function InventorySystem() {
         ${canEdit && selected.size > 0 ? html`
           <div className="ivs-bulkbar">
             <span>${selected.size}건 선택됨</span>
+            <button className="ivs-btn ivs-btn-primary" onClick=${() => setBulkMoveOpen(true)}>
+              <${ArrowRightCircle} size=${13} /> 선택 공정이동
+            </button>
             <button className="ivs-btn ivs-btn-danger" onClick=${() => setDeleteTarget("bulk")}>
               <${Trash2} size=${13} /> 선택 삭제
             </button>
@@ -4223,9 +4501,9 @@ function InventorySystem() {
                 <th>카테고리</th>
                 <th>거래처</th>
                 <th>출고지</th>
-                <th>로트번호</th>
+                <th>입고 Lot</th>
                 <th>주차</th>
-                <th>현재단계</th>
+                <th>현재공정</th>
                 <${Th} label="수량(포함)" sortKey="qtyKg" sort=${sort} onSort=${toggleSort} align="right" />
                 <th className="ivs-hide-sm">물중량</th>
                 <th className="ivs-hide-sm">제외무게</th>
@@ -4285,7 +4563,7 @@ function InventorySystem() {
           </table>
         </div>
         <div className="ivs-tablefoot">${filtered.length}건 표시 중 · 전체 ${lots.length}건</div>
-      ` : activeTab === "production" ? html`<${ProductionTab} lots=${lots} moves=${moves} canEdit=${canEdit} onClearMoves=${() => setClearMovesConfirm(true)} />`
+      ` : activeTab === "production" ? html`<${ProductionTab} lots=${lots} moves=${moves} canEdit=${canEdit} onClearMoves=${() => setClearMovesConfirm(true)} onDeleteMoves=${handleDeleteMoves} />`
         : activeTab === "tolling" ? html`<${TollingTab} lots=${lots} />`
         : activeTab === "dashboard" ? html`<${DashboardTab} lots=${lots} moves=${moves} dayDelta=${dayDelta} />`
         : html`<div className="ivs-comingsoon">이 탭은 다음 단계에서 만들어요.</div>`}
@@ -4310,6 +4588,12 @@ function InventorySystem() {
       ` : null}
       ${moveModal ? html`
         <${MoveStageModal} lot=${moveModal} onCancel=${() => setMoveModal(null)} onConfirm=${handleMoveStage} />
+      ` : null}
+      ${importOpen ? html`
+        <${ImportLotsModal} lots=${lots} master=${master} onCancel=${() => setImportOpen(false)} onConfirm=${handleImportLots} />
+      ` : null}
+      ${bulkMoveOpen ? html`
+        <${BulkMoveModal} lots=${selectedLots} onCancel=${() => setBulkMoveOpen(false)} onConfirm=${handleBulkMove} />
       ` : null}
       ${labelLots ? html`
         <${LabelModal} lots=${labelLots} manager=${settings.manager || DEFAULT_SETTINGS.manager} onClose=${() => setLabelLots(null)} />
@@ -4475,8 +4759,8 @@ function LotFormModal({ mode, initial, master, onCancel, onSave, onOpenMaster })
             </select>
           <//>
           <${Field} label="출고지"><input className="ivs-input" value=${v.shipLoc} onChange=${set("shipLoc")} /><//>
-          <${Field} label="로트번호 *"><input className="ivs-input" value=${v.lotNo} onChange=${set("lotNo")} /><//>
-          <${Field} label="현재단계">
+          <${Field} label="입고 Lot *"><input className="ivs-input" value=${v.lotNo} onChange=${set("lotNo")} /><//>
+          <${Field} label="현재공정">
             <select className="ivs-select ivs-select-full" value=${v.stage} onChange=${set("stage")}>
               ${STAGES.map((s) => html`<option key=${s.key} value=${s.key}>${s.label}</option>`)}
             </select>
@@ -4632,6 +4916,333 @@ function MoveStageModal({ lot, onCancel, onConfirm }) {
   `;
 }
 
+// 여러 로트를 한 번에 다음 공정으로 보낼 때 쓰는 창.
+// 단계를 하나 고르면, 고른 로트마다 "이동 후 배출 수량"을 따로 손볼 수 있어요 (기본값은 지금 수량 그대로).
+// 파일에서 읽은 표를 우리 로트 형태로 바꾸고, 넣어도 되는지 하나씩 따져봐요.
+const IMPORT_HEADERS = ["입고 Lot", "품목코드", "품목명", "카테고리", "거래처", "출고지", "입고일", "현재공정", "수량(Kg)", "물중량(Kg)", "제외무게(Kg)", "톨링품", "이월"];
+
+function buildImportRows(table, existingLots, master) {
+  if (!table || table.length === 0) return { rows: [], error: "파일에서 읽을 내용이 없어요." };
+  const map = mapHeader(table[0]);
+  if (map.lotNo === undefined && map.qtyKg === undefined) {
+    return { rows: [], error: "첫 줄에서 열 제목을 찾지 못했어요. 아래 \"양식 내려받기\"로 받은 형식을 써주세요." };
+  }
+  const body = table.slice(1);
+  const pick = (r, f) => (map[f] === undefined ? "" : String(r[map[f]] ?? "").trim());
+  const seen = new Set();
+  const usedLotNos = new Set(existingLots.map((l) => l.lotNo));
+  const vendorNames = (master.vendors || []).map((v) => v.name);
+  const stageByLabel = Object.fromEntries(STAGES.map((s) => [s.label, s.key]));
+  const catByLabel = Object.fromEntries(CATEGORIES.map((c) => [c.label, c]));
+  const catByCode = Object.fromEntries(CATEGORIES.map((c) => [c.code, c]));
+
+  const rows = body.map((r, i) => {
+    const errs = [];
+    const warns = [];
+    const lotNo = pick(r, "lotNo");
+    if (!lotNo) errs.push("입고 Lot 없음");
+    else if (usedLotNos.has(lotNo)) errs.push("이미 등록된 Lot");
+    else if (seen.has(lotNo)) errs.push("파일 내 중복 Lot");
+    seen.add(lotNo);
+
+    const qtyRaw = pick(r, "qtyKg").replace(/,/g, "").replace(/kg$/i, "").trim();
+    const qtyKg = Number(qtyRaw);
+    if (!qtyRaw) errs.push("수량 없음");
+    else if (!Number.isFinite(qtyKg) || qtyKg <= 0) errs.push("수량이 숫자가 아님");
+
+    const codeRaw = pick(r, "code");
+    const catRaw = pick(r, "categoryId");
+    let cat = catByLabel[catRaw] || catByCode[codeRaw] || null;
+    if (!cat && catRaw) errs.push(`알 수 없는 카테고리 "${catRaw}"`);
+    if (!cat && !catRaw && codeRaw) errs.push(`품목코드 "${codeRaw}" 알 수 없음`);
+    if (!cat && !catRaw && !codeRaw) errs.push("품목코드/카테고리 없음");
+
+    const stageRaw = pick(r, "stage");
+    let stage = "raw_in";
+    if (stageRaw) {
+      if (stageByLabel[stageRaw]) stage = stageByLabel[stageRaw];
+      else errs.push(`알 수 없는 공정 "${stageRaw}"`);
+    }
+
+    const dateRaw = pick(r, "receivedDate");
+    const receivedDate = dateRaw ? toDateStr(dateRaw) : new Date().toISOString().slice(0, 10);
+    if (dateRaw && !/^\d{4}-\d{2}-\d{2}$/.test(receivedDate)) errs.push(`입고일 형식 확인 "${dateRaw}"`);
+
+    const vendor = pick(r, "vendor");
+    if (vendor && vendorNames.length > 0 && !vendorNames.includes(vendor)) warns.push("등록되지 않은 거래처");
+
+    const numOrNull = (t) => {
+      const v = t.replace(/,/g, "").trim();
+      if (!v) return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
+
+    return {
+      key: `imp-${i}`,
+      line: i + 2, // 파일에서 몇 번째 줄인지 (1줄은 제목)
+      errs, warns,
+      lot: {
+        code: cat ? cat.code : codeRaw,
+        name: pick(r, "name") || (cat ? cat.label : ""),
+        categoryId: cat ? cat.id : "",
+        vendor,
+        shipLoc: pick(r, "shipLoc"),
+        lotNo,
+        receivedDate,
+        stage,
+        qtyKg: Number.isFinite(qtyKg) ? qtyKg : 0,
+        waterKg: numOrNull(pick(r, "waterKg")),
+        excludeKg: numOrNull(pick(r, "excludeKg")),
+        tolling: truthy(pick(r, "tolling")),
+        carriedOver: truthy(pick(r, "carriedOver")),
+      },
+    };
+  });
+  return { rows, error: null };
+}
+
+function ImportLotsModal({ lots, master, onCancel, onConfirm }) {
+  const [rows, setRows] = useState(null);
+  const [fileName, setFileName] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const handleFile = async (file) => {
+    if (!file) return;
+    setBusy(true); setError(""); setRows(null); setFileName(file.name);
+    try {
+      const buf = await file.arrayBuffer();
+      let table;
+      if (/\.xlsx$/i.test(file.name)) {
+        table = await readXlsxRows(buf);
+      } else {
+        const text = decodeText(buf);
+        // QR 라벨기로 찍은 파일이면 라벨 문자열을 그대로 읽어요.
+        const scans = parseScanLines(text);
+        if (scans.length > 0) {
+          table = [["입고 Lot", "품목코드", "수량(Kg)", "입고일"],
+            ...scans.map((s) => [s.lotNo, s.code, s.qtyKg, s.receivedDate])];
+        } else {
+          const delim = (text.split("\n")[0] || "").includes("\t") ? "\t" : ",";
+          table = parseDelimited(text, delim);
+        }
+      }
+      const built = buildImportRows(table, lots, master);
+      if (built.error) setError(built.error);
+      setRows(built.rows);
+    } catch (e) {
+      setError(e && e.message ? e.message : "파일을 읽지 못했어요.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const downloadTemplate = () => {
+    const cat = CATEGORIES[0];
+    const vendor = (master.vendors || [])[0];
+    const sample = [
+      "SB-BM260907-1", cat.code, cat.label, cat.label,
+      vendor ? vendor.name : "", vendor ? (vendor.loc || "") : "",
+      new Date().toISOString().slice(0, 10), STAGES[0].label, 900, "", "", "", "",
+    ];
+    downloadXlsx("입고Lot_업로드양식.xlsx", "업로드 양식", [IMPORT_HEADERS, sample],
+      [16, 11, 18, 14, 20, 12, 12, 14, 12, 13, 14, 9, 7]);
+  };
+
+  const okRows = (rows || []).filter((r) => r.errs.length === 0);
+  const badRows = (rows || []).filter((r) => r.errs.length > 0);
+
+  return html`
+    <div className="ivs-overlay" onClick=${onCancel}>
+      <div className="ivs-modal ivs-modal-xl" onClick=${(e) => e.stopPropagation()}>
+        <div className="ivs-modal-head">
+          <h3><${FileText} size=${16} style=${{ verticalAlign: -3, marginRight: 6 }} /> 파일로 입고 Lot 한 번에 추가</h3>
+          <button className="ivs-icon-btn" onClick=${onCancel}><${X} size=${16} /></button>
+        </div>
+        <div className="ivs-modal-body">
+          <div className="ivs-import-drop">
+            <input
+              type="file" id="ivs-import-file" className="ivs-import-input"
+              accept=".xlsx,.csv,.tsv,.txt"
+              onChange=${(e) => handleFile(e.target.files && e.target.files[0])}
+            />
+            <button className="ivs-btn" onClick=${downloadTemplate}>
+              <${Download} size=${13} /> 양식 내려받기
+            </button>
+            <span className="ivs-section-hint">
+              엑셀(.xlsx) · CSV · QR 라벨기로 찍은 텍스트 파일을 받아요.
+              ${fileName ? html` 지금 파일: <b>${fileName}</b>` : null}
+            </span>
+          </div>
+
+          ${busy ? html`<div className="ivs-prod-empty center"><${Loader2} size=${14} className="ivs-spin" /> 파일을 읽는 중…</div>` : null}
+          ${error ? html`<p className="ivs-move-diff loss" style=${{ marginTop: 12 }}>${error}</p>` : null}
+
+          ${rows && rows.length > 0 ? html`
+            <div className="ivs-import-sum">
+              <span className="ivs-chip ok"><${Check} size=${12} /> 추가할 수 있는 행 ${okRows.length}건</span>
+              ${badRows.length > 0 ? html`
+                <span className="ivs-chip bad"><${AlertTriangle} size=${12} /> 넘어갈 행 ${badRows.length}건</span>
+                <span className="ivs-section-hint">문제가 있는 행은 추가하지 않고 건너뛰어요. 아래에서 이유를 확인하세요.</span>
+              ` : null}
+            </div>
+            <div className="ivs-table-wrap" style=${{ maxHeight: 340 }}>
+              <table className="ivs-table">
+                <thead>
+                  <tr>
+                    <th>줄</th><th className="ivs-import-st">상태</th><th>입고 Lot</th><th>품목</th>
+                    <th>입고일</th><th>현재공정</th><th className="ivs-right">수량(Kg)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rows.map((r) => html`
+                    <tr key=${r.key} className=${r.errs.length ? "ivs-row-bad" : ""}>
+                      <td className="ivs-dim">${r.line}</td>
+                      <td>
+                        ${r.errs.length
+                          ? html`<span className="ivs-chip bad">${r.errs.join(" · ")}</span>`
+                          : r.warns.length
+                            ? html`<span className="ivs-chip accent">${r.warns.join(" · ")}</span>`
+                            : html`<span className="ivs-chip ok"><${Check} size=${11} /> 확인</span>`}
+                      </td>
+                      <td className="ivs-mono">${r.lot.lotNo || "-"}</td>
+                      <td>${r.lot.code} ${r.lot.name ? `· ${r.lot.name}` : ""}</td>
+                      <td className="ivs-mono">${r.lot.receivedDate}</td>
+                      <td>${getStage(r.lot.stage).label}</td>
+                      <td className="ivs-mono ivs-right">${r.lot.qtyKg ? r.lot.qtyKg.toLocaleString("ko-KR", { maximumFractionDigits: 1 }) : "-"}</td>
+                    </tr>
+                  `)}
+                </tbody>
+              </table>
+            </div>
+          ` : null}
+          ${rows && rows.length === 0 && !error ? html`
+            <div className="ivs-prod-empty center">파일에 읽을 행이 없어요.</div>
+          ` : null}
+        </div>
+        <div className="ivs-modal-foot">
+          <button className="ivs-btn" onClick=${onCancel}>취소</button>
+          <button className="ivs-btn ivs-btn-primary" disabled=${okRows.length === 0}
+            onClick=${() => onConfirm(okRows.map((r) => r.lot))}>
+            ${okRows.length > 0 ? `${okRows.length}건 추가` : "추가"}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function BulkMoveModal({ lots, onCancel, onConfirm }) {
+  const [target, setTarget] = useState(null);
+  const [qty, setQty] = useState(() => Object.fromEntries(lots.map((l) => [l.id, String(l.qtyKg)])));
+
+  // 이미 그 단계에 있는 로트는 건너뛰어요 (같은 단계로는 이동하지 않으니까요).
+  const movable = target ? lots.filter((l) => l.stage !== target) : lots;
+  const skipped = target ? lots.length - movable.length : 0;
+  const inSum = movable.reduce((a, l) => a + (Number(l.qtyKg) || 0), 0);
+  const outSum = movable.reduce((a, l) => {
+    const n = Number(qty[l.id]);
+    return a + (Number.isFinite(n) && n > 0 ? n : Number(l.qtyKg) || 0);
+  }, 0);
+  const diff = outSum - inSum;
+  const badRow = movable.some((l) => { const n = Number(qty[l.id]); return !Number.isFinite(n) || n <= 0; });
+
+  return html`
+    <div className="ivs-overlay" onClick=${onCancel}>
+      <div className="ivs-modal ivs-modal-xl" onClick=${(e) => e.stopPropagation()}>
+        <div className="ivs-modal-head">
+          <h3><${ArrowRightCircle} size=${16} style=${{ verticalAlign: -3, marginRight: 6 }} /> 선택 공정이동 · ${lots.length}건</h3>
+          <button className="ivs-icon-btn" onClick=${onCancel}><${X} size=${16} /></button>
+        </div>
+        <div className="ivs-modal-body">
+          <div className="ivs-move-flow">
+            <span className="ivs-dim">보낼 공정</span>
+            <span className="ivs-move-arrow">→</span>
+            ${target
+              ? html`<span className="ivs-badge" style=${{ "--c": getStage(target).color }}><span className="ivs-badge-dot" />${getStage(target).label}</span>`
+              : html`<span className="ivs-move-placeholder">이동할 공정을 아래에서 고르세요</span>`}
+          </div>
+          <div className="ivs-stage-picker">
+            ${STAGES.map((st) => html`
+              <button
+                key=${st.key} type="button"
+                className=${`ivs-stage-pick ${target === st.key ? "active" : ""}`}
+                style=${{ "--c": st.color }}
+                onClick=${() => setTarget(st.key)}
+              >
+                ${target === st.key ? html`<${Check} size=${12} />` : null}${st.label}
+              </button>
+            `)}
+          </div>
+
+          ${skipped > 0 ? html`
+            <p className="ivs-dash-note" style=${{ marginTop: 12, marginBottom: 0 }}>
+              고른 ${lots.length}건 중 ${skipped}건은 이미 "${getStage(target).label}" 공정이라 건너뛰어요.
+            </p>
+          ` : null}
+
+          <div className="ivs-chart-label" style=${{ marginTop: 16 }}>
+            이동 후 배출 수량 (Kg) — 기본값은 지금 수량 그대로예요. 공정손실이 있으면 줄여서 넣으세요.
+          </div>
+          <div className="ivs-table-wrap" style=${{ maxHeight: 300 }}>
+            <table className="ivs-table">
+              <thead>
+                <tr>
+                  <th>입고 Lot</th><th>품목</th><th>현재공정</th>
+                  <th className="ivs-right">투입(Kg)</th><th className="ivs-right">배출(Kg)</th><th className="ivs-right">차이</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${movable.map((l) => {
+                  const n = Number(qty[l.id]);
+                  const ok = Number.isFinite(n) && n > 0;
+                  const d = ok ? n - (Number(l.qtyKg) || 0) : 0;
+                  return html`
+                    <tr key=${l.id}>
+                      <td className="ivs-mono">${l.lotNo}</td>
+                      <td>${l.code} · ${l.name}</td>
+                      <td><span className="ivs-badge" style=${{ "--c": getStage(l.stage).color }}>${getStage(l.stage).label}</span></td>
+                      <td className="ivs-mono ivs-right">${fmtKg(l.qtyKg)}</td>
+                      <td className="ivs-right">
+                        <input
+                          type="number" className=${`ivs-input ivs-qty-cell ${ok ? "" : "bad"}`}
+                          value=${qty[l.id] ?? ""}
+                          onChange=${(e) => setQty((q) => ({ ...q, [l.id]: e.target.value }))}
+                        />
+                      </td>
+                      <td className=${`ivs-mono ivs-right ${d < 0 ? "ivs-diff-loss" : d > 0 ? "ivs-diff-mix" : "ivs-dim"}`}>
+                        ${d === 0 ? "-" : `${d > 0 ? "+" : ""}${d.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}`}
+                      </td>
+                    </tr>
+                  `;
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="ivs-bulk-sum">
+            <span>투입 합계 <b>${fmtKg(inSum)}</b></span>
+            <span>배출 합계 <b>${fmtKg(outSum)}</b></span>
+            <span className=${diff < 0 ? "ivs-diff-loss" : diff > 0 ? "ivs-diff-mix" : "ivs-dim"}>
+              ${diff === 0 ? "차이 없음" : diff < 0 ? `공정손실 ${fmtKg(-diff)}` : `혼합증가 +${fmtKg(diff)}`}
+            </span>
+          </div>
+        </div>
+        <div className="ivs-modal-foot">
+          <button className="ivs-btn" onClick=${onCancel}>취소</button>
+          <button
+            className="ivs-btn ivs-btn-primary"
+            disabled=${!target || movable.length === 0 || badRow}
+            onClick=${() => onConfirm(target, qty)}
+          >
+            ${target ? `${movable.length}건을 "${getStage(target).label}"로 이동` : "이동"}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function SettingsModal({ settings, unlocked, onUnlock, onSave, onClose }) {
   const hasPin = !!settings.editPin;
   const canEditNow = !hasPin || unlocked;
@@ -4740,9 +5351,16 @@ function SettingsModal({ settings, unlocked, onUnlock, onSave, onClose }) {
   `;
 }
 
-function ProductionTab({ lots, moves, canEdit, onClearMoves }) {
+function ProductionTab({ lots, moves, canEdit, onClearMoves, onDeleteMoves }) {
   const todayStr = new Date().toISOString().slice(0, 10);
   const [selectedDate, setSelectedDate] = useState(todayStr);
+  const [pickedMoves, setPickedMoves] = useState(() => new Set()); // 지울 이력으로 체크해둔 것들
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const toggleMove = (id) => setPickedMoves((prev) => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
 
   const availableYears = useMemo(() => {
     const s = new Set(
@@ -4842,19 +5460,62 @@ function ProductionTab({ lots, moves, canEdit, onClearMoves }) {
           `)}
         </div>
 
-        <div className="ivs-prod-listlabel">공정이동 (${dayMoves.length}건)</div>
+        <div className="ivs-prod-listhead">
+          <div className="ivs-prod-listlabel" style=${{ marginBottom: 0 }}>공정이동 (${dayMoves.length}건)</div>
+          ${canEdit && dayMoves.length > 0 ? html`
+            <div className="ivs-prod-listactions">
+              <button className="ivs-btn ivs-btn-sm" onClick=${() => setPickedMoves((prev) => {
+                const allPicked = dayMoves.every((m) => prev.has(m.id));
+                const next = new Set(prev);
+                dayMoves.forEach((m) => (allPicked ? next.delete(m.id) : next.add(m.id)));
+                return next;
+              })}>
+                ${dayMoves.every((m) => pickedMoves.has(m.id)) ? "선택 해제" : `이 날 ${dayMoves.length}건 모두 선택`}
+              </button>
+              <button
+                className="ivs-btn ivs-btn-sm ivs-btn-danger"
+                disabled=${dayMoves.every((m) => !pickedMoves.has(m.id))}
+                onClick=${() => setConfirmDelete(true)}
+              >
+                <${Trash2} size=${12} /> 선택 이력 삭제 (${dayMoves.filter((m) => pickedMoves.has(m.id)).length})
+              </button>
+            </div>
+          ` : null}
+        </div>
         <div className="ivs-prod-list">
           ${dayMoves.length === 0 ? html`
             <div className="ivs-prod-empty">이 날 등록된 공정이동이 없습니다.</div>
           ` : dayMoves.map((m) => html`
-            <div className="ivs-prod-row" key=${m.id}>
-              ${m.code} · ${m.lotNo} · ${getStage(m.fromStage).label} → ${getStage(m.toStage).label} ·
-              투입 ${Number(m.inputQty).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg → 배출 ${Number(m.outputQty).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg
-              ${m.lossQty > 0 ? html`<span className="ivs-prod-tag loss">손실 ${m.lossQty.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg</span>` : null}
-              ${m.mixQty > 0 ? html`<span className="ivs-prod-tag mix">혼합증가 ${m.mixQty.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg</span>` : null}
+            <div className=${`ivs-prod-row ${pickedMoves.has(m.id) ? "picked" : ""}`} key=${m.id}>
+              ${canEdit ? html`
+                <input type="checkbox" className="ivs-prod-check" checked=${pickedMoves.has(m.id)}
+                  onChange=${() => toggleMove(m.id)} title="이 이력을 삭제 대상으로 고르기" />
+              ` : null}
+              <span>
+                ${m.code} · ${m.lotNo} · ${getStage(m.fromStage).label} → ${getStage(m.toStage).label} ·
+                투입 ${Number(m.inputQty).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg → 배출 ${Number(m.outputQty).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg
+                ${m.lossQty > 0 ? html`<span className="ivs-prod-tag loss">손실 ${m.lossQty.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg</span>` : null}
+                ${m.mixQty > 0 ? html`<span className="ivs-prod-tag mix">혼합증가 ${m.mixQty.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg</span>` : null}
+              </span>
             </div>
           `)}
         </div>
+        ${confirmDelete ? html`
+          <${ConfirmModal}
+            icon=${html`<${AlertTriangle} size=${18} />`}
+            title=${`공정이동 이력 ${dayMoves.filter((m) => pickedMoves.has(m.id)).length}건을 지울까요?`}
+            body="고른 이력만 지워져요. 재고현황의 로트(단계·수량)는 그대로 남고, 생산 통계에서만 빠져요. 되돌릴 수 없어요."
+            confirmLabel="이력 삭제"
+            danger=${true}
+            onCancel=${() => setConfirmDelete(false)}
+            onConfirm=${() => {
+              const ids = dayMoves.filter((m) => pickedMoves.has(m.id)).map((m) => m.id);
+              onDeleteMoves(ids);
+              setPickedMoves((prev) => { const next = new Set(prev); ids.forEach((id) => next.delete(id)); return next; });
+              setConfirmDelete(false);
+            }}
+          />
+        ` : null}
       </div>
 
       <div className="ivs-prod-periodbar">
@@ -5231,7 +5892,7 @@ function DashboardTab({ lots, moves, dayDelta }) {
 
   const downloadLedger = () => {
     const headers = [
-      "기준일", "공정단계", "품목코드", "품목명", "카테고리", "거래처", "출고지", "로트번호",
+      "기준일", "공정단계", "품목코드", "품목명", "카테고리", "거래처", "출고지", "입고 Lot",
       "입고일", "주차", "기준일 수량(Kg)", "물중량(Kg)", "제외무게(Kg)", "최종 공정이동일", "톨링품", "이월",
     ];
     const rows = snapshotLedger.map(({ lot, state }) => [
@@ -5271,7 +5932,7 @@ function DashboardTab({ lots, moves, dayDelta }) {
       <div className="ivs-kpis cols-5">
         <${SummaryCard} label="총 입고량 (선택 기간)" value=${fmtTon(totalInKg)} unit="톤" sub=${`물중량 제외 ${fmtTon(totalNetKg)} 톤`} />
         <${SummaryCard} label="출하대기 (선택 기간)" value=${fmtTon(readyKg)} unit="톤" />
-        <${SummaryCard} label="열분해필요 (선택 기간)" value=${fmtTon(calcineKg)} unit="톤" />
+        <${SummaryCard} label="열분해대기 (선택 기간)" value=${fmtTon(calcineKg)} unit="톤" />
         <${SummaryCard} label="출하완료 (선택 기간)" value=${fmtTon(shippedKg)} unit="톤" />
         <${SummaryCard}
           label="현재고 (실시간)"
@@ -5283,9 +5944,9 @@ function DashboardTab({ lots, moves, dayDelta }) {
       </div>
 
       <p className="ivs-dash-note">
-        ※ "총 입고량"과 단계별 카드(출하대기 · 열분해필요 · 출하완료)는 선택한 기간에 입고된 로트 기준이고,
+        ※ "총 입고량"과 단계별 카드(출하대기 · 열분해대기 · 출하완료)는 선택한 기간에 입고된 로트 기준이고,
         "현재고"는 기간과 무관하게 지금 이 순간의 실시간 수량이에요.
-        재공(현재고)에서 빠지는 최종 단계는 "출하완료" 하나예요 — 열분해필요는 아직 공정이 남아있어서 현재고에 포함돼요.
+        재공(현재고)에서 빠지는 최종 단계는 "출하완료" 하나예요 — 열분해대기는 아직 공정이 남아있어서 현재고에 포함돼요.
       </p>
 
       <div className="ivs-card">
@@ -5310,7 +5971,7 @@ function DashboardTab({ lots, moves, dayDelta }) {
         </div>
         <p className="ivs-dash-note">
           기간을 바꾸면 기준일도 함께 바뀌고, "재공재고 장부 내려받기"는 그 기준일 시점의 재공재고를
-          로트 한 줄씩(단계 · 로트번호 · 수량 · 입고일 순) 정리해서 내려줘요.
+          로트 한 줄씩(단계 · 입고 Lot · 수량 · 입고일 순) 정리해서 내려줘요.
           엑셀 파일(.xlsx)이라 더블클릭하면 바로 열리고, 한글이 깨지지 않아요.
         </p>
       </div>
@@ -5490,7 +6151,7 @@ function qrSvg(text) {
 }
 
 // QR에 담는 값 — 한글을 넣으면 글자당 3바이트라 QR이 커지고, 17mm 라벨에서는 스캔이 잘 안 돼요.
-// 그래서 QR은 짧은 ASCII로 두고(휴대폰으로 찍어도 로트번호가 그대로 읽혀요), 한글 정보는 라벨에 글자로 인쇄해요.
+// 그래서 QR은 짧은 ASCII로 두고(휴대폰으로 찍어도 입고 Lot가 그대로 읽혀요), 한글 정보는 라벨에 글자로 인쇄해요.
 function labelPayload(lot, manager, prodDate) {
   return `DRT|${lot.lotNo}|${lot.code}|${lot.qtyKg}kg|${lot.receivedDate}|${prodDate}`;
 }

@@ -246,11 +246,26 @@
   .ivs-input-auto { background: var(--surface-3); color: var(--text-dim); cursor: default; }
   .ivs-settings-divider { height: 1px; background: var(--border); margin: 3px 0; }
 
+  /* 이동 흐름: 현재 단계 → 고른 단계 */
+  .ivs-move-flow { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-bottom: 12px; }
+  .ivs-move-arrow { color: var(--text-faint); font-size: 15px; }
+  .ivs-move-placeholder { font-size: 12.5px; color: var(--text-faint); border: 1px dashed var(--border-strong);
+    padding: 3px 10px; border-radius: 999px; }
+
   .ivs-stage-picker { display: flex; flex-wrap: wrap; gap: 7px; }
-  .ivs-stage-pick { border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); color: var(--c); background: transparent;
-    padding: 7px 12px; border-radius: 999px; font-size: 12.5px; font-family: inherit; cursor: pointer; }
-  .ivs-stage-pick:hover { background: color-mix(in srgb, var(--c) 12%, transparent); }
-  .ivs-stage-pick.active { background: var(--c); color: var(--bg); font-weight: 650; }
+  .ivs-stage-pick { display: inline-flex; align-items: center; gap: 5px;
+    border: 1px solid color-mix(in srgb, var(--c) 50%, transparent); color: var(--c); background: transparent;
+    padding: 7px 12px; border-radius: 999px; font-size: 12.5px; font-family: inherit; cursor: pointer;
+    transition: background .12s ease, box-shadow .12s ease; }
+  .ivs-stage-pick:hover { background: color-mix(in srgb, var(--c) 14%, transparent); }
+  .ivs-stage-pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* 고른 단계 — 색을 꽉 채우고 체크까지 붙여서 한눈에 보이게. 글자는 어느 테마에서든 진한 잉크로 고정해요. */
+  .ivs-stage-pick.active { background: var(--c); color: #0B1119; font-weight: 700; border-color: var(--c);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 30%, transparent); }
+  .ivs-stage-pick.active:hover { background: var(--c); }
+  /* 지금 있는 단계 — 고를 수 없어요 (같은 단계로는 이동하지 않으니까요) */
+  .ivs-stage-pick.current { opacity: .4; cursor: not-allowed; }
+  .ivs-stage-pick.current:hover { background: transparent; }
   .ivs-move-diff { font-size: 12.5px; margin-top: 10px; padding: 7px 11px; border-radius: var(--radius-sm); }
   .ivs-move-diff.loss { color: var(--bad); background: var(--bad-soft); }
   .ivs-move-diff.mix { color: var(--good); background: var(--good-soft); }
@@ -4066,7 +4081,7 @@ function InventorySystem() {
             sub=${`전체 ${totals.count.toLocaleString("ko-KR", { maximumFractionDigits: 1 })} lot · 어제 ${fmtTon(dayDelta.prevTotal)} 톤`}
           />
           <${SummaryCard}
-            label="현재고 (재공 중)"
+            label="현재고"
             value=${fmtTon(totals.inProgress)} unit="톤" accent=${true}
             icon=${html`<${Layers} size=${13} />`}
             delta=${html`<${Delta} kg=${dayDelta.inProgKg} />`}
@@ -4558,7 +4573,7 @@ function MasterModal({ master, lots, onSave, onClose }) {
 }
 
 function MoveStageModal({ lot, onCancel, onConfirm }) {
-  const [target, setTarget] = useState(lot.stage);
+  const [target, setTarget] = useState(null); // 아직 아무 단계도 고르지 않은 상태로 시작해요
   const [outputQty, setOutputQty] = useState(String(lot.qtyKg));
   const outNum = Number(outputQty) || 0;
   const diff = outNum - lot.qtyKg;
@@ -4570,20 +4585,31 @@ function MoveStageModal({ lot, onCancel, onConfirm }) {
           <button className="ivs-icon-btn" onClick=${onCancel}><${X} size=${16} /></button>
         </div>
         <div className="ivs-modal-body">
-          <p className="ivs-dim" style=${{ marginBottom: 10 }}>
-            현재 단계: <span className="ivs-badge" style=${{ "--c": getStage(lot.stage).color }}><span className="ivs-badge-dot" />${getStage(lot.stage).label}</span>
-          </p>
+          <div className="ivs-move-flow">
+            <span className="ivs-badge" style=${{ "--c": getStage(lot.stage).color }}><span className="ivs-badge-dot" />${getStage(lot.stage).label}</span>
+            <span className="ivs-move-arrow">→</span>
+            ${target
+              ? html`<span className="ivs-badge" style=${{ "--c": getStage(target).color }}><span className="ivs-badge-dot" />${getStage(target).label}</span>`
+              : html`<span className="ivs-move-placeholder">이동할 단계를 아래에서 고르세요</span>`}
+          </div>
           <div className="ivs-stage-picker">
-            ${STAGES.map((s) => html`
-              <button
-                key=${s.key}
-                className=${`ivs-stage-pick ${target === s.key ? "active" : ""}`}
-                style=${{ "--stage-color": s.color }}
-                onClick=${() => setTarget(s.key)}
-              >
-                ${s.label}
-              </button>
-            `)}
+            ${STAGES.map((s) => {
+              const isCurrent = s.key === lot.stage;
+              const isPicked = target === s.key;
+              return html`
+                <button
+                  key=${s.key}
+                  type="button"
+                  className=${`ivs-stage-pick ${isPicked ? "active" : ""} ${isCurrent ? "current" : ""}`}
+                  style=${{ "--c": s.color }}
+                  disabled=${isCurrent}
+                  title=${isCurrent ? "지금 이 단계예요 — 다른 단계를 골라주세요" : `${s.label}(으)로 이동`}
+                  onClick=${() => setTarget(s.key)}
+                >
+                  ${isPicked ? html`<${Check} size=${12} />` : null}${s.label}${isCurrent ? " (현재)" : ""}
+                </button>
+              `;
+            })}
           </div>
           <label className="ivs-field" style=${{ marginTop: 14 }}>
             <span>이동 후 배출 수량 (Kg) — 투입 ${lot.qtyKg.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}Kg</span>
@@ -4597,8 +4623,8 @@ function MoveStageModal({ lot, onCancel, onConfirm }) {
         </div>
         <div className="ivs-modal-foot">
           <button className="ivs-btn" onClick=${onCancel}>취소</button>
-          <button className="ivs-btn ivs-btn-primary" onClick=${() => onConfirm(lot, target, outNum)} disabled=${target === lot.stage || outNum <= 0}>
-            이동
+          <button className="ivs-btn ivs-btn-primary" onClick=${() => onConfirm(lot, target, outNum)} disabled=${!target || outNum <= 0}>
+            ${target ? `"${getStage(target).label}"로 이동` : "이동"}
           </button>
         </div>
       </div>

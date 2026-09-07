@@ -194,8 +194,8 @@
   .ivs-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius);
     background: var(--surface); box-shadow: var(--shadow-sm); }
   .ivs-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; min-width: 1080px; }
-  .ivs-table th { text-align: left; color: var(--text-dim); font-weight: 600; font-size: 11.5px;
-    letter-spacing: .03em; text-transform: none; padding: 11px 12px; background: var(--surface-2);
+  .ivs-table th { text-align: left; color: var(--text-dim); font-weight: 650; font-size: 13px;
+    letter-spacing: 0; text-transform: none; padding: 11px 12px; background: var(--surface-2);
     border-bottom: 1px solid var(--border); white-space: nowrap; position: sticky; top: 0; z-index: 2; }
   .ivs-table td { padding: 11px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
   .ivs-table tbody tr:nth-child(even) { background: var(--zebra); }
@@ -204,6 +204,8 @@
   .ivs-th-check, .ivs-th-actions { width: 38px; }
   .ivs-th-sort { background: none; border: none; color: inherit; font: inherit; display: inline-flex;
     align-items: center; gap: 4px; cursor: pointer; padding: 0; }
+  .ivs-table th.ivs-right { text-align: right; }
+  .ivs-table th.ivs-right .ivs-th-sort { display: flex; width: 100%; justify-content: flex-end; }
   .ivs-th-sort:hover { color: var(--text); }
   .ivs-th-sort.active { color: var(--text); }
   .ivs-arrow-up { transform: rotate(180deg); }
@@ -4504,8 +4506,8 @@ function InventorySystem() {
                 <th>주차</th>
                 <th>현재공정</th>
                 <${Th} label="수량(포함)" sortKey="qtyKg" sort=${sort} onSort=${toggleSort} align="right" />
-                <th className="ivs-hide-sm">물중량</th>
-                <th className="ivs-hide-sm">제외무게</th>
+                <th className="ivs-hide-sm ivs-right">물중량</th>
+                <th className="ivs-hide-sm ivs-right">제외무게</th>
                 <${Th} label="입고일" sortKey="receivedDate" sort=${sort} onSort=${toggleSort} />
                 <th className="ivs-hide-sm">공정이동</th>
                 <th className="ivs-th-actions"></th>

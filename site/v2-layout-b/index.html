@@ -732,45 +732,6 @@
     color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); }
   .ivs-mx-cell { background: color-mix(in srgb, var(--c) calc(var(--a) * 100%), transparent); }
 
-  /* ---------- 보고서 (슬라이드 미리보기) ---------- */
-  .ivs-flowline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .ivs-flowline-arrow { color: var(--text-faint); font-size: 12px; }
-  .ivs-flowline-step { padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
-    color: var(--text-faint); background: var(--surface-2); border: 1px solid var(--border); }
-  .ivs-flowline-step.on { color: var(--accent); background: var(--accent-soft);
-    border-color: color-mix(in srgb, var(--accent) 38%, transparent); }
-  .ivs-slides { display: flex; flex-direction: column; gap: 16px; }
-  .ivs-slide { background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-    border-left: 4px solid var(--accent); padding: 20px 24px 22px; break-inside: avoid; }
-  .ivs-slide-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-  .ivs-slide-kicker { font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: .04em; }
-  .ivs-slide-no { font-size: 11px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
-  .ivs-slide-title { font-size: 19px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
-  .ivs-slide-msg { font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.55;
-    padding: 12px 16px; margin-bottom: 16px; border-radius: 9px;
-    background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent); }
-  .ivs-slide-body.split { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; align-items: start; }
-  .ivs-slide-bullets { margin: 0; padding-left: 17px; display: flex; flex-direction: column; gap: 7px; }
-  .ivs-slide-bullets li { font-size: 12.5px; color: var(--text-dim); line-height: 1.55; }
-  .ivs-slide-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
-  .ivs-slide-kpi { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
-  .ivs-slide-kpi-l { font-size: 11px; color: var(--text-faint); margin-bottom: 5px; }
-  .ivs-slide-kpi-v { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
-  .ivs-slide-kpi-v em { font-size: 11px; font-style: normal; margin-left: 2px; opacity: .7; }
-  .ivs-slide-kpi-s { font-size: 10.5px; color: var(--text-faint); margin-top: 5px; }
-  .ivs-slide-bars { display: flex; flex-direction: column; gap: 8px; }
-  .ivs-slide-bar { display: grid; grid-template-columns: minmax(120px, 1fr) 1.5fr auto; gap: 12px; align-items: center; }
-  .ivs-slide-bar-l { font-size: 12px; color: var(--text-dim); }
-  .ivs-slide-bar-t { height: 16px; border-radius: 5px; background: var(--surface-2);
-    border: 1px solid var(--border); overflow: hidden; }
-  .ivs-slide-bar-t i { display: block; height: 100%; }
-  .ivs-slide-bar-v { font-size: 12px; font-weight: 600; color: var(--text);
-    font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; min-width: 108px; }
-  .ivs-slide-table td, .ivs-slide-table th { font-size: 12px; }
-  @media print {
-    .ivs-slide { page-break-after: always; border-radius: 0; }
-  }
-
   /* ---------- 생산계획 : 로드맵 · 기준 ---------- */
   .ivs-roadmap { display: flex; gap: 8px; align-items: stretch; }
   .ivs-rm-seg { flex: 1 1 0; min-width: 178px; padding: 13px 14px 12px; border-radius: 11px;
@@ -836,6 +797,112 @@
   .ivs-cal-day { border-top: 2px solid var(--c); }
   .ivs-cal-day.stop { border-top-color: transparent; }
   .ivs-cellinput.wide { width: 100%; min-width: 96px; text-align: left; }
+
+  /* ---------- 보고서 (슬라이드 미리보기) ---------- */
+  /* 내려받는 .pptx와 같은 인상이 되도록, 화면에서도 딥 네이비 + 원포인트 컬러로 그려요. */
+  .ivs-flowline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ivs-flowline-arrow { color: var(--text-faint); font-size: 12px; }
+  .ivs-flowline-step { padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    color: var(--text-faint); background: var(--surface-2); border: 1px solid var(--border); }
+  .ivs-flowline-step.on { color: #10B981; background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.4); }
+
+  .ivs-slides { display: flex; flex-direction: column; gap: 18px; }
+  .ivs-slide { --accent: #10B981;
+    background: #0F172A; border: 1px solid #2E3B52; border-radius: 12px;
+    padding: 26px 30px 28px; break-inside: avoid; position: relative; color: #FFFFFF; }
+  .ivs-slide::before { content: ""; position: absolute; left: 30px; top: 30px;
+    width: 4px; height: 44px; background: var(--accent); border-radius: 2px; }
+  .ivs-slide-head { display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px; padding-left: 18px; }
+  .ivs-slide-kicker { font-size: 10.5px; font-weight: 700; color: var(--accent); letter-spacing: .08em; }
+  .ivs-slide-no { font-size: 10.5px; color: #64748B; font-variant-numeric: tabular-nums; }
+  .ivs-slide-title { font-size: 21px; font-weight: 700; line-height: 1.38; padding-left: 18px; color: #fff; }
+  .ivs-slide-sub { font-size: 12.5px; color: #94A3B8; padding-left: 18px; margin-top: 5px; }
+  .ivs-slide-body { margin-top: 22px; }
+
+  .ivs-slide.cover { padding: 46px 40px 40px; border-top: 3px solid #10B981; }
+  .ivs-slide.cover::before { display: none; }
+  .ivs-slide-eyebrow { font-size: 11px; font-weight: 700; color: #10B981; letter-spacing: .16em; }
+  .ivs-slide-covertitle { font-size: 32px; font-weight: 700; margin-top: 12px; color: #fff; }
+  .ivs-slide-coverrule { width: 56px; height: 3px; background: #10B981; margin: 18px 0 14px; }
+  .ivs-slide-coversub { font-size: 14px; color: #94A3B8; }
+  .ivs-slide-covermeta { font-size: 11px; color: #64748B; margin-top: 26px; }
+
+  .ivs-slide-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .ivs-slide-kpi { background: #1B2437; border: 1px solid #2E3B52; border-radius: 10px; padding: 16px 18px; }
+  .ivs-slide-kpi-l { font-size: 11px; color: #94A3B8; }
+  .ivs-slide-kpi-v { font-size: 30px; font-weight: 700; line-height: 1.15; margin-top: 6px;
+    font-variant-numeric: tabular-nums; }
+  .ivs-slide-kpi-v em { font-size: 13px; font-style: normal; color: #94A3B8; margin-left: 3px; }
+  .ivs-slide-kpi-d { font-size: 10.5px; font-weight: 600; margin-top: 8px; }
+
+  .ivs-slide-points { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; }
+  .ivs-slide-point { display: grid; grid-template-columns: 18px auto 1fr; gap: 10px; align-items: baseline;
+    background: rgba(27,36,55,.6); border-radius: 8px; padding: 11px 14px; font-size: 12px; }
+  .ivs-slide-pn { width: 18px; height: 18px; border-radius: 50%; color: #0F172A; font-size: 10px;
+    font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+  .ivs-slide-point span:last-child { color: #94A3B8; }
+
+  .ivs-slide-bars { display: flex; flex-direction: column; gap: 11px;
+    background: rgba(27,36,55,.55); border-radius: 10px; padding: 20px 22px; }
+  .ivs-slide-bar { display: grid; grid-template-columns: 190px 1fr 130px; gap: 14px; align-items: center; }
+  .ivs-slide-bar-l { font-size: 12px; color: #94A3B8; text-align: right; }
+  .ivs-slide-bar.strong .ivs-slide-bar-l, .ivs-slide-bar.strong .ivs-slide-bar-v { font-weight: 700; }
+  .ivs-slide-bar-t { position: relative; height: 22px; border-radius: 6px; background: #232F45; overflow: visible; }
+  .ivs-slide-bar-t i { display: block; height: 100%; border-radius: 6px; }
+  .ivs-slide-bar-t u { position: absolute; top: -4px; bottom: -4px; width: 1.5px; background: #94A3B8; opacity: .6; }
+  .ivs-slide-bar-v { font-size: 12px; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
+
+  .ivs-slide-trend { background: rgba(27,36,55,.55); border-radius: 10px; padding: 22px 26px 16px; }
+  .ivs-slide-trend-svg { width: 100%; height: 170px; display: block; }
+  .ivs-slide-trend-x { display: flex; margin-top: 10px; }
+  .ivs-slide-trend-x span { flex: 1 1 0; text-align: center; font-size: 10px; color: #94A3B8;
+    display: flex; flex-direction: column; gap: 2px; }
+  .ivs-slide-trend-x b { font-size: 12.5px; color: #fff; font-variant-numeric: tabular-nums; }
+
+  .ivs-slide-issues { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .ivs-slide-issue { background: #1B2437; border-radius: 10px; border-top: 3px solid var(--c); padding: 18px 18px 20px; }
+  .ivs-slide-issue-h { display: flex; align-items: center; gap: 10px; }
+  .ivs-slide-issue-ico { width: 26px; height: 26px; border-radius: 7px; border: 1.5px solid var(--c);
+    position: relative; flex: 0 0 auto; }
+  .ivs-slide-issue-ico::after { content: ""; position: absolute; inset: 6px; border-radius: 3px; background: var(--c); }
+  .ivs-slide-issue-h b { font-size: 13.5px; color: #fff; }
+  .ivs-slide-issue-badge { display: inline-block; margin: 12px 0 12px; padding: 3px 10px; border-radius: 6px;
+    font-size: 10px; font-weight: 700; color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); }
+  .ivs-slide-issue-r { font-size: 11.5px; color: #94A3B8; line-height: 1.5; margin-bottom: 9px; }
+  .ivs-slide-issue-r b { color: #fff; margin-right: 5px; }
+
+  .ivs-slide-plan { display: flex; flex-direction: column; gap: 10px; }
+  .ivs-slide-planrow { display: grid; grid-template-columns: 16px 1fr 90px 100px; gap: 14px; align-items: center;
+    background: rgba(27,36,55,.55); border-radius: 9px; padding: 13px 16px; }
+  .ivs-slide-plandot { width: 12px; height: 12px; border-radius: 50%; background: var(--c); }
+  .ivs-slide-plantxt { display: flex; flex-direction: column; gap: 3px; }
+  .ivs-slide-plantxt b { font-size: 12.5px; color: #fff; }
+  .ivs-slide-plantxt span { font-size: 10.5px; color: #94A3B8; }
+  .ivs-slide-planowner { font-size: 10.5px; font-weight: 700; color: var(--c); text-align: center;
+    background: color-mix(in srgb, var(--c) 16%, transparent); border-radius: 6px; padding: 4px 0; }
+  .ivs-slide-plandue { font-size: 11px; color: #94A3B8; text-align: right; }
+
+  .ivs-slide-banner { margin-top: 16px; border-radius: 9px; padding: 14px 18px; font-size: 12px; color: #fff;
+    border-left: 4px solid #3B82F6; background: rgba(59,130,246,.12); }
+  .ivs-slide-banner.action { border-left-color: #EF4444; background: rgba(239,68,68,.12); }
+  .ivs-slide-banner.insight { border-left-color: #10B981; background: rgba(16,185,129,.12); }
+  .ivs-slide-banner b { margin-right: 8px; }
+  .ivs-slide-banner.action b { color: #EF4444; }
+  .ivs-slide-banner.insight b { color: #10B981; }
+
+  .ivs-slide-table { background: transparent; }
+  .ivs-slide-table th { font-size: 11px; color: #94A3B8; border-color: #2E3B52; }
+  .ivs-slide-table td { font-size: 11.5px; color: #fff; border-color: #2E3B52; }
+  .ivs-slide .ivs-table-wrap { border-color: #2E3B52; }
+  .ivs-slide .ivs-section-hint { color: #64748B; }
+  @media print { .ivs-slide { page-break-after: always; border-radius: 0; } }
+
+  @media (max-width: 1100px) {
+    .ivs-slide-kpis { grid-template-columns: repeat(2, 1fr); }
+    .ivs-slide-issues { grid-template-columns: 1fr; }
+    .ivs-slide-bar { grid-template-columns: 130px 1fr 110px; }
+  }
 
   /* ---------- 반응형 ---------- */
   @media (max-width: 1100px) {
@@ -3663,15 +3730,15 @@ const LAYOUT = (typeof window !== "undefined" && window.IVS_LAYOUT === "tabs") ?
 
 // 메뉴는 세 묶음으로 나눠요 — 재고 / 생산 / 분석.
 const MENU_GROUPS = [
-  { title: "재고관리", items: [
-    { key: "inventory", label: "재고현황", icon: "layers" },
-    { key: "ship", label: "출하처리", icon: "arrow-right-circle" },
-    { key: "tolling", label: "톨링품재고현황", icon: "users" },
-  ] },
   { title: "생산관리", items: [
     { key: "plan", label: "생산계획", icon: "calendar" },
     { key: "act", label: "생산실적", icon: "file-text" },
     { key: "production", label: "생산이력", icon: "arrow-right-circle" },
+  ] },
+  { title: "재고관리", items: [
+    { key: "inventory", label: "재고현황", icon: "layers" },
+    { key: "ship", label: "출하처리", icon: "arrow-right-circle" },
+    { key: "tolling", label: "톨링품재고현황", icon: "users" },
   ] },
   { title: "분석", items: [
     { key: "util", label: "가동율 현황", icon: "monitor" },
@@ -4538,132 +4605,377 @@ function downloadFile(filename, content, mime) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-// ---------- 파워포인트(.pptx) 파일 만들기 ----------
-// .pptx도 .xlsx와 똑같이 XML 몇 개를 담은 zip이에요. 그래서 라이브러리 없이 여기서 직접 조립합니다.
-// 좌표 단위는 EMU(English Metric Unit) — 1인치 = 914400, 16:9 한 장은 12192000 × 6858000이에요.
-const EMU = 914400 / 96;                // CSS px → EMU (96dpi 기준으로 생각하면 편해요)
+// ---------- 경영진 보고용 슬라이드 드로잉 ----------
+// .pptx도 .xlsx처럼 XML 몇 개를 담은 zip이라, 라이브러리 없이 여기서 직접 조립해요.
+// 좌표는 1280×720 기준으로 쓰고(16:9), 마지막에 EMU로 환산합니다.
+//
+// 디자인 원칙 네 가지 — 보고서를 받는 사람이 제목만 넘겨봐도 상황을 알 수 있게:
+//   1) 액션 타이틀 : 제목이 곧 결론. "9월 생산 현황"이 아니라 "목표 105% 초과 달성"
+//   2) 원 포인트 컬러 : 바탕은 무채색, 잘한 것 하나·못한 것 하나에만 색
+//   3) 데이터 다이어트 : 큰 숫자 3~4개만 앞에, 상세 표는 별첨으로
+//   4) 픽토그램 : 글이 많은 장표는 아이콘으로 먼저 읽히게
+const EMU = 914400 / 96;
 const SLIDE_W = 12192000, SLIDE_H = 6858000;
 const px = (v) => Math.round(v * EMU);
 
-// 보고서 색 — 어두운 배경에 주황 포인트 (화면과 같은 인상으로)
+// 무채색 바탕 + 포인트 컬러. 색이 많아지면 어디를 봐야 할지 알 수 없게 돼요.
 const PT = {
-  bg: "0E1420", card: "18202E", line: "2A3547", text: "E8EDF5", dim: "9AA7B8",
-  accent: "E9692F", good: "2FBF71", bad: "EF4444", warn: "F59E0B", blue: "4C8DFF",
+  bg: "0F172A",        // 딥 네이비
+  card: "1B2437",
+  cardAlt: "232F45",
+  line: "2E3B52",
+  text: "FFFFFF",
+  dim: "94A3B8",
+  faint: "64748B",
+  green: "10B981",     // 달성 · 개선
+  red: "EF4444",       // 미달 · 문제  ← 시선이 여기로 꽂히게
+  blue: "3B82F6",      // 중립 강조
+  amber: "F59E0B",     // 주의
+  redSoft: "2A1A22",
+  greenSoft: "14262A",
+  blueSoft: "16233C",
 };
+const hex = (c) => String(c == null ? "" : c).replace("#", "") || PT.dim;
+
+// 투명도가 있으면 srgbClr를 열고 alpha를 넣은 뒤 닫아야 해요.
+// 한 줄로 붙이려다 </a:srgbClr/> 같은 게 나오면 파워포인트가 파일을 아예 못 엽니다.
+const solidFill = (color, alpha) =>
+  alpha == null
+    ? `<a:solidFill><a:srgbClr val="${hex(color)}"/></a:solidFill>`
+    : `<a:solidFill><a:srgbClr val="${hex(color)}"><a:alpha val="${Math.round(alpha * 100000)}"/></a:srgbClr></a:solidFill>`;
 
 let ppShapeId = 1;
 const nextId = () => ++ppShapeId;
 
-function ppRect(x, y, w, h, fill, opts = {}) {
-  const ln = opts.line ? `<a:ln w="${opts.lineW || 12700}"><a:solidFill><a:srgbClr val="${opts.line}"/></a:solidFill></a:ln>` : `<a:ln><a:noFill/></a:ln>`;
-  return `<p:sp><p:nvSpPr><p:cNvPr id="${nextId()}" name="r${ppShapeId}"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr>` +
-    `<p:spPr><a:xfrm><a:off x="${px(x)}" y="${px(y)}"/><a:ext cx="${px(w)}" cy="${px(h)}"/></a:xfrm>` +
-    `<a:prstGeom prst="${opts.geom || "rect"}"><a:avLst/></a:prstGeom>` +
-    (fill ? `<a:solidFill><a:srgbClr val="${fill}"/></a:solidFill>` : `<a:noFill/>`) + ln +
-    `</p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>`;
+function ppShape(x, y, w, h, fill, opts = {}) {
+  const o = opts || {};
+  const ln = o.line
+    ? `<a:ln w="${o.lineW || 12700}"><a:solidFill><a:srgbClr val="${hex(o.line)}"/></a:solidFill></a:ln>`
+    : `<a:ln><a:noFill/></a:ln>`;
+  const rot = o.rot ? ` rot="${Math.round(o.rot * 60000)}"` : "";
+  return `<p:sp><p:nvSpPr><p:cNvPr id="${nextId()}" name="s${ppShapeId}"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr>` +
+    `<p:spPr><a:xfrm${rot}><a:off x="${px(x)}" y="${px(y)}"/><a:ext cx="${px(w)}" cy="${px(h)}"/></a:xfrm>` +
+    `<a:prstGeom prst="${o.geom || "rect"}"><a:avLst/></a:prstGeom>` +
+    (fill ? solidFill(fill, o.alpha) : `<a:noFill/>`) +
+    ln + `</p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>`;
 }
+const ppRect = ppShape;
 
-// 글상자. lines = [{ t, size, color, bold, spaceBefore }]
+// 글상자. lines = [{ t, size, color, bold, bullet, align, spaceBefore }]
+// t 에 배열을 넣으면 한 줄 안에서 색·크기를 섞을 수 있어요 (숫자만 크게 같은 것).
 function ppText(x, y, w, h, lines, opts = {}) {
-  const anchor = opts.anchor || "t";
-  const align = opts.align || "l";
-  const body = lines.map((l) => {
+  const o = opts || {};
+  const body = lines.filter(Boolean).map((l) => {
     const runs = (Array.isArray(l.t) ? l.t : [{ t: l.t }]).map((r) => {
-      const c = r.color || l.color || PT.text;
-      const b = (r.bold ?? l.bold) ? 1 : 0;
-      return `<a:r><a:rPr lang="ko-KR" sz="${(r.size || l.size || 14) * 100}" b="${b}" dirty="0">` +
+      const c = hex(r.color || l.color || PT.text);
+      const b = (r.bold != null ? r.bold : l.bold) ? 1 : 0;
+      const sz = Math.round((r.size || l.size || 14) * 100);
+      const sp = r.spc != null ? ` spc="${Math.round(r.spc * 100)}"` : "";
+      return `<a:r><a:rPr lang="ko-KR" sz="${sz}" b="${b}"${sp} dirty="0">` +
         `<a:solidFill><a:srgbClr val="${c}"/></a:solidFill>` +
-        `<a:latin typeface="Malgun Gothic"/><a:ea typeface="Malgun Gothic"/></a:rPr>` +
+        `<a:latin typeface="Malgun Gothic"/><a:ea typeface="Malgun Gothic"/><a:cs typeface="Malgun Gothic"/></a:rPr>` +
         `<a:t>${xmlEsc(r.t)}</a:t></a:r>`;
     }).join("");
-    const bu = l.bullet ? `<a:buChar char="•"/>` : `<a:buNone/>`;
-    return `<a:p><a:pPr algn="${l.align || align}" marL="${l.bullet ? 171450 : 0}" indent="${l.bullet ? -171450 : 0}">` +
-      `<a:lnSpc><a:spcPct val="${l.lnSpc || 108000}"/></a:lnSpc>` +
+    const bu = l.bullet ? `<a:buFont typeface="Arial"/><a:buChar char="•"/>` : `<a:buNone/>`;
+    return `<a:p><a:pPr algn="${l.align || o.align || "l"}" marL="${l.bullet ? 152400 : 0}" indent="${l.bullet ? -152400 : 0}">` +
+      `<a:lnSpc><a:spcPct val="${l.lnSpc || o.lnSpc || 110000}"/></a:lnSpc>` +
       `<a:spcBef><a:spcPts val="${(l.spaceBefore || 0) * 100}"/></a:spcBef>${bu}</a:pPr>${runs}</a:p>`;
   }).join("");
   return `<p:sp><p:nvSpPr><p:cNvPr id="${nextId()}" name="t${ppShapeId}"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr>` +
     `<p:spPr><a:xfrm><a:off x="${px(x)}" y="${px(y)}"/><a:ext cx="${px(w)}" cy="${px(h)}"/></a:xfrm>` +
     `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>` +
-    `<p:txBody><a:bodyPr wrap="square" anchor="${anchor}" lIns="0" tIns="0" rIns="0" bIns="0"><a:normAutofit/></a:bodyPr>` +
-    `<a:lstStyle/>${body}</p:txBody></p:sp>`;
+    `<p:txBody><a:bodyPr wrap="square" anchor="${o.anchor || "t"}" lIns="0" tIns="0" rIns="0" bIns="0">` +
+    `<a:normAutofit/></a:bodyPr><a:lstStyle/>${body}</p:txBody></p:sp>`;
 }
 
-// 가로 막대 그래프 — 도형만으로 그려요 (차트 부품을 따로 넣지 않아도 어디서나 열려요)
-function ppBars(x, y, w, h, rows, opts = {}) {
-  if (!rows || rows.length === 0) return "";
-  const max = Math.max(1, ...rows.map((r) => Math.abs(Number(r.value) || 0)));
-  const rowH = h / rows.length;
-  const barH = Math.min(22, rowH * 0.5);
-  const labelW = opts.labelW || w * 0.3;
-  const valueW = opts.valueW || w * 0.22;
-  const trackW = w - labelW - valueW - 16;
-  let out = "";
-  rows.forEach((r, i) => {
-    const cy = y + rowH * i + (rowH - barH) / 2;
-    const v = Math.abs(Number(r.value) || 0);
-    out += ppText(x, cy - 2, labelW - 8, barH + 4, [{ t: r.label, size: 10, color: PT.text }], { anchor: "ctr" });
-    out += ppRect(x + labelW, cy, trackW, barH, PT.line, { geom: "roundRect" });
-    if (v > 0) out += ppRect(x + labelW, cy, Math.max(3, (v / max) * trackW), barH, String(r.color || PT.accent).replace("#", ""), { geom: "roundRect" });
-    out += ppText(x + labelW + trackW + 10, cy - 2, valueW, barH + 4,
-      [{ t: r.text != null ? r.text : String(v), size: 10, bold: true, color: PT.text, align: "r" }], { anchor: "ctr" });
-  });
-  return out;
+// 꺾은선 · 다각형 (추이 차트용)
+function ppLine(pts, color, width = 2.5, opts = {}) {
+  if (!pts || pts.length < 2) return "";
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  const x0 = Math.min(...xs), y0 = Math.min(...ys);
+  const w = Math.max(1, Math.max(...xs) - x0), h = Math.max(1, Math.max(...ys) - y0);
+  const path = pts.map((p, i) =>
+    `<a:${i === 0 ? "moveTo" : "lnTo"}><a:pt x="${px(p[0] - x0)}" y="${px(p[1] - y0)}"/></a:${i === 0 ? "moveTo" : "lnTo"}>`).join("");
+  const close = opts.close ? "<a:close/>" : "";
+  return `<p:sp><p:nvSpPr><p:cNvPr id="${nextId()}" name="l${ppShapeId}"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr>` +
+    `<p:spPr><a:xfrm><a:off x="${px(x0)}" y="${px(y0)}"/><a:ext cx="${px(w)}" cy="${px(h)}"/></a:xfrm>` +
+    `<a:custGeom><a:avLst/><a:gdLst/><a:ahLst/><a:cxnLst/><a:rect l="0" t="0" r="r" b="b"/>` +
+    `<a:pathLst><a:path w="${px(w)}" h="${px(h)}">${path}${close}</a:path></a:pathLst></a:custGeom>` +
+    (opts.fill ? `<a:solidFill><a:srgbClr val="${hex(opts.fill)}"><a:alpha val="${Math.round((opts.fillAlpha != null ? opts.fillAlpha : 0.18) * 100000)}"/></a:srgbClr></a:solidFill>` : `<a:noFill/>`) +
+    `<a:ln w="${Math.round(width * 12700)}" cap="rnd"><a:solidFill><a:srgbClr val="${hex(color)}"/></a:solidFill><a:round/></a:ln>` +
+    `</p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>`;
 }
 
-// 간단한 표
+// 픽토그램 — 아이콘 파일을 끌어오지 않고 파워포인트 기본 도형으로 그려요.
+// (외부 아이콘은 라이선스도 걸리고, 파일에 이미지를 심으면 용량이 커져요)
+const PICTO = {
+  gear: "gear6", cycle: "donut", box: "cube", bolt: "lightningBolt",
+  truck: "flowChartInputOutput", warn: "triangle", dot: "ellipse",
+  up: "upArrow", down: "downArrow", right: "rightArrow", flag: "plaque",
+  target: "donut", people: "flowChartMultidocument", chart: "flowChartMagneticDrum",
+};
+function ppIcon(x, y, size, kind, color) {
+  const geom = PICTO[kind] || "ellipse";
+  return ppShape(x, y, size, size, PT.card, { geom: "roundRect", line: color, lineW: 9525 }) +
+    ppShape(x + size * 0.26, y + size * 0.26, size * 0.48, size * 0.48, color, { geom });
+}
+
+// 표 — 별첨에서만 씁니다. 본문에 로우 데이터를 붙이지 않아요.
 function ppTable(x, y, w, rows, opts = {}) {
-  const colW = opts.colW || rows[0].map(() => w / rows[0].length);
-  const rh = opts.rowH || 26;
+  const o = opts || {};
+  const colW = o.colW || rows[0].map(() => w / rows[0].length);
+  const rh = o.rowH || 25;
   let out = "";
   rows.forEach((row, ri) => {
     const ry = y + rh * ri;
-    if (ri === 0) out += ppRect(x, ry, w, rh, PT.line);
-    else if (ri % 2 === 0) out += ppRect(x, ry, w, rh, PT.card);
+    if (ri === 0) out += ppRect(x, ry, w, rh, PT.cardAlt);
+    else if (ri % 2 === 0) out += ppRect(x, ry, w, rh, PT.card, { alpha: 0.6 });
     let cx = x;
     row.forEach((cell, ci) => {
-      const right = ci > 0;
-      out += ppText(cx + 8, ry, colW[ci] - 16, rh, [{
-        t: String(cell), size: 10, bold: ri === 0,
-        color: ri === 0 ? PT.dim : PT.text, align: right ? "r" : "l",
+      out += ppText(cx + 9, ry, colW[ci] - 18, rh, [{
+        t: String(cell), size: 9.5, bold: ri === 0,
+        color: ri === 0 ? PT.dim : PT.text, align: ci > 0 ? "r" : "l",
       }], { anchor: "ctr" });
       cx += colW[ci];
     });
   });
-  return { xml: out, height: rh * rows.length };
+  return out;
 }
 
-// KPI 4장 한 줄
-function ppKpis(x, y, w, items) {
-  const gap = 14, cw = (w - gap * (items.length - 1)) / items.length;
+// ── 슬라이드 골격 ─────────────────────────────────────────
+// 왼쪽 세로 포인트 바 + 액션 타이틀 + 영문 부제. 첨부해주신 샘플 보고서와 같은 구성이에요.
+function slideFrame(s, idx, total) {
+  let out = ppRect(0, 0, 1280, 720, PT.bg);
+  const titleLines = String(s.title || "").split("\n").length;
+  // 26pt 한 줄이 대략 42px을 먹어요. 줄 수에 맞춰 부제 위치를 내려야 글자가 겹치지 않습니다.
+  const lineH = 42;
+  const titleH = lineH * titleLines;
+  out += ppRect(64, 50, 5, titleH + (s.subtitle ? 26 : 0), s.accent || PT.green);
+  out += ppText(88, 48, 1120, titleH + 8, [{ t: s.title, size: 26, bold: true, color: PT.text, lnSpc: 118000 }]);
+  if (s.subtitle) out += ppText(88, 48 + titleH + 6, 1120, 24, [{ t: s.subtitle, size: 13, color: PT.dim }]);
+  // 바닥선 + 쪽번호
+  out += ppRect(64, 668, 1152, 1, PT.line);
+  out += ppText(64, 682, 700, 16, [{ t: s.footer || "", size: 8.5, color: PT.faint }]);
+  out += ppText(900, 682, 316, 16, [{ t: `${idx} / ${total}`, size: 8.5, color: PT.faint, align: "r" }]);
+  return out;
+}
+
+// 하단 강조 배너 — "그래서 무엇을 할 것인가"를 한 줄로 못박아요.
+function ppBanner(y, kind, label, text) {
+  const color = kind === "action" ? PT.red : kind === "insight" ? PT.green : PT.blue;
+  const soft = kind === "action" ? PT.redSoft : kind === "insight" ? PT.greenSoft : PT.blueSoft;
+  let out = ppRect(64, y, 1152, 54, soft, { geom: "roundRect" });
+  out += ppRect(64, y, 4, 54, color);
+  out += ppShape(86, y + 19, 16, 16, color, { geom: kind === "action" ? "triangle" : "ellipse" });
+  out += ppText(112, y, 1090, 54, [{ t: [
+    { t: `${label}  `, size: 11.5, bold: true, color },
+    { t: text, size: 11.5, color: PT.text },
+  ] }], { anchor: "ctr" });
+  return out;
+}
+
+// ── 장표 유형별 본문 ───────────────────────────────────────
+// 1) KPI — 큰 숫자 3~4개만. 소수점 둘째 자리보다 추세와 비율이 궁금한 자리니까요.
+function bodyKpi(v, s) {
+  const items = v.items || [];
+  const n = Math.max(1, items.length);
+  const gap = 20, x0 = 64, w = (1152 - gap * (n - 1)) / n;
   let out = "";
   items.forEach((k, i) => {
-    const cx = x + (cw + gap) * i;
-    out += ppRect(cx, y, cw, 96, PT.card, { line: PT.line, lineW: 9525, geom: "roundRect" });
-    out += ppText(cx + 16, y + 14, cw - 32, 18, [{ t: k.label, size: 10, color: PT.dim }]);
-    out += ppText(cx + 16, y + 34, cw - 32, 34, [{ t: [{ t: k.value, size: 24, bold: true, color: String(k.color || PT.text).replace("#", "") }, { t: k.unit || "", size: 11, color: PT.dim }] }]);
-    if (k.sub) out += ppText(cx + 16, y + 70, cw - 32, 16, [{ t: k.sub, size: 9, color: PT.dim }]);
+    const x = x0 + (w + gap) * i;
+    out += ppRect(x, 196, w, 168, PT.card, { geom: "roundRect", line: PT.line, lineW: 9525 });
+    out += ppText(x + 26, 220, w - 52, 20, [{ t: k.label, size: 11, color: PT.dim }]);
+    out += ppText(x + 26, 250, w - 52, 66, [{ t: [
+      { t: k.value, size: 40, bold: true, color: k.color || PT.text },
+      { t: k.unit ? ` ${k.unit}` : "", size: 14, color: PT.dim },
+    ] }]);
+    if (k.delta) {
+      out += ppShape(x + 26, 328, 13, 13, k.deltaColor || PT.dim,
+        { geom: k.deltaDir === "up" ? "upArrow" : k.deltaDir === "down" ? "downArrow" : "ellipse" });
+      out += ppText(x + 46, 325, w - 72, 20, [{ t: k.delta, size: 10.5, bold: true, color: k.deltaColor || PT.dim }]);
+    }
+  });
+  // 시사점 세 가지 — 결론 밑에 근거를 개조식으로.
+  if (s.points && s.points.length) {
+    out += ppText(64, 400, 1152, 24, [{ t: "핵심 시사점", size: 11, bold: true, color: PT.dim, spc: 1 }]);
+    s.points.forEach((p, i) => {
+      const y = 432 + i * 62;
+      out += ppRect(64, y, 1152, 50, PT.card, { geom: "roundRect", alpha: 0.55 });
+      out += ppShape(84, y + 17, 16, 16, p.color || PT.blue, { geom: "ellipse" });
+      out += ppText(92, y + 17, 16, 16, [{ t: String(i + 1), size: 9, bold: true, color: PT.bg, align: "ctr" }]);
+      out += ppText(116, y, 1080, 50, [{ t: [
+        { t: `${p.label}  `, size: 11.5, bold: true, color: p.color || PT.text },
+        { t: p.text, size: 11.5, color: PT.dim },
+      ] }], { anchor: "ctr" });
+    });
+  }
+  return out;
+}
+
+// 2) 가로 막대 — 목표선까지의 트랙을 깔고, 문제 있는 항목 하나만 빨강.
+function bodyBars(v, s) {
+  const rows = v.rows || [];
+  if (rows.length === 0) return ppText(64, 300, 1152, 40, [{ t: "표시할 데이터가 없습니다.", size: 13, color: PT.faint, align: "ctr" }]);
+  const hasBanner = !!s.banner;
+  const top = 206, boxH = hasBanner ? 356 : 420;
+  let out = ppRect(64, top, 1152, boxH, PT.card, { geom: "roundRect", alpha: 0.55 });
+  const max = Math.max(1, ...rows.map((r) => Math.abs(Number(r.value) || 0)), v.axisMax || 0);
+  const padY = 30, rowH = (boxH - padY * 2) / rows.length;
+  const barH = Math.min(34, rowH * 0.52);
+  const labelW = 206, valW = 132;
+  const trackX = 64 + 30 + labelW, trackW = 1152 - 60 - labelW - valW;
+  rows.forEach((r, i) => {
+    const cy = top + padY + rowH * i + (rowH - barH) / 2;
+    const val = Math.abs(Number(r.value) || 0);
+    const c = hex(r.color || PT.blue);
+    out += ppText(64 + 30, cy - 4, labelW - 14, barH + 8,
+      [{ t: r.label, size: 11.5, bold: !!r.strong, color: r.strong ? c : PT.dim, align: "r" }], { anchor: "ctr" });
+    out += ppRect(trackX, cy, trackW, barH, PT.cardAlt, { geom: "roundRect" });
+    if (val > 0) out += ppRect(trackX, cy, Math.max(6, (val / max) * trackW), barH, c, { geom: "roundRect" });
+    // 목표선 (100% 등) — 어디까지 갔어야 하는지 한눈에
+    if (v.mark != null && v.mark > 0) {
+      const mx = trackX + (v.mark / max) * trackW;
+      if (i === 0) out += ppRect(mx, top + 18, 1.6, boxH - 36, PT.dim, { alpha: 0.55 });
+    }
+    // "5시간 50분 · 2건" 처럼 두 정보가 붙어 있으면 줄을 나눠요 —
+    // 한 줄로 밀어넣으면 글꼴에 따라 어정쩡하게 접혀서 "건"만 다음 줄로 떨어집니다.
+    const txt = r.text != null ? String(r.text) : String(val);
+    const cut = txt.indexOf(" · ");
+    const vLines = cut > 0
+      ? [{ t: txt.slice(0, cut), size: 11.5, bold: true, color: r.strong ? c : PT.text },
+         { t: txt.slice(cut + 3), size: 9.5, color: PT.faint }]
+      : [{ t: txt, size: 11.5, bold: true, color: r.strong ? c : PT.text }];
+    out += ppText(trackX + trackW + 12, cy - 8, valW, barH + 16, vLines, { anchor: "ctr" });
+  });
+  if (v.mark != null && v.mark > 0) {
+    const mx = trackX + (v.mark / max) * trackW;
+    out += ppText(mx - 60, top + 4, 120, 16, [{ t: v.markLabel || `목표 ${v.mark}`, size: 9, color: PT.dim, align: "ctr" }]);
+  }
+  if (hasBanner) out += ppBanner(586, s.banner.kind, s.banner.label, s.banner.text);
+  return out;
+}
+
+// 3) 추이 — 꺾은선 + 면. 값은 점 위에 직접 적어서 축 눈금을 지웁니다.
+function bodyTrend(v, s) {
+  const rows = (v.rows || []).filter((r) => r.value != null);
+  if (rows.length < 2) return ppText(64, 300, 1152, 40, [{ t: "추이를 그릴 만큼 데이터가 쌓이지 않았습니다.", size: 13, color: PT.faint, align: "ctr" }]);
+  const hasBanner = !!s.banner;
+  const top = 206, boxH = hasBanner ? 356 : 420;
+  let out = ppRect(64, top, 1152, boxH, PT.card, { geom: "roundRect", alpha: 0.55 });
+  const padL = 56, padR = 56, padT = 62, padB = 52;
+  const x0 = 64 + padL, y0 = top + padT;
+  const w = 1152 - padL - padR, h = boxH - padT - padB;
+  const vals = rows.map((r) => Number(r.value) || 0);
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const span = Math.max(1e-6, hi - lo);
+  const pad = span * 0.28;
+  const yOf = (val) => y0 + h - ((val - (lo - pad)) / (span + pad * 2)) * h;
+  const xOf = (i) => x0 + (rows.length === 1 ? w / 2 : (w * i) / (rows.length - 1));
+  // 은은한 가로 눈금
+  [0.25, 0.5, 0.75].forEach((g) => { out += ppRect(x0, y0 + h * g, w, 0.8, PT.line, { alpha: 0.5 }); });
+  const pts = rows.map((r, i) => [xOf(i), yOf(Number(r.value) || 0)]);
+  const color = v.color || PT.green;
+  out += ppLine(pts.concat([[xOf(rows.length - 1), y0 + h], [x0, y0 + h]]), color, 0.5, { fill: color, fillAlpha: 0.16, close: true });
+  out += ppLine(pts, color, 3);
+  rows.forEach((r, i) => {
+    const [cx, cy] = pts[i];
+    out += ppShape(cx - 7, cy - 7, 14, 14, PT.bg, { geom: "ellipse", line: color, lineW: 28000 });
+    out += ppText(cx - 60, cy - 34, 120, 20, [{ t: r.text != null ? r.text : String(r.value), size: 11.5, bold: true, color: PT.text, align: "ctr" }]);
+    out += ppText(cx - 60, y0 + h + 14, 120, 20, [{ t: r.label, size: 10, color: PT.dim, align: "ctr" }]);
+  });
+  if (hasBanner) out += ppBanner(586, s.banner.kind, s.banner.label, s.banner.text);
+  return out;
+}
+
+// 4) 현안 과제 — 카드 3장. 아이콘·우선순위 뱃지로 읽지 않아도 감이 오게.
+function bodyIssues(v) {
+  const cards = (v.cards || []).slice(0, 3);
+  if (cards.length === 0) return ppText(64, 300, 1152, 40, [{ t: "현안 과제가 없습니다.", size: 13, color: PT.faint, align: "ctr" }]);
+  const gap = 22, w = (1152 - gap * (cards.length - 1)) / cards.length;
+  let out = "";
+  cards.forEach((c, i) => {
+    const x = 64 + (w + gap) * i;
+    const color = hex(c.color || PT.blue);
+    out += ppRect(x, 200, w, 400, PT.card, { geom: "roundRect" });
+    out += ppRect(x, 200, w, 4, color);                     // 색은 위쪽 테두리에만
+    out += ppIcon(x + 24, 228, 38, c.icon || "dot", color);
+    out += ppText(x + 74, 232, w - 96, 34, [{ t: c.title, size: 14.5, bold: true, color: PT.text }]);
+    out += ppRect(x + 24, 284, Math.min(w - 48, 8 + c.badge.length * 8.6), 24, color, { geom: "roundRect", alpha: 0.16 });
+    out += ppText(x + 24, 284, Math.min(w - 48, 8 + c.badge.length * 8.6), 24,
+      [{ t: c.badge, size: 9.5, bold: true, color, align: "ctr" }], { anchor: "ctr" });
+    (c.rows || []).slice(0, 4).forEach((r, j) => {
+      const y = 326 + j * 64;
+      out += ppText(x + 24, y, w - 48, 58, [{ t: [
+        { t: `${r.k}  `, size: 11, bold: true, color: PT.text },
+        { t: r.v, size: 11, color: PT.dim },
+      ], lnSpc: 126000 }]);
+    });
   });
   return out;
 }
 
-// 슬라이드 한 장 = 제목 + 한 줄 메시지 띠 + 본문
+// 5) 실행계획 — 타임라인. 언제까지 누가 무엇을.
+function bodyPlan(v) {
+  const rows = (v.rows || []).slice(0, 5);
+  if (rows.length === 0) return ppText(64, 300, 1152, 40, [{ t: "실행 항목이 없습니다.", size: 13, color: PT.faint, align: "ctr" }]);
+  let out = ppRect(120, 232, 2, rows.length * 84 - 40, PT.line); // 세로 축
+  rows.forEach((r, i) => {
+    const y = 214 + i * 84;
+    const color = hex(r.color || PT.blue);
+    out += ppShape(112, y + 16, 18, 18, color, { geom: "ellipse" });
+    out += ppRect(160, y, 1056, 66, PT.card, { geom: "roundRect", alpha: 0.55 });
+    out += ppText(182, y + 12, 700, 24, [{ t: r.title, size: 12.5, bold: true, color: PT.text }]);
+    out += ppText(182, y + 36, 700, 20, [{ t: r.detail || "", size: 10.5, color: PT.dim }]);
+    out += ppRect(950, y + 20, 96, 26, color, { geom: "roundRect", alpha: 0.16 });
+    out += ppText(950, y + 20, 96, 26, [{ t: r.owner || "-", size: 10, bold: true, color, align: "ctr" }], { anchor: "ctr" });
+    out += ppText(1060, y + 20, 136, 26, [{ t: r.due || "-", size: 10.5, color: PT.dim, align: "r" }], { anchor: "ctr" });
+  });
+  return out;
+}
+
+// 6) 별첨 — 상세 표는 여기로 몰아둡니다.
+function bodyTable(v) {
+  const head = v.head || [];
+  const rows = (v.rows || []).slice(0, 14);
+  const ratio = v.colRatio || head.map((_, i) => (i === 0 ? 0.28 : 0.72 / Math.max(1, head.length - 1)));
+  const t = ppTable(64, 208, 1152, [head, ...rows], { colW: ratio.map((r) => r * 1152), rowH: 25 });
+  return t + (v.note ? ppText(64, 208 + 25 * (rows.length + 1) + 14, 1152, 20,
+    [{ t: v.note, size: 9.5, color: PT.faint }]) : "");
+}
+
+// 7) 표지
+function bodyCover(v) {
+  let out = ppRect(0, 0, 1280, 720, PT.bg);
+  out += ppRect(0, 0, 1280, 4, PT.green);
+  out += ppText(96, 236, 1088, 40, [{ t: v.eyebrow || "", size: 13, bold: true, color: PT.green, spc: 2 }]);
+  out += ppText(96, 282, 1088, 120, [{ t: v.title, size: 40, bold: true, color: PT.text, lnSpc: 116000 }]);
+  out += ppRect(96, 424, 64, 3, PT.green);
+  out += ppText(96, 452, 1088, 30, [{ t: v.subtitle || "", size: 15, color: PT.dim }]);
+  const meta = (v.meta || []).map((m) => `${m}`).join("     ·     ");
+  out += ppText(96, 616, 1088, 24, [{ t: meta, size: 11, color: PT.faint }]);
+  return out;
+}
+
+function slideBody(s) {
+  const v = s.visual || {};
+  if (v.type === "cover") return bodyCover(v);
+  if (v.type === "kpi") return bodyKpi(v, s);
+  if (v.type === "bars") return bodyBars(v, s);
+  if (v.type === "trend") return bodyTrend(v, s);
+  if (v.type === "issues") return bodyIssues(v);
+  if (v.type === "plan") return bodyPlan(v);
+  if (v.type === "table") return bodyTable(v);
+  return s.bullets && s.bullets.length
+    ? ppText(64, 210, 1152, 380, s.bullets.map((b, i) => ({ t: b, size: 13, color: PT.dim, bullet: true, spaceBefore: i ? 12 : 0 })))
+    : "";
+}
+
 function slideXml(s, idx, total) {
   ppShapeId = 1;
-  let body = "";
-  body += ppRect(0, 0, 1280, 720, PT.bg);
-  body += ppRect(0, 0, 6, 720, PT.accent);                      // 왼쪽 포인트 띠
-  body += ppText(48, 40, 1120, 40, [{ t: s.title, size: 26, bold: true }]);
-  if (s.kicker) body += ppText(48, 26, 1120, 16, [{ t: s.kicker, size: 10, color: PT.accent, bold: true }]);
-  // 한 줄 메시지 — 보고서에서 제일 중요한 줄이라 배경을 깔아 눈에 띄게 해요.
-  if (s.message) {
-    body += ppRect(48, 92, 1184, 46, "1F2A3C", { line: PT.accent, lineW: 9525, geom: "roundRect" });
-    body += ppText(66, 92, 1148, 46, [{ t: s.message, size: 13, bold: true, color: PT.text }], { anchor: "ctr" });
-  }
-  body += s.body || "";
-  body += ppText(48, 682, 600, 16, [{ t: s.footer || "DRT 리사이클링 · 생산관리", size: 9, color: PT.dim }]);
-  body += ppText(1000, 682, 232, 16, [{ t: `${idx} / ${total}`, size: 9, color: PT.dim, align: "r" }]);
+  const isCover = s.visual && s.visual.type === "cover";
+  const body = isCover ? slideBody(s) : slideFrame(s, idx, total) + slideBody(s);
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>${body}</p:spTree></p:cSld><p:clrMapOvr><a:overrideClrMapping bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/></p:clrMapOvr></p:sld>`;
+<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>${body}</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>`;
 }
 
 const PPT_THEME = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -4733,7 +5045,7 @@ const newLotForm = (master) => {
 // 색은 전부 스타일시트의 .ivs-root[data-theme="dark"|"light"] 토큰에서 와요 (인라인 변수 없음).
 
 function InventorySystem() {
-  const [activeTab, setActiveTab] = useState("inventory"); // 'inventory' | 'production' | 'tolling' | 'dashboard'
+  const [activeTab, setActiveTab] = useState(MENU_ITEMS[0].key); // 메뉴 첫 항목 = 생산계획
   // 부트스트랩(bootstrap())이 렌더 전에 Firebase에서 한 번 읽어온 값으로 시작해요. 그 뒤로는
   // 실시간 구독(subscribeLive)이 변경분을 계속 밀어줘요 — 별도의 "로컬 저장" 개념이 아예 없어요.
   const [lots, setLots] = useState(() => LIVE_DATA.lots);
@@ -7309,37 +7621,62 @@ function Pareto({ rows, total, colorOf }) {
     </div>`;
 }
 
-// ---------- 생산실적 보고서 ----------
-// 대표이사 보고용이라 "배경 → 문제 → 분석 → 대안 → 실행계획 → 결론" 순서로 이야기가 흐르게 짰어요.
-// 슬라이드마다 제목 한 줄, 그 아래 핵심 메시지 한 줄, 그리고 그 메시지를 뒷받침하는 그림 하나.
-// 화면 미리보기와 내려받는 .pptx가 똑같은 내용을 쓰도록, 그림은 '설명서(visual)' 형태로 한 번만 정의해요.
+// ---------- 경영진 보고서 ----------
+// 워딩 규칙: 서술어를 빼고 명사형으로 끝맺어요.
+//   "기계가 고장나서 안 돌아갑니다" → "설비 결함으로 인한 가동 중단"
+// 제목 규칙: 제목이 곧 결론(액션 타이틀). 제목만 넘겨봐도 상황이 읽혀야 해요.
 
 // 한글 조사 — 앞말에 받침이 있으면 "이/을/은", 없으면 "가/를/는".
 // 숫자·영문으로 끝나는 경우도 있어서 마지막 글자가 한글일 때만 받침을 따져요.
 function josa(word, pair) {
   const [withBatchim, without] = pair;
   const t = String(word || "").trim();
+  if (!t) return without;
   const ch = t.charCodeAt(t.length - 1);
-  if (!(ch >= 0xAC00 && ch <= 0xD7A3)) return without; // 한글이 아니면 받침 없는 쪽으로
+  if (!(ch >= 0xAC00 && ch <= 0xD7A3)) return without;
   return (ch - 0xAC00) % 28 > 0 ? withBatchim : without;
 }
 
-// 비가동 대분류별로 실제로 할 만한 대책을 붙여둬요 — 보고서에서 "그래서 뭘 할 건데"가 비면 곤란하니까.
-const DT_ACTIONS = {
-  "설비고장": ["고장 이력 기반 점검 항목 보강 · 점검 주기 단축", "소모성 예비품(베어링 · 커터) 상시 재고 확보", "정지 30분 초과 건은 원인분석서 의무화"],
-  "계획정지": ["OH·PM을 저부하 구간으로 이동해 조업 손실 최소화", "정지 중 병행작업 묶어서 총 정지시간 단축"],
-  "준비/교체": ["타공망 · 커터 교체 표준시간 설정 후 실적 관리", "예비 소모품을 라인 옆에 상시 배치해 대기시간 제거"],
-  "공정이상": ["투입 전 이물 선별 강화 (막힘 · 과부하 원인 제거)", "슈트 · 덕트 차압 상시 감시로 막힘 조기 발견"],
-  "물류/자재": ["원료 선입고로 대기 제거 · 계량 동선 개선", "톤백 · 지게차 사전 배치"],
-  "안전/환경": ["안전점검 일정을 조업계획에 미리 반영", "스크러버 · 배기 정기점검 주기화"],
-  "기타": ["교대 인수인계 표준양식 도입", "정전 · 에어 공급 중단에 대한 대비책 점검"],
+// 현장 용어 → 경영진 용어
+const EXEC_TERM = {
+  "설비고장": "설비 결함으로 인한 가동 중단",
+  "계획정지": "계획 정비에 따른 계획 정지",
+  "준비/교체": "소모품 교체 및 셋업 전환",
+  "공정이상": "공정 이상에 따른 비계획 정지",
+  "물류/자재": "원부자재 수급 지연",
+  "안전/환경": "안전·환경 점검에 따른 정지",
+  "기타": "기타 운영 요인",
 };
+const execTerm = (k) => EXEC_TERM[k] || k;
 
-// PPT XML은 "#" 없는 6자리 hex만 받아요. dtMajorColor·CREW_COLOR 같은 CSS 색이 섞여 들어오면
-// 화면에서는 "##EF4444"가 되어 색이 아예 안 칠해지니, 여기서 한 번 벗겨서 통일해요.
-const hx = (c) => String(c == null ? "" : c).replace("#", "") || "E9692F";
+// 비가동 유형별 아이콘과 대응 방향
+const DT_META = {
+  "설비고장": { icon: "gear", color: "EF4444",
+    cause: "예방정비 주기 초과 및 소모성 부품 열화",
+    action: ["점검 주기 단축 및 고장 이력 기반 점검항목 보강", "베어링·커터 등 소모성 예비품 상시 재고 확보", "30분 초과 정지 건 원인분석서 의무화"] },
+  "계획정지": { icon: "cycle", color: "3B82F6",
+    cause: "정기 OH 및 예방정비 일정 집행",
+    action: ["저부하 구간으로 정비 일정 재배치", "정지 중 병행작업 묶음 편성으로 총 정지시간 단축"] },
+  "준비/교체": { icon: "box", color: "A855F7",
+    cause: "소모품 교체 표준시간 미설정",
+    action: ["타공망·커터 교체 표준시간 설정 및 실적 관리", "예비 소모품 라인사이드 상시 배치"] },
+  "공정이상": { icon: "bolt", color: "F59E0B",
+    cause: "투입물 이물 혼입 및 차압 상승",
+    action: ["투입 전 이물 선별 강화", "슈트·덕트 차압 상시 감시 체계 도입"] },
+  "물류/자재": { icon: "truck", color: "14B8A6",
+    cause: "원료 입고 및 제품 배출 대기",
+    action: ["원료 선입고 전환 및 계량 동선 개선", "톤백·지게차 사전 배치"] },
+  "안전/환경": { icon: "warn", color: "EC4899",
+    cause: "정기 안전점검 및 환경설비 이상",
+    action: ["안전점검 일정 조업계획 사전 반영", "스크러버·배기 정기점검 주기화"] },
+  "기타": { icon: "dot", color: "64748B",
+    cause: "인수인계 및 유틸리티 공급 요인",
+    action: ["교대 인수인계 표준양식 도입", "정전·에어 공급 중단 대비책 점검"] },
+};
+const dtMeta = (k) => DT_META[k] || DT_META["기타"];
 
-function buildReport(kind, from, to, mes, runs, downs, lots) {
+function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
+  const isMonth = kind === "month";
   const target = Number(mes.targetUtil) || 90;
   const tr = mes.targetRates || { bm: 55, cu: 12, al: 10, cd: 5 };
   const recs = recordsFor(from, to, mes, runs, downs);
@@ -7352,261 +7689,294 @@ function buildReport(kind, from, to, mes, runs, downs, lots) {
   const byMajor = groupDowns(dtRows, (r) => r.major);
   const byDetail = groupDowns(dtRows, (r) => r.detail);
   const byEq = groupDowns(dtRows, (r) => r.eqId);
-  const eqs = equipStats(from, to, mes, runs, downs);
   const weeks = groupWeeks(recs);
-  const isMonth = kind === "month";
+  const label = isMonth ? from.slice(0, 7) : `${from} ~ ${to}`;
+  const org = (settings && settings.title) || "생산본부";
 
-  // 교대조별 — 누가 얼마나 했는지
+  const achieve = tot.achieve, utilAll = tot.utilAll, rateBm = tot.rate.bm;
+  const dPt = (a, b) => (a == null || b == null ? null : a - b);
+  const pp = (v) => (v == null ? "-" : `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}%p`);
+  const okAch = achieve != null && achieve >= 100;
+  const okUtil = utilAll != null && utilAll >= target;
+
   const crewRows = CREWS.map((c) => {
     const rs = runs.filter((r) => r.date >= from && r.date <= to && r.crew === c);
     const input = rs.reduce((a, r) => a + (Number(r.inputKg) || 0), 0);
     const workers = rs.reduce((a, r) => a + (Number(r.workers) || 0), 0);
-    return { crew: c, input, workers, shifts: rs.length, perCap: workers > 0 ? input / workers : null, color: hx(CREW_COLOR[c]) };
+    return { crew: c, input, workers, shifts: rs.length, perCap: workers > 0 ? input / workers : null };
   }).filter((r) => r.shifts > 0);
 
-  const dPt = (a, b) => (a == null || b == null ? null : a - b);
-  const sign = (v, d = 1) => (v == null ? "-" : `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(d)}`);
-  const achieve = tot.achieve, utilAll = tot.utilAll;
-  const rateBm = tot.rate.bm;
-
-  // 목표에 못 미친 것만 골라내요 — 이게 "문제" 슬라이드의 뼈대가 됩니다.
-  const gaps = [];
-  if (achieve != null && achieve < 100) gaps.push({ k: "계획 대비 달성율", v: achieve, t: 100, unit: "%", gapKg: tot.planKg - tot.inputKg });
-  if (utilAll != null && utilAll < target) gaps.push({ k: "종합가동율", v: utilAll, t: target, unit: "%" });
-  if (tot.utilTime != null && tot.utilTime < target) gaps.push({ k: "시간가동율", v: tot.utilTime, t: target, unit: "%" });
-  if (tot.utilPerf != null && tot.utilPerf < target) gaps.push({ k: "성능가동율", v: tot.utilPerf, t: target, unit: "%" });
-  if (rateBm != null && rateBm < tr.bm) gaps.push({ k: "BM 회수율", v: rateBm, t: tr.bm, unit: "%" });
-
-  const label = isMonth ? `${from.slice(0, 7)}` : `${from} ~ ${to}`;
+  const noPlan = tot.planKg === 0;
   const S = [];
 
-  // ── 1. 요약 (결론 먼저 한 장) ──────────────────────────────
+  // ── 표지 ────────────────────────────────────────────────
   S.push({
-    kicker: "요약",
-    title: `${isMonth ? "월간" : "주간"} 생산실적 보고 · ${label}`,
-    message: achieve == null ? "이 기간에는 조업 계획이 없습니다."
-      : `투입 ${fmtTon(tot.inputKg)}톤 / 계획 ${fmtTon(tot.planKg)}톤 — 달성율 ${achieve.toFixed(1)}%, 종합가동율 ${utilAll == null ? "-" : utilAll.toFixed(1)}% (목표 ${target}%)`,
+    visual: { type: "cover",
+      eyebrow: isMonth ? "MONTHLY PRODUCTION REVIEW" : "WEEKLY PRODUCTION REVIEW",
+      title: `${isMonth ? "월간" : "주간"} 생산실적 보고`,
+      subtitle: `${label}   ·   ${org}`,
+      meta: [`투입 ${fmtTon(tot.inputKg)}톤`, `달성율 ${fmtPct(achieve)}`, `종합가동율 ${fmtPct(utilAll)}`, `작성 ${new Date().toISOString().slice(0, 10)}`] },
+  });
+
+  // ── 1. Executive Summary : 결론을 제목에 ────────────────
+  const headline = noPlan
+    ? `${label} 조업 계획 미수립 구간으로, 실적 평가 대상에서 제외`
+    : okAch && okUtil
+      ? `${label} 생산량 ${fmtTon(tot.inputKg)}톤으로 목표 ${achieve.toFixed(0)}% 달성,\n종합가동율 ${utilAll.toFixed(1)}%로 목표 수준 유지`
+      : okAch
+        ? `${label} 생산량 목표 ${achieve.toFixed(0)}% 달성하였으나,\n종합가동율 ${utilAll == null ? "-" : utilAll.toFixed(1)}%로 목표 ${target}% 미달`
+        : `${label} 생산량 ${fmtTon(tot.inputKg)}톤으로 목표 대비 ${achieve == null ? "-" : achieve.toFixed(0)}% 수준,\n${byMajor[0] ? execTerm(byMajor[0].key) : "가동 저해 요인"}이 주요 제약`;
+
+  const points = [];
+  points.push({ label: "생산", color: okAch ? PT.green : PT.amber,
+    text: noPlan ? "계획 미수립"
+      : `계획 ${fmtTon(tot.planKg)}톤 대비 ${fmtTon(tot.inputKg)}톤 투입 · 달성율 ${fmtPct(achieve)} (직전 대비 ${pp(dPt(achieve, prev.achieve))})` });
+  points.push({ label: "가동", color: okUtil ? PT.green : PT.amber,
+    text: `시간가동율 ${fmtPct(tot.utilTime)} × 성능가동율 ${fmtPct(tot.utilPerf)} = 종합 ${fmtPct(utilAll)} · 목표 ${target}% 대비 ${pp(dPt(utilAll, target))}` });
+  points.push({ label: byMajor[0] ? "제약" : "회수", color: byMajor[0] ? PT.red : PT.blue,
+    text: byMajor[0]
+      ? `${execTerm(byMajor[0].key)} ${fmtMin(byMajor[0].min)} 발생 · 총 정지시간의 ${((byMajor[0].min / totMin) * 100).toFixed(0)}% 점유`
+      : `BM 회수율 ${fmtPct(rateBm)} · 목표 ${tr.bm}% 대비 ${pp(dPt(rateBm, tr.bm))}` });
+
+  S.push({
+    kicker: "요약", accent: okAch && okUtil ? PT.green : PT.red,
+    title: headline,
+    subtitle: "Executive Summary : Key Performance Indicators",
+    points,
     visual: { type: "kpi", items: [
-      { label: "투입량", value: fmtTon(tot.inputKg), unit: "톤", sub: `계획 ${fmtTon(tot.planKg)}톤`, color: PT.text },
-      { label: "계획 대비 달성율", value: achieve == null ? "-" : achieve.toFixed(1), unit: "%",
-        sub: `직전 대비 ${sign(dPt(achieve, prev.achieve))}%p`, color: achieve != null && achieve >= 100 ? PT.good : PT.warn },
-      { label: "종합가동율", value: utilAll == null ? "-" : utilAll.toFixed(1), unit: "%",
-        sub: `목표 ${target}% · 시간 ${fmtPct(tot.utilTime)} × 성능 ${fmtPct(tot.utilPerf)}`, color: utilAll != null && utilAll >= target ? PT.good : PT.bad },
+      { label: "투입량 (톤)", value: fmtTon(tot.inputKg), color: PT.text,
+        delta: `계획 ${fmtTon(tot.planKg)}톤 대비 ${fmtPct(achieve)}`, deltaColor: okAch ? PT.green : PT.amber,
+        deltaDir: okAch ? "up" : "down" },
+      { label: "종합 가동율", value: utilAll == null ? "-" : utilAll.toFixed(1), unit: "%", color: okUtil ? PT.green : PT.red,
+        delta: `목표 ${target}% 대비 ${pp(dPt(utilAll, target))}`, deltaColor: okUtil ? PT.green : PT.red,
+        deltaDir: okUtil ? "up" : "down" },
       { label: "BM 회수율", value: rateBm == null ? "-" : rateBm.toFixed(1), unit: "%",
-        sub: `목표 ${tr.bm}% · 회수 ${fmtTon(tot.out.bm)}톤`, color: rateBm != null && rateBm >= tr.bm ? PT.good : PT.warn },
+        color: rateBm != null && rateBm >= tr.bm ? PT.green : PT.amber,
+        delta: `목표 ${tr.bm}% 대비 ${pp(dPt(rateBm, tr.bm))}`,
+        deltaColor: rateBm != null && rateBm >= tr.bm ? PT.green : PT.amber,
+        deltaDir: rateBm != null && rateBm >= tr.bm ? "up" : "down" },
+      { label: "비가동 시간", value: (totMin / 60).toFixed(1), unit: "h", color: totMin > 0 ? PT.amber : PT.green,
+        delta: `${dtRows.length}건 · 계획시간의 ${tot.planMin > 0 ? ((totMin / tot.planMin) * 100).toFixed(1) : "0.0"}%`,
+        deltaColor: PT.dim, deltaDir: "flat" },
     ] },
-    bullets: [
-      `조업 ${tot.opDays}일 · 실적 기록 ${tot.actDays}일 · 총 ${tot.shifts}개 교대`,
-      `산출 ${fmtTon(tot.outKg)}톤 (수율 ${fmtPct(tot.yieldPct)}) · 비가동 ${fmtMin(totMin)} ${dtRows.length}건`,
-      gaps.length === 0 ? "목표를 모두 충족했습니다." : `목표 미달 ${gaps.length}개 항목 — ${gaps.map((g) => g.k).join(", ")}`,
-    ],
   });
 
-  // ── 2. 배경 ────────────────────────────────────────────────
-  const stops = Array.from(new Set(recs.flatMap((r) => r.plan.stopNames))).filter((x) => x && x !== "계획 기간 밖");
-  const phasesInRange = Array.from(new Set(recs.filter((r) => r.plan.phaseName).map((r) => r.plan.phaseName)));
-  const utilPlan = Array.from(new Set(recs.filter((r) => !r.plan.isStop).map((r) => Math.round((r.plan.util || 0) * 100))));
-  const rr = mesRates(mes, from.slice(0, 7));
+  // ── 2. 생산 실적 추이 (월간만) ──────────────────────────
+  // 조업 계획이 있는 주만 그려요 — 계획이 아예 없는 주까지 넣으면 선이 바닥으로 떨어져서
+  // "감소 추세"처럼 보이는데, 실제로는 그냥 조업일이 아닌 겁니다.
+  const trendWeeks = weeks.filter((w) => w.planKg > 0);
+  if (isMonth && trendWeeks.length >= 2) {
+    const first = trendWeeks[0], last = trendWeeks[trendWeeks.length - 1];
+    const peak = trendWeeks.reduce((a, w) => (w.inputKg > a.inputKg ? w : a), trendWeeks[0]);
+    const rising = (last.inputKg || 0) >= (first.inputKg || 0);
+    const anyInput = trendWeeks.some((w) => w.inputKg > 0);
+    const title = !anyInput
+      ? `기간 내 투입 실적 미기록,\n주차별 계획 ${fmtTon(first.planKg)} ~ ${fmtTon(last.planKg)}톤 편성`
+      : last.inputKg >= peak.inputKg
+        ? `주차 경과에 따라 투입량 상승,\n최종 주 ${fmtTon(last.inputKg)}톤으로 기간 내 최고 수준 도달`
+        : rising
+          ? `주차 경과에 따라 투입량 증가 추세,\n최고 ${peak.label} ${fmtTon(peak.inputKg)}톤 기록`
+          : `주차 경과에 따라 투입량 감소,\n최종 주 ${fmtTon(last.inputKg)}톤으로 최고 대비 ${fmtTon(peak.inputKg - last.inputKg)}톤 하락`;
+    S.push({
+      kicker: "분석", accent: !anyInput ? PT.faint : rising ? PT.green : PT.red,
+      title,
+      subtitle: "Weekly Production Trend (단위: 톤)",
+      visual: { type: "trend", color: !anyInput ? PT.faint : rising ? PT.green : PT.red,
+        rows: trendWeeks.map((w) => ({ label: w.label, value: w.inputKg / 1000, text: (w.inputKg / 1000).toFixed(1) })) },
+      banner: { kind: "insight", label: "Insight",
+        text: `주 평균 ${fmtTon(tot.inputKg / Math.max(1, trendWeeks.length))}톤 투입 · 최고 ${fmtTon(peak.inputKg)}톤 / 최저 ${fmtTon(Math.min(...trendWeeks.map((w) => w.inputKg)))}톤 · 편차 ${fmtTon(peak.inputKg - Math.min(...trendWeeks.map((w) => w.inputKg)))}톤` },
+    });
+  }
+
+  // ── 3. 계획 대비 달성 ───────────────────────────────────
+  const perfRows = [
+    { key: "계획 대비 달성율", v: achieve, t: 100 },
+    { key: "시간 가동율", v: tot.utilTime, t: target },
+    { key: "성능 가동율", v: tot.utilPerf, t: target },
+    { key: "종합 가동율", v: utilAll, t: target },
+  ];
+  const worstPerf = perfRows.filter((r) => r.v != null).sort((a, b) => (a.v - a.t) - (b.v - b.t))[0];
   S.push({
-    kicker: "배경",
-    title: "이 기간의 조업 조건",
-    message: `${phasesInRange.join(" → ") || "계획 없음"} 구간 · 설비 ${rr.capa.toLocaleString("ko-KR")}kg/hr, 계획 가동률 ${utilPlan.join("→")}% 기준으로 ${tot.opDays}일 조업 ${fmtTon(tot.planKg)}톤을 계획했습니다.`,
-    visual: { type: "table", head: ["구분", "계획(톤)", "투입(톤)", "달성율"],
-      rows: (isMonth ? weeks : recs.filter((r) => r.planMin > 0)).slice(0, 9).map((r) => [
-        isMonth ? r.label : `${r.date.slice(5)} (${r.dow})`,
-        fmtTon(r.planKg), fmtTon(r.inputKg), fmtPct(r.achieve),
-      ]) },
-    bullets: [
-      `${Array.from(new Set(recs.filter((r) => !r.plan.isStop).map((r) => r.plan.workTypeLabel))).join(" · ") || "-"}` +
-        ` · 교대당 설비 가동 ${rr.dayHours}h (주간근무일은 ${rr.dayOnlyHours}h)`,
-      stops.length > 0 ? `비조업: ${stops.join(", ")}` : "기간 중 계획된 비조업 일정 없음",
-      `직전 동일 기간 투입 ${fmtTon(prev.inputKg)}톤 → 이번 ${fmtTon(tot.inputKg)}톤 (${sign((tot.inputKg - prev.inputKg) / 1000)}톤)`,
-    ],
+    kicker: "문제", accent: worstPerf && worstPerf.v < worstPerf.t ? PT.red : PT.green,
+    title: noPlan ? "조업 계획 미수립 구간으로 목표 대비 평가 미적용"
+      : worstPerf && worstPerf.v < worstPerf.t
+        ? `${worstPerf.key} ${worstPerf.v.toFixed(1)}%로 목표 ${worstPerf.t}% 대비 ${(worstPerf.t - worstPerf.v).toFixed(1)}%p 미달,\n${byMajor[0] ? execTerm(byMajor[0].key) : "가동 저해"}이 직접 원인`
+        : "전 지표 목표 달성, 현 조업 조건 유지 필요",
+    subtitle: "Target vs. Actual (단위: %)",
+    visual: { type: "bars", mark: 100, markLabel: "목표 100%", axisMax: 120,
+      rows: perfRows.map((r) => {
+        const worst = worstPerf && r.key === worstPerf.key;
+        const met = r.v != null && r.v >= r.t;
+        return { label: r.key, value: r.v || 0, text: fmtPct(r.v),
+          color: worst ? PT.red : met ? PT.green : PT.faint, strong: worst };
+      }) },
+    banner: worstPerf && worstPerf.v < worstPerf.t ? { kind: "action", label: "Action Required",
+      text: byMajor[0]
+        ? `${execTerm(byMajor[0].key)} ${fmtMin(byMajor[0].min)} 해소 시 시간가동율 ${((totMin > 0 && tot.planMin > 0) ? (byMajor[0].min / tot.planMin * 100).toFixed(1) : "0.0")}%p 회복 가능`
+        : `계획 대비 ${fmtTon(tot.planKg - tot.inputKg)}톤 미달분 차기 기간 만회 필요` } : null,
   });
 
-  // ── 3. 문제 ────────────────────────────────────────────────
+  // ── 4. 가동 저해 요인 (Pareto) ──────────────────────────
+  const top2 = byMajor.slice(0, 2).reduce((a, m) => a + m.min, 0);
   S.push({
-    kicker: "문제",
-    title: "목표 대비 어디가 벌어졌나",
-    message: tot.planKg === 0
-      ? "이 기간에는 조업 계획이 없어 목표 대비 평가를 하지 않았습니다."
-      : gaps.length === 0
-      ? "설정한 목표를 모두 달성했습니다. 아래는 유지해야 할 수준입니다."
-      : `${gaps[0].k}${josa(gaps[0].k, ["이", "가"])} 목표 ${gaps[0].t}${gaps[0].unit}에 ${(gaps[0].t - gaps[0].v).toFixed(1)}%p 못 미쳤습니다${gaps[0].gapKg ? ` (미달 ${fmtTon(gaps[0].gapKg)}톤)` : ""}.`,
-    visual: { type: "bars", rows: [
-      { label: "계획 대비 달성율", value: achieve || 0, text: fmtPct(achieve), color: achieve >= 100 ? PT.good : PT.warn },
-      { label: "종합가동율", value: utilAll || 0, text: fmtPct(utilAll), color: utilAll >= target ? PT.good : PT.bad },
-      { label: "시간가동율", value: tot.utilTime || 0, text: fmtPct(tot.utilTime), color: tot.utilTime >= target ? PT.good : PT.warn },
-      { label: "성능가동율", value: tot.utilPerf || 0, text: fmtPct(tot.utilPerf), color: tot.utilPerf >= target ? PT.good : PT.warn },
-      { label: `BM 회수율 (목표 ${tr.bm}%)`, value: rateBm || 0, text: fmtPct(rateBm), color: rateBm >= tr.bm ? PT.good : PT.warn },
-    ] },
-    bullets: tot.planKg === 0
-      ? ["생산계획에 이 기간이 들어있지 않습니다.", "생산계획 화면에서 단계 기간을 확인해주세요."]
-      : gaps.length === 0
-      ? ["모든 지표가 목표 이상입니다.", "현재 조업 조건과 정비 주기를 그대로 유지합니다."]
-      : gaps.map((g) => `${g.k} ${g.v.toFixed(1)}${g.unit} (목표 ${g.t}${g.unit} · 격차 ${(g.t - g.v).toFixed(1)}%p${g.gapKg ? ` · 미달 ${fmtTon(g.gapKg)}톤` : ""})`),
+    kicker: "분석", accent: PT.red,
+    title: byMajor.length === 0
+      ? "기간 내 비가동 발생 없음, 안정 조업 유지"
+      : `${execTerm(byMajor[0].key)}${josa(execTerm(byMajor[0].key), ["이", "가"])} 총 정지시간의 ${((byMajor[0].min / totMin) * 100).toFixed(0)}% 점유,\n상위 2개 요인 집중 관리 시 ${((top2 / totMin) * 100).toFixed(0)}% 개선 가능`,
+    subtitle: "Downtime Pareto by Root Cause",
+    visual: { type: "bars",
+      rows: byMajor.slice(0, 6).map((m, i) => ({
+        label: execTerm(m.key), value: m.min, text: `${fmtMin(m.min)} · ${m.count}건`,
+        color: i === 0 ? PT.red : i === 1 ? PT.amber : PT.faint, strong: i === 0,
+      })) },
+    banner: byMajor.length > 0 ? { kind: "insight", label: "Insight",
+      text: `최다 정지 설비 ${byEq[0] ? eqName(byEq[0].key) : "-"} ${byEq[0] ? fmtMin(byEq[0].min) : ""} · 최빈 상세원인 ${byDetail[0] ? `${byDetail[0].key} ${byDetail[0].count}건` : "-"}` } : null,
   });
 
-  // ── 4. 분석 : 비가동 ───────────────────────────────────────
-  S.push({
-    kicker: "분석",
-    title: "라인이 선 이유 — 비가동 파레토",
-    message: byMajor.length === 0 ? "이 기간에 기록된 비가동이 없습니다."
-      : `총 ${fmtMin(totMin)} 정지 중 "${byMajor[0].key}"${josa(byMajor[0].key, ["이", "가"])} ${((byMajor[0].min / totMin) * 100).toFixed(0)}%를 차지합니다 — 상위 2개 유형이 전체의 ${(((byMajor[0].min + (byMajor[1]?.min || 0)) / totMin) * 100).toFixed(0)}%입니다.`,
-    visual: { type: "bars", rows: byMajor.slice(0, 6).map((m) => ({
-      label: m.key, value: m.min, text: `${fmtMin(m.min)} · ${m.count}건`, color: hx(dtMajorColor(m.key)),
-    })) },
-    bullets: byMajor.length === 0 ? ["비가동 기록이 없어 원인 분석을 생략합니다."] : [
-      `가장 오래 선 설비: ${byEq[0] ? `${eqName(byEq[0].key)} ${fmtMin(byEq[0].min)} (${byEq[0].count}건)` : "-"}`,
-      `가장 잦은 상세원인: ${byDetail[0] ? `${byDetail[0].key} ${byDetail[0].count}건 · ${fmtMin(byDetail[0].min)}` : "-"}`,
-      `비가동이 계획시간에서 차지한 비중 ${tot.planMin > 0 ? ((totMin / tot.planMin) * 100).toFixed(1) : "0.0"}% → 시간가동율 ${fmtPct(tot.utilTime)}`,
-    ],
-  });
-
-  // ── 5. 분석 : 회수 (월간만) ────────────────────────────────
+  // ── 5. 회수 구조 (월간만) ───────────────────────────────
   if (isMonth) {
+    const under = OUTPUT_KINDS.filter((k) => tot.rate[k.key] != null && tot.rate[k.key] < tr[k.key]);
     S.push({
-      kicker: "분석",
-      title: "회수 구성과 회수율",
-      message: tot.inputKg === 0 ? "투입 실적이 없어 회수율을 산출할 수 없습니다."
-        : `투입 ${fmtTon(tot.inputKg)}톤에서 ${fmtTon(tot.outKg)}톤을 회수했습니다 (수율 ${fmtPct(tot.yieldPct)}) — BM ${fmtPct(tot.rate.bm)} / Cu ${fmtPct(tot.rate.cu)} / Al ${fmtPct(tot.rate.al)}.`,
-      visual: { type: "bars", rows: OUTPUT_KINDS.map((k) => ({
-        label: `${k.label} (목표 ${tr[k.key]}%)`, value: tot.rate[k.key] || 0,
-        text: `${fmtPct(tot.rate[k.key])} · ${fmtTon(tot.out[k.key])}톤`,
-        color: (tot.rate[k.key] || 0) >= tr[k.key] ? PT.good : PT.warn,
-      })) },
-      bullets: OUTPUT_KINDS.map((k) => {
-        const v = tot.rate[k.key];
-        return `${k.label} ${fmtPct(v)} (목표 ${tr[k.key]}%) — ${v == null ? "실적 없음" : v >= tr[k.key] ? "달성" : `${(tr[k.key] - v).toFixed(1)}%p 미달`}`;
-      }),
+      kicker: "분석", accent: under.length ? PT.amber : PT.green,
+      title: tot.inputKg === 0 ? "투입 실적 없음, 회수율 산출 불가"
+        : under.length === 0
+          ? `전 품목 회수율 목표 달성,\n투입 ${fmtTon(tot.inputKg)}톤 대비 ${fmtTon(tot.outKg)}톤 회수 (수율 ${fmtPct(tot.yieldPct)})`
+          : `${under.map((k) => k.label).join(" · ")} 회수율 목표 미달,\n총 수율 ${fmtPct(tot.yieldPct)} 수준`,
+      subtitle: "Recovery Rate vs. Target (단위: %)",
+      visual: { type: "bars", mark: tr.bm, markLabel: `BM 목표 ${tr.bm}%`,
+        rows: OUTPUT_KINDS.map((k) => {
+          const v = tot.rate[k.key];
+          const met = v != null && v >= tr[k.key];
+          const worst = under[0] && k.key === under[0].key;
+          return { label: `${k.label} (목표 ${tr[k.key]}%)`, value: v || 0,
+            text: `${fmtPct(v)} · ${fmtTon(tot.out[k.key])}톤`,
+            color: worst ? PT.red : met ? PT.green : PT.faint, strong: worst };
+        }) },
     });
   }
 
-  // ── 6. 분석 : 교대조 ───────────────────────────────────────
-  if (crewRows.length > 0) {
-    const best = [...crewRows].sort((a, b) => (b.perCap || 0) - (a.perCap || 0))[0];
+  // ── 6. 교대조별 생산성 (실적 있을 때만) ─────────────────
+  if (crewRows.length > 1) {
+    const sorted = [...crewRows].sort((a, b) => (b.perCap || 0) - (a.perCap || 0));
+    const best = sorted[0], worst = sorted[sorted.length - 1];
+    const gap = (best.perCap || 0) - (worst.perCap || 0);
     S.push({
-      kicker: "분석",
-      title: "교대조별 인당 생산성",
-      message: `${best.crew}조가 인당 ${Math.round(best.perCap || 0).toLocaleString("ko-KR")}kg로 가장 높습니다 — 조별 편차 ${(Math.max(...crewRows.map((c) => c.perCap || 0)) - Math.min(...crewRows.map((c) => c.perCap || 0))).toFixed(0)}kg.`,
-      visual: { type: "bars", rows: crewRows.map((c) => ({
-        label: `${c.crew}조 (${c.shifts}교대 · 연인원 ${c.workers}명)`, value: c.perCap || 0,
-        text: `${Math.round(c.perCap || 0).toLocaleString("ko-KR")} kg/인`, color: c.color,
-      })) },
-      bullets: crewRows.map((c) => `${c.crew}조 — 투입 ${fmtTon(c.input)}톤 · ${c.shifts}교대 · 인당 ${Math.round(c.perCap || 0).toLocaleString("ko-KR")}kg`),
+      kicker: "분석", accent: gap > (best.perCap || 1) * 0.15 ? PT.amber : PT.green,
+      title: `${best.crew}조 인당 생산성 ${Math.round(best.perCap || 0).toLocaleString("ko-KR")}kg로 최고 수준,\n최저 ${worst.crew}조 대비 편차 ${Math.round(gap).toLocaleString("ko-KR")}kg`,
+      subtitle: "Productivity per Head by Shift Crew",
+      visual: { type: "bars",
+        rows: sorted.map((c, i) => ({
+          label: `${c.crew}조 · ${c.shifts}교대`, value: c.perCap || 0,
+          text: `${Math.round(c.perCap || 0).toLocaleString("ko-KR")} kg/인`,
+          color: i === 0 ? PT.green : i === sorted.length - 1 ? PT.red : PT.faint,
+          strong: i === 0 || i === sorted.length - 1,
+        })) },
+      banner: { kind: "insight", label: "Insight",
+        text: `조별 편차 축소를 위한 ${worst.crew}조 대상 표준작업 재교육 및 우수사례 수평전개 필요` },
     });
   }
 
-  // ── 7. 대안 ────────────────────────────────────────────────
-  const topMajors = byMajor.slice(0, 3).map((m) => m.key);
-  const actions = topMajors.flatMap((m) => (DT_ACTIONS[m] || []).map((a) => ({ cause: m, text: a })));
-  const fallback = [{ cause: "유지", text: "현재 정비 주기와 조업 조건을 유지하고 월 1회 점검" }];
-  const actionList = actions.length > 0 ? actions : fallback;
-  S.push({
-    kicker: "대안",
-    title: "무엇을 바꿀 것인가",
-    message: topMajors.length === 0 ? "정지 요인이 없어 현 수준 유지를 제안합니다."
-      : `상위 정지 요인 ${topMajors.join(" · ")}에 대해 ${actionList.length}건의 대책을 제안합니다 — 예상 회수 효과 ${fmtMin(byMajor.slice(0, 2).reduce((a, m) => a + m.min, 0) * 0.4)} / 기간.`,
-    visual: { type: "table", head: ["정지 요인", "대책", "정지시간"],
-      rows: actionList.slice(0, 7).map((a) => {
-        const m = byMajor.find((x) => x.key === a.cause);
-        return [a.cause, a.text, m ? fmtMin(m.min) : "-"];
-      }), colRatio: [0.17, 0.62, 0.21] },
-    bullets: [],
+  // ── 7. 현안 과제 및 대응 방안 ───────────────────────────
+  const issueSrc = byMajor.slice(0, 3);
+  const cards = issueSrc.map((m, i) => {
+    const meta = dtMeta(m.key);
+    const share = totMin > 0 ? (m.min / totMin) * 100 : 0;
+    const eqTop = groupDowns(dtRows.filter((r) => r.major === m.key), (r) => r.eqId)[0];
+    return {
+      title: execTerm(m.key), icon: meta.icon, color: meta.color,
+      badge: i === 0 ? "긴급 (High Priority)" : i === 1 ? "모니터링 (Medium)" : "관리 (Low)",
+      rows: [
+        { k: "현상", v: `${fmtMin(m.min)} 정지 · ${m.count}건 발생 (정지시간 비중 ${share.toFixed(0)}%)` },
+        { k: "원인", v: meta.cause + (eqTop ? ` · 주 발생 설비 ${eqShort(eqTop.key)}` : "") },
+        { k: "대응", v: meta.action[0] },
+      ],
+    };
   });
+  if (cards.length > 0) {
+    S.push({
+      kicker: "대안", accent: PT.red,
+      title: `상위 ${cards.length}개 요인에 대한 대응 방안 수립,\n${cards[0].title} 우선 조치로 정지시간 ${fmtMin(byMajor[0].min * 0.4)} 절감 목표`,
+      subtitle: "Key Issues & Action Plans",
+      visual: { type: "issues", cards },
+    });
+  }
 
-  // ── 8. 실행계획 ────────────────────────────────────────────
+  // ── 8. 실행계획 ─────────────────────────────────────────
   const nextFrom = addDaysStr(to, 1);
   const nextTo = isMonth ? monthDateList(ymShift(from.slice(0, 7), 1)).slice(-1)[0] : addDaysStr(nextFrom, 6);
   const nextPlan = rollupDays(recordsFor(nextFrom, nextTo, mes, runs, downs));
+  const planRows = issueSrc.slice(0, 3).map((m, i) => {
+    const meta = dtMeta(m.key);
+    return { title: meta.action[0], detail: `${execTerm(m.key)} 대응 · 목표 정지시간 ${fmtMin(m.min * 0.6)} 이내`,
+      owner: i === 0 ? "설비팀" : i === 1 ? "생산팀" : "공무팀", due: i === 0 ? "즉시" : isMonth ? "차월 중" : "차주 중", color: meta.color };
+  });
+  planRows.push({ title: `차기 기간 계획 ${fmtTon(nextPlan.planKg)}톤 확정 및 원료 확보`,
+    detail: `${nextFrom} ~ ${nextTo} · 조업 ${nextPlan.opDays}일`, owner: "생산팀", due: "착수 전", color: PT.blue });
   S.push({
-    kicker: "실행계획",
-    title: `다음 ${isMonth ? "달" : "주"} 계획 (${nextFrom} ~ ${nextTo})`,
-    message: `${nextPlan.opDays}일 조업 · ${fmtTon(nextPlan.planKg)}톤 계획 — 이번 기간 실적 ${fmtTon(tot.inputKg)}톤 대비 ${sign((nextPlan.planKg - tot.inputKg) / 1000)}톤.`,
-    visual: { type: "table", head: ["항목", "담당", "기한"],
-      rows: actionList.slice(0, 5).map((a, i) => [a.text, i % 2 === 0 ? "생산팀" : "설비팀", i < 2 ? "즉시" : isMonth ? "차월 중" : "차주 중"])
-        .concat([[`${isMonth ? "월간" : "주간"} 계획 ${fmtTon(nextPlan.planKg)}톤 확정 및 원료 확보`, "생산팀", "착수 전"]]),
-      colRatio: [0.6, 0.2, 0.2] },
-    bullets: [],
+    kicker: "실행계획", accent: PT.blue,
+    title: `차기 기간 ${fmtTon(nextPlan.planKg)}톤 계획 대비 ${planRows.length}건 실행 과제 확정,\n즉시 착수 1건 포함`,
+    subtitle: `Action Plan (${nextFrom} ~ ${nextTo})`,
+    visual: { type: "plan", rows: planRows },
   });
 
-  // ── 9. 결론 ────────────────────────────────────────────────
+  // ── 9. 결론 및 요청사항 ─────────────────────────────────
   S.push({
-    kicker: "결론",
-    title: "결론 및 요청사항",
-    message: gaps.length === 0
-      ? `목표를 모두 달성했습니다. 현 조업 조건을 유지하며 다음 기간 ${fmtTon(nextPlan.planKg)}톤을 목표로 합니다.`
-      : `${gaps[0].k} 회복이 최우선입니다. 상위 정지 요인 ${topMajors[0] || "-"} 대책 실행으로 종합가동율 ${target}% 달성을 목표로 합니다.`,
-    visual: { type: "kpi", items: [
-      { label: "이번 기간 달성율", value: achieve == null ? "-" : achieve.toFixed(1), unit: "%", sub: label, color: achieve >= 100 ? PT.good : PT.warn },
-      { label: "종합가동율", value: utilAll == null ? "-" : utilAll.toFixed(1), unit: "%", sub: `목표 ${target}%`, color: utilAll >= target ? PT.good : PT.bad },
-      { label: "다음 기간 계획", value: fmtTon(nextPlan.planKg), unit: "톤", sub: `${nextPlan.opDays}일 조업`, color: PT.text },
-      { label: "실행 과제", value: String(Math.min(6, actionList.length)), unit: "건", sub: "즉시 착수 2건 포함", color: PT.accent },
-    ] },
-    bullets: [
-      gaps.length === 0 ? "특이 요청사항 없음" : `요청 1 — ${topMajors[0] ? `${topMajors[0]} 관련 예비품 · 정비 예산 반영` : "정비 예산 반영"}`,
-      `요청 2 — 다음 기간 원료 ${fmtTon(nextPlan.planKg)}톤 입고 일정 사전 확정`,
-      `보고자: ${(mes.reporter || "생산관리팀")} · 작성일 ${new Date().toISOString().slice(0, 10)}`,
+    kicker: "결론", accent: okAch && okUtil ? PT.green : PT.red,
+    title: okAch && okUtil
+      ? `현 조업 조건 유지 시 차기 ${fmtTon(nextPlan.planKg)}톤 달성 가능,\n추가 자원 투입 불요`
+      : `${byMajor[0] ? execTerm(byMajor[0].key) : "가동 저해 요인"} 해소가 최우선 과제,\n정비 예산 및 예비품 확보 승인 요청`,
+    subtitle: "Conclusion & Request to Management",
+    points: [
+      { label: "결론", color: okAch && okUtil ? PT.green : PT.amber,
+        text: noPlan ? "평가 대상 구간 아님"
+          : `${label} 달성율 ${fmtPct(achieve)} · 종합가동율 ${fmtPct(utilAll)} · 차기 목표 ${fmtTon(nextPlan.planKg)}톤` },
+      { label: "요청 1", color: PT.red,
+        text: byMajor[0] ? `${execTerm(byMajor[0].key)} 대응 예비품 및 정비 예산 반영` : "현 정비 주기 유지" },
+      { label: "요청 2", color: PT.blue,
+        text: `차기 기간 원료 ${fmtTon(nextPlan.planKg)}톤 입고 일정 사전 확정` },
     ],
+    visual: { type: "kpi", items: [
+      { label: "기간 달성율", value: achieve == null ? "-" : achieve.toFixed(1), unit: "%",
+        color: okAch ? PT.green : PT.red, delta: label, deltaColor: PT.dim, deltaDir: "flat" },
+      { label: "종합 가동율", value: utilAll == null ? "-" : utilAll.toFixed(1), unit: "%",
+        color: okUtil ? PT.green : PT.red, delta: `목표 ${target}%`, deltaColor: PT.dim, deltaDir: "flat" },
+      { label: "차기 계획", value: fmtTon(nextPlan.planKg), unit: "톤",
+        color: PT.text, delta: `조업 ${nextPlan.opDays}일`, deltaColor: PT.dim, deltaDir: "flat" },
+      { label: "실행 과제", value: String(planRows.length), unit: "건",
+        color: PT.blue, delta: "즉시 착수 1건 포함", deltaColor: PT.dim, deltaDir: "flat" },
+    ] },
   });
 
-  // 장수 제한 — 주간 5장, 월간 10장 이내
-  const pick = (k) => S.find((x) => x.kicker === k);
+  // ── 10. 별첨 : 상세 데이터 ──────────────────────────────
+  const src = isMonth ? weeks : recs.filter((r) => r.planMin > 0);
+  S.push({
+    kicker: "별첨", accent: PT.faint,
+    title: "별첨 : 기간 상세 실적",
+    subtitle: "Appendix : Detailed Records",
+    visual: { type: "table",
+      head: ["구분", "계획(톤)", "투입(톤)", "달성율", "비가동", "시간가동율", "성능가동율", "종합가동율"],
+      colRatio: [0.22, 0.11, 0.11, 0.11, 0.12, 0.11, 0.11, 0.11],
+      rows: src.slice(0, 13).map((r) => [
+        isMonth ? r.label : `${r.date.slice(5)} (${r.dow})`,
+        fmtTon(r.planKg), fmtTon(r.inputKg), fmtPct(r.achieve),
+        r.dtMin > 0 ? fmtMin(r.dtMin) : "-", fmtPct(r.utilTime), fmtPct(r.utilPerf), fmtPct(r.utilAll),
+      ]),
+      note: `합계 · 조업 ${tot.opDays}일 · 계획 ${fmtTon(tot.planKg)}톤 / 투입 ${fmtTon(tot.inputKg)}톤 · 비가동 ${fmtMin(tot.dtMin)}` },
+  });
+
+  // 장수 맞추기 — 주간 5장(표지 제외), 월간 10장 이내.
+  const cover = S[0];
+  const rest = S.slice(1);
   let keep;
   if (isMonth) {
-    keep = S.slice(0, 10);
+    keep = rest.slice(0, 9); // 표지까지 합쳐 10장
   } else {
-    // 주간은 다섯 장이지만 이야기는 여섯 단계를 다 거쳐야 해요. 그래서 두 번 묶습니다 —
-    // 요약은 배경 안으로, 대안은 실행계획과 한 장으로. 순서는 배경 → 문제 → 분석 → 대안·실행계획 → 결론.
-    const sum = pick("요약"), bg = pick("배경"), plan = pick("실행계획"), alt = pick("대안");
-    const intro = {
-      kicker: "배경",
-      title: `${isMonth ? "월간" : "주간"} 생산실적 보고 · ${label}`,
-      message: sum ? sum.message : (bg ? bg.message : ""),
-      visual: sum ? sum.visual : null,
-      // 요약 숫자 아래에 "어떤 조업 조건이었는지"를 붙여야 문제 슬라이드가 이해돼요.
-      bullets: [bg ? bg.message : null].filter(Boolean)
-        .concat(bg ? bg.bullets.slice(0, 2) : [])
-        .concat(sum ? sum.bullets.slice(-1) : []),
-    };
-    const merged = {
-      kicker: "대안 · 실행계획",
-      title: "대책과 다음 주 실행계획",
-      message: `${alt ? alt.message : ""} ${plan ? plan.message : ""}`.trim(),
-      visual: plan ? plan.visual : (alt ? alt.visual : null),
-      bullets: (alt && alt.visual && alt.visual.rows ? alt.visual.rows.slice(0, 3).map((r) => `${r[0]} — ${r[1]}`) : []),
-    };
-    keep = [intro, pick("문제"), pick("분석"), merged, pick("결론")].filter(Boolean);
+    // 주간은 다섯 장. 여섯 단계(배경·문제·분석·대안·실행계획·결론)를 다 거치되,
+    // 실행계획은 결론 장표의 요청사항으로 흡수해요.
+    const pick = (k) => rest.find((x) => x.kicker === k);
+    keep = [pick("요약"), pick("문제"), pick("분석"), pick("대안") || pick("실행계획"), pick("결론")].filter(Boolean);
   }
-  return { label, kind, from, to, tot, prev, slides: keep };
-}
-
-// 슬라이드 하나를 .pptx 도형으로 옮겨요 (미리보기와 같은 내용)
-function slideBodyXml(s) {
-  let body = "";
-  const top = s.message ? 158 : 108;
-  const v = s.visual || {};
-  const hasBullets = s.bullets && s.bullets.length > 0;
-  if (v.type === "kpi") {
-    body += ppKpis(48, top, 1184, v.items);
-    if (hasBullets) body += ppText(48, top + 118, 1184, 200,
-      s.bullets.map((b, i) => ({ t: b, size: 12, color: PT.dim, bullet: true, spaceBefore: i ? 8 : 0 })));
-  } else if (v.type === "bars") {
-    const w = hasBullets ? 660 : 1184;
-    body += ppBars(48, top + 8, w, Math.min(360, (v.rows.length || 1) * 46), v.rows, { labelW: w * 0.34, valueW: w * 0.24 });
-    if (hasBullets) body += ppText(48 + w + 36, top, 1184 - w - 36, 340,
-      s.bullets.map((b, i) => ({ t: b, size: 11.5, color: PT.dim, bullet: true, spaceBefore: i ? 10 : 0 })));
-  } else if (v.type === "table") {
-    const ratio = v.colRatio || v.head.map((_, i) => (i === 0 ? 0.4 : 0.6 / (v.head.length - 1)));
-    const w = hasBullets ? 700 : 1184;
-    const t = ppTable(48, top, w, [v.head, ...v.rows], { colW: ratio.map((r) => r * w), rowH: 27 });
-    body += t.xml;
-    if (hasBullets) body += ppText(48 + w + 36, top, 1184 - w - 36, 340,
-      s.bullets.map((b, i) => ({ t: b, size: 11.5, color: PT.dim, bullet: true, spaceBefore: i ? 10 : 0 })));
-  } else if (hasBullets) {
-    body += ppText(48, top, 1184, 380, s.bullets.map((b, i) => ({ t: b, size: 13, color: PT.dim, bullet: true, spaceBefore: i ? 12 : 0 })));
-  }
-  return body;
+  return { label, kind, from, to, tot, prev, slides: [cover, ...keep] };
 }
 
 function ReportTab({ mes, runs, downs, lots, settings }) {
@@ -7615,21 +7985,20 @@ function ReportTab({ mes, runs, downs, lots, settings }) {
   const [anchor, setAnchor] = useState(today);
   const from = kind === "week" ? mondayOf(anchor) : `${anchor.slice(0, 7)}-01`;
   const to = kind === "week" ? addDaysStr(mondayOf(anchor), 6) : monthDateList(anchor.slice(0, 7)).slice(-1)[0];
-  const rep = useMemo(() => buildReport(kind, from, to, mes, runs, downs, lots),
-    [kind, from, to, mes, runs, downs, lots]);
+  const rep = useMemo(() => buildReport(kind, from, to, mes, runs, downs, lots, settings),
+    [kind, from, to, mes, runs, downs, lots, settings]);
   const [busy, setBusy] = useState(false);
 
   const download = () => {
     setBusy(true);
     try {
-      const slides = rep.slides.map((s) => ({
-        kicker: s.kicker, title: s.title, message: s.message,
-        footer: `${settings.title || "DRT"} · ${rep.label}`,
-        body: slideBodyXml(s),
-      }));
+      const slides = rep.slides.map((s) => ({ ...s, footer: `${settings.title || "DRT"} · ${rep.label}` }));
       downloadPptx(`${kind === "week" ? "주간" : "월간"}생산보고_${rep.label.replace(/[ ~]/g, "")}.pptx`, slides);
     } finally { setBusy(false); }
   };
+
+  const stages = ["배경", "문제", "분석", "대안", "실행계획", "결론"];
+  const covered = { 요약: "배경", 문제: "문제", 분석: "분석", 대안: "대안", 실행계획: "실행계획", 결론: "결론", 별첨: null };
 
   return html`
     <div>
@@ -7641,7 +8010,7 @@ function ReportTab({ mes, runs, downs, lots, settings }) {
         <input className="ivs-input" type=${kind === "month" ? "month" : "date"}
           value=${kind === "month" ? anchor.slice(0, 7) : anchor}
           onChange=${(e) => setAnchor(kind === "month" ? `${e.target.value}-01` : e.target.value)} />
-        <span className="ivs-section-hint">${rep.label} · 슬라이드 ${rep.slides.length}장</span>
+        <span className="ivs-section-hint">${rep.label} · 표지 포함 ${rep.slides.length}장</span>
         <span className="ivs-spacer"></span>
         <button className="ivs-btn ivs-btn-primary" onClick=${download} disabled=${busy}>
           <${Icon} name="download" size=${14} /> ${busy ? "만드는 중…" : "PPT 내려받기"}
@@ -7653,66 +8022,139 @@ function ReportTab({ mes, runs, downs, lots, settings }) {
 
       <div className="ivs-card ivs-print-hide" style=${{ paddingTop: 14, paddingBottom: 14 }}>
         <div className="ivs-flowline">
-          ${["배경", "문제", "분석", "대안", "실행계획", "결론"].map((k, i) => html`
+          ${stages.map((k, i) => html`
             <${Fragment} key=${k}>
               ${i > 0 ? html`<span className="ivs-flowline-arrow">→</span>` : null}
-              <span className=${`ivs-flowline-step ${rep.slides.some((s) => s.kicker === k) ? "on" : ""}`}>${k}</span>
+              <span className=${`ivs-flowline-step ${rep.slides.some((s) => covered[s.kicker] === k) ? "on" : ""}`}>${k}</span>
             <//>`)}
           <span className="ivs-spacer"></span>
-          <span className="ivs-section-hint">대표이사 보고 흐름에 맞춰 자동으로 구성했어요 — 숫자는 모두 실제 실적에서 계산합니다</span>
+          <span className="ivs-section-hint">
+            제목이 곧 결론입니다 — 제목만 넘겨봐도 상황이 읽히도록 액션 타이틀로 씁니다
+          </span>
         </div>
       </div>
 
       <div className="ivs-slides">
-        ${rep.slides.map((s, i) => html`
-          <div className="ivs-slide" key=${i}>
-            <div className="ivs-slide-head">
-              <span className="ivs-slide-kicker">${s.kicker}</span>
-              <span className="ivs-slide-no">${i + 1} / ${rep.slides.length}</span>
-            </div>
-            <div className="ivs-slide-title">${s.title}</div>
-            ${s.message ? html`<div className="ivs-slide-msg">${s.message}</div>` : null}
-            <div className=${`ivs-slide-body ${s.bullets && s.bullets.length && s.visual && s.visual.type !== "kpi" ? "split" : ""}`}>
-              <${SlideVisual} v=${s.visual} />
-              ${s.bullets && s.bullets.length > 0 ? html`
-                <ul className="ivs-slide-bullets">
-                  ${s.bullets.map((b, j) => html`<li key=${j}>${b}</li>`)}
-                </ul>` : null}
-            </div>
-          </div>`)}
+        ${rep.slides.map((s, i) => html`<${SlidePreview} key=${i} s=${s} no=${i + 1} total=${rep.slides.length} />`)}
       </div>
     </div>`;
 }
 
-// 미리보기용 그림 — .pptx에 들어가는 것과 같은 설명서(visual)를 화면용으로 그려요.
+// 화면 미리보기 — 내려받는 .pptx와 같은 설명서(visual)로 그려요.
+function SlidePreview({ s, no, total }) {
+  const v = s.visual || {};
+  if (v.type === "cover") {
+    return html`
+      <div className="ivs-slide cover">
+        <div className="ivs-slide-eyebrow">${v.eyebrow}</div>
+        <div className="ivs-slide-covertitle">${v.title}</div>
+        <div className="ivs-slide-coverrule"></div>
+        <div className="ivs-slide-coversub">${v.subtitle}</div>
+        <div className="ivs-slide-covermeta">${(v.meta || []).join("   ·   ")}</div>
+      </div>`;
+  }
+  return html`
+    <div className="ivs-slide" style=${{ "--accent": `#${String(s.accent || "10B981").replace("#", "")}` }}>
+      <div className="ivs-slide-head">
+        <span className="ivs-slide-kicker">${s.kicker}</span>
+        <span className="ivs-slide-no">${no} / ${total}</span>
+      </div>
+      <div className="ivs-slide-title">${String(s.title).split("\n").map((t, i) => html`<div key=${i}>${t}</div>`)}</div>
+      ${s.subtitle ? html`<div className="ivs-slide-sub">${s.subtitle}</div>` : null}
+      <div className="ivs-slide-body">
+        <${SlideVisual} v=${v} />
+        ${s.points && s.points.length ? html`
+          <div className="ivs-slide-points">
+            ${s.points.map((p, i) => html`
+              <div className="ivs-slide-point" key=${i}>
+                <span className="ivs-slide-pn" style=${{ background: `#${String(p.color || "3B82F6").replace("#", "")}` }}>${i + 1}</span>
+                <b style=${{ color: `#${String(p.color || "3B82F6").replace("#", "")}` }}>${p.label}</b>
+                <span>${p.text}</span>
+              </div>`)}
+          </div>` : null}
+        ${s.banner ? html`
+          <div className=${`ivs-slide-banner ${s.banner.kind}`}>
+            <b>${s.banner.label}</b> ${s.banner.text}
+          </div>` : null}
+      </div>
+    </div>`;
+}
+
 function SlideVisual({ v }) {
   if (!v) return null;
+  const hx2 = (c) => `#${String(c || "").replace("#", "")}`;
   if (v.type === "kpi") {
     return html`<div className="ivs-slide-kpis">
       ${v.items.map((k, i) => html`<div className="ivs-slide-kpi" key=${i}>
         <div className="ivs-slide-kpi-l">${k.label}</div>
-        <div className="ivs-slide-kpi-v" style=${{ color: `#${String(k.color || "").replace("#", "")}` }}>${k.value}<em>${k.unit || ""}</em></div>
-        <div className="ivs-slide-kpi-s">${k.sub || ""}</div>
+        <div className="ivs-slide-kpi-v" style=${{ color: hx2(k.color) }}>${k.value}<em>${k.unit || ""}</em></div>
+        ${k.delta ? html`<div className="ivs-slide-kpi-d" style=${{ color: hx2(k.deltaColor) }}>
+          ${k.deltaDir === "up" ? "▲" : k.deltaDir === "down" ? "▼" : "●"} ${k.delta}
+        </div>` : null}
       </div>`)}
     </div>`;
   }
   if (v.type === "bars") {
-    const max = Math.max(1, ...v.rows.map((r) => Math.abs(Number(r.value) || 0)));
+    const max = Math.max(1, ...v.rows.map((r) => Math.abs(Number(r.value) || 0)), v.axisMax || 0);
     return html`<div className="ivs-slide-bars">
-      ${v.rows.map((r, i) => html`<div className="ivs-slide-bar" key=${i}>
-        <span className="ivs-slide-bar-l">${r.label}</span>
-        <span className="ivs-slide-bar-t"><i style=${{ width: `${Math.max(2, (Math.abs(r.value) / max) * 100)}%`, background: `#${String(r.color || "E9692F").replace("#", "")}` }}></i></span>
-        <span className="ivs-slide-bar-v">${r.text}</span>
+      ${v.rows.map((r, i) => html`<div className=${`ivs-slide-bar ${r.strong ? "strong" : ""}`} key=${i}>
+        <span className="ivs-slide-bar-l" style=${r.strong ? { color: hx2(r.color) } : null}>${r.label}</span>
+        <span className="ivs-slide-bar-t">
+          <i style=${{ width: `${Math.max(2, (Math.abs(r.value) / max) * 100)}%`, background: hx2(r.color) }}></i>
+          ${v.mark ? html`<u style=${{ left: `${(v.mark / max) * 100}%` }}></u>` : null}
+        </span>
+        <span className="ivs-slide-bar-v" style=${r.strong ? { color: hx2(r.color) } : null}>${r.text}</span>
+      </div>`)}
+    </div>`;
+  }
+  if (v.type === "trend") {
+    const rows = v.rows || [];
+    const vals = rows.map((r) => Number(r.value) || 0);
+    const lo = Math.min(...vals), hi = Math.max(...vals), span = Math.max(1e-6, hi - lo), pad = span * 0.28;
+    const y = (val) => 100 - ((val - (lo - pad)) / (span + pad * 2)) * 100;
+    const pts = rows.map((r, i) => [rows.length === 1 ? 50 : (100 * i) / (rows.length - 1), y(Number(r.value) || 0)]);
+    return html`<div className="ivs-slide-trend">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="ivs-slide-trend-svg">
+        <polygon points=${`0,100 ${pts.map(([a, b]) => `${a},${b}`).join(" ")} 100,100`} fill=${hx2(v.color)} opacity="0.16" />
+        <polyline points=${pts.map(([a, b]) => `${a},${b}`).join(" ")} fill="none" stroke=${hx2(v.color)} strokeWidth="2" vectorEffect="non-scaling-stroke" />
+      </svg>
+      <div className="ivs-slide-trend-x">
+        ${rows.map((r, i) => html`<span key=${i}><b>${r.text}</b>${r.label}</span>`)}
+      </div>
+    </div>`;
+  }
+  if (v.type === "issues") {
+    return html`<div className="ivs-slide-issues">
+      ${v.cards.map((c, i) => html`<div className="ivs-slide-issue" key=${i} style=${{ "--c": hx2(c.color) }}>
+        <div className="ivs-slide-issue-h">
+          <span className="ivs-slide-issue-ico"></span>
+          <b>${c.title}</b>
+        </div>
+        <span className="ivs-slide-issue-badge">${c.badge}</span>
+        ${c.rows.map((r, j) => html`<div className="ivs-slide-issue-r" key=${j}><b>${r.k}</b> ${r.v}</div>`)}
+      </div>`)}
+    </div>`;
+  }
+  if (v.type === "plan") {
+    return html`<div className="ivs-slide-plan">
+      ${v.rows.map((r, i) => html`<div className="ivs-slide-planrow" key=${i} style=${{ "--c": hx2(r.color) }}>
+        <span className="ivs-slide-plandot"></span>
+        <div className="ivs-slide-plantxt"><b>${r.title}</b><span>${r.detail || ""}</span></div>
+        <span className="ivs-slide-planowner">${r.owner}</span>
+        <span className="ivs-slide-plandue">${r.due}</span>
       </div>`)}
     </div>`;
   }
   if (v.type === "table") {
-    return html`<div className="ivs-table-wrap"><table className="ivs-table ivs-slide-table">
-      <thead><tr>${v.head.map((h, i) => html`<th key=${i} className=${i > 0 ? "ivs-right" : ""}>${h}</th>`)}</tr></thead>
-      <tbody>${v.rows.map((r, i) => html`<tr key=${i}>
-        ${r.map((c, j) => html`<td key=${j} className=${j > 0 ? "ivs-right" : ""}>${c}</td>`)}
-      </tr>`)}</tbody>
-    </table></div>`;
+    return html`<div>
+      <div className="ivs-table-wrap"><table className="ivs-table ivs-slide-table">
+        <thead><tr>${v.head.map((h, i) => html`<th key=${i} className=${i > 0 ? "ivs-right" : ""}>${h}</th>`)}</tr></thead>
+        <tbody>${v.rows.map((r, i) => html`<tr key=${i}>
+          ${r.map((c, j) => html`<td key=${j} className=${j > 0 ? "ivs-right" : ""}>${c}</td>`)}
+        </tr>`)}</tbody>
+      </table></div>
+      ${v.note ? html`<div className="ivs-section-hint" style=${{ marginTop: 10 }}>${v.note}</div>` : null}
+    </div>`;
   }
   return null;
 }
@@ -8493,20 +8935,71 @@ function PlanTab({ mes, canEdit, onSave }) {
   const horizon = planHorizon(mes);
   const phases = useMemo(() => planByPhase(mes, days), [mes, days]);
   const months = useMemo(() => planByMonth(mes, days), [mes, days]);
-  const weeks = useMemo(() => planByWeek(mes, days), [mes, days]);
-  const hiring = useMemo(() => hiringPlan(mes), [mes]);
-  const [ym, setYm] = useState(() => (months[0] ? months[0].key : new Date().toISOString().slice(0, 7)));
-  const [editOpen, setEditOpen] = useState(null); // "basis" | "phases" | "holidays" | "hiring" | "crew"
+  const weeksAll = useMemo(() => planByWeek(mes, days), [mes, days]);
+  const [editOpen, setEditOpen] = useState(null); // "basis" | "phases" | "holidays" | "crew"
 
-  const totKg = days.reduce((a, d) => a + d.totalKg, 0);
-  const totOp = days.filter((d) => !d.isStop).length;
-  const cap = Number(mes.headcount) || 9;
-  const now = staffAt(mes, new Date().toISOString().slice(0, 10));
+  // 계획을 두 가지 눈으로 봐요 — 이번 달 하나만 파고들 때와, 3개월 전체 흐름을 볼 때.
+  const today = new Date().toISOString().slice(0, 10);
+  const curYm = months.find((m) => m.key === today.slice(0, 7)) ? today.slice(0, 7)
+    : (months[0] ? months[0].key : today.slice(0, 7));
+  const [scope, setScope] = useState("month"); // "month" | "range"
+  const [ym, setYm] = useState(curYm);
+
   const monthDays = days.filter((d) => d.date.slice(0, 7) === ym);
-  const monthKg = monthDays.reduce((a, d) => a + d.totalKg, 0);
+  const monthRow = months.find((m) => m.key === ym) || { kg: 0, opDays: 0, avg: 0, bm: 0, phaseNames: [] };
+  const monthPhases = phases.filter((p) => monthDays.some((d) => d.phase && d.phase.id === p.id));
+  const monthWeeks = weeksAll.filter((w) => w.ym === ym);
+
+  // 화면에 뿌릴 값 — 당월이면 그 달만, 3개월이면 전체.
+  const view = scope === "month"
+    ? { days: monthDays, weeks: monthWeeks, kg: monthRow.kg, opDays: monthRow.opDays, label: `${Number(ym.slice(5))}월` }
+    : { days, weeks: weeksAll, kg: days.reduce((a, d) => a + d.totalKg, 0),
+        opDays: days.filter((d) => !d.isStop).length, label: `${months.length}개월` };
+  const bm = bmOf(mes, view.kg);
+  const yieldPct = ((Number(mes.yieldRate) || 0.88) * 100).toFixed(0);
+  const calDays = scope === "month" ? monthDays : days.filter((d) => d.date.slice(0, 7) === ym);
 
   const kgTon = (kg) => Number(kg / 1000).toLocaleString("ko-KR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const kgNum = (kg) => Math.round(kg).toLocaleString("ko-KR");
+
+  const weekTable = (rows) => html`
+    <div className="ivs-table-wrap" style=${{ marginTop: 18 }}>
+      <table className="ivs-table">
+        <thead><tr>
+          <th>월</th><th>주차</th><th>기간</th><th>단계</th><th>근무형태</th>
+          <th className="ivs-right">조업일</th><th className="ivs-right">계획 생산량(kg)</th>
+          <th className="ivs-right">BM 계획(kg)</th><th className="ivs-right">1인 주 근로</th><th>비고</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map((w) => {
+            const v = hourVerdict(w.personHours);
+            return html`<tr key=${w.key}>
+              <td className="ivs-dim">${Number(w.ym.slice(5))}월</td>
+              <td className="ivs-mono">${w.week}</td>
+              <td className="ivs-mono ivs-dim">${w.label}</td>
+              <td><span className="ivs-ph-dot" style=${{ background: w.color }}></span>${w.phaseName || "-"}</td>
+              <td>${w.workLabel}</td>
+              <td className="ivs-mono ivs-right">${w.opDays}</td>
+              <td className="ivs-mono ivs-right">${kgNum(w.kg)}</td>
+              <td className="ivs-mono ivs-right ivs-dim">${kgNum(bmOf(mes, w.kg))}</td>
+              <td className="ivs-right">
+                <span className=${`ivs-chip ${v.c === "bad" ? "bad" : v.c === "warn" ? "accent" : "ok"}`}>
+                  ${w.personHours > 0 ? `${w.personHours.toFixed(1)}h · ${v.t}` : "-"}
+                </span>
+              </td>
+              <td className="ivs-dim">${w.note || "-"}</td>
+            </tr>`;
+          })}
+        </tbody>
+        <tfoot><tr className="ivs-tablefoot">
+          <td colSpan=${5}>합계 · ${rows.length}주</td>
+          <td className="ivs-mono ivs-right">${rows.reduce((a, w) => a + w.opDays, 0)}</td>
+          <td className="ivs-mono ivs-right">${kgNum(rows.reduce((a, w) => a + w.kg, 0))}</td>
+          <td className="ivs-mono ivs-right">${kgNum(bmOf(mes, rows.reduce((a, w) => a + w.kg, 0)))}</td>
+          <td colSpan=${2}></td>
+        </tr></tfoot>
+      </table>
+    </div>`;
 
   return html`
     <div className="ivs-plan">
@@ -8518,248 +9011,189 @@ function PlanTab({ mes, canEdit, onSave }) {
         </span>
       </div>
 
-      <!-- Ⅰ. 핵심 요약 -->
-      <div className=${`ivs-kpis cols-${Math.min(4, Math.max(2, months.length + 1))}`}>
-        ${months.slice(0, 3).map((m) => html`
-          <${SummaryCard} key=${m.key}
-            label=${`${m.key.slice(0, 4)}년 ${Number(m.key.slice(5))}월 계획`}
-            value=${kgTon(m.kg)} unit="톤"
-            icon=${html`<${Icon} name="calendar" size=${13} />`}
-            sub=${`${m.phaseNames.join(" · ") || "-"} · 조업 ${m.opDays}일 · 일평균 ${kgNum(m.avg)} kg`} />`)}
-        <${SummaryCard} label=${`${months.length}개월 계획 생산량`}
-          value=${kgTon(totKg)} unit="톤" accent=${true}
+      <div className="ivs-periodbar">
+        <div className="ivs-seg">
+          <button className=${`ivs-seg-btn ${scope === "month" ? "on" : ""}`} onClick=${() => setScope("month")}>
+            ${Number(ym.slice(5))}월 생산계획
+          </button>
+          <button className=${`ivs-seg-btn ${scope === "range" ? "on" : ""}`} onClick=${() => setScope("range")}>
+            ${months.length}개월 생산계획
+          </button>
+        </div>
+        <select className="ivs-select" value=${ym} onChange=${(e) => setYm(e.target.value)}>
+          ${months.map((m) => html`<option key=${m.key} value=${m.key}>${m.key}</option>`)}
+        </select>
+        <span className="ivs-section-hint">
+          ${scope === "month" ? `${ym} 한 달만 봅니다` : `${horizon ? `${horizon.from} ~ ${horizon.to}` : ""} 전체를 봅니다 · 일별 달력은 위에서 고른 달`}
+        </span>
+      </div>
+
+      <!-- 핵심 요약 -->
+      <div className="ivs-kpis">
+        <${SummaryCard} label=${`${view.label} 계획 생산량`} value=${kgTon(view.kg)} unit="톤" accent=${true}
           icon=${html`<${Icon} name="package" size=${13} />`}
-          sub=${`조업 ${totOp}일 · BM 환산 ${kgTon(bmOf(mes, totKg))} 톤 (회수율 ${((Number(mes.yieldRate) || 0.88) * 100).toFixed(0)}%)`} />
+          sub=${`조업 ${view.opDays}일 · 일평균 ${kgNum(view.opDays > 0 ? view.kg / view.opDays : 0)} kg`} />
+        <${SummaryCard} label=${`${view.label} BM 계획량`} value=${kgTon(bm)} unit="톤"
+          icon=${html`<${Icon} name="layers" size=${13} />`}
+          sub=${`회수율 ${yieldPct}% 적용 · 수분 + 유기물 제외`} />
+        <${SummaryCard} label="일 평균 BM" value=${kgNum(view.opDays > 0 ? bm / view.opDays : 0)} unit="kg"
+          icon=${html`<${Icon} name="trending-up" size=${13} />`}
+          sub=${`조업일 기준`} />
+        <${SummaryCard} label=${scope === "month" ? "이 달의 단계" : "양산 단계"}
+          value=${scope === "month" ? (monthPhases.length || "-") : phases.length} unit="단계"
+          icon=${html`<${Icon} name="calendar" size=${13} />`}
+          sub=${(scope === "month" ? monthPhases : phases).map((p) => p.name).join(" · ") || "-"} />
       </div>
 
-      <!-- Ⅱ. 양산 로드맵 -->
-      <div className="ivs-card">
-        <div className="ivs-card-head-row">
-          <h2 className="ivs-section-title">양산 로드맵</h2>
-          <div className="ivs-card-head-actions">
-            <span className="ivs-section-hint">가동률이 단계마다 올라가면서 하루 생산량이 커집니다</span>
-            ${canEdit ? html`<button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("phases")}>
-              <${Icon} name="pencil" size=${13} /> 단계 편집</button>` : null}
-          </div>
-        </div>
-        <div className="ivs-roadmap">
-          ${phases.map((p) => html`
-            <div className="ivs-rm-seg" key=${p.id}
-              style=${{ flexGrow: Math.max(2, Math.min(6, p.days / 4)), "--c": p.color }}>
-              <div className="ivs-rm-name">${p.name}</div>
-              <div className="ivs-rm-range">${p.start.slice(5).replace("-", "/")} ~ ${p.end.slice(5).replace("-", "/")}</div>
-              <div className="ivs-rm-util"><i style=${{ width: `${(Number(p.util) || 0) * 100}%` }}></i><span>가동률 ${((Number(p.util) || 0) * 100).toFixed(0)}%</span></div>
-              <div className="ivs-rm-kg">${kgTon(p.kg)} 톤</div>
-              <div className="ivs-rm-sub">${phaseWorkLabel(p)} · ${p.opDays}일 · 인원 ${p.staff}명</div>
-            </div>`)}
-        </div>
-        <div className="ivs-table-wrap" style=${{ marginTop: 16 }}>
-          <table className="ivs-table">
-            <thead><tr>
-              <th>단계</th><th>기간</th><th>근무형태</th><th className="ivs-right">인원</th>
-              <th className="ivs-right">가동률</th><th className="ivs-right">조업일</th>
-              <th className="ivs-right">계획 생산량(kg)</th><th className="ivs-right">일 평균(kg/일)</th><th>비고</th>
-            </tr></thead>
-            <tbody>
-              ${phases.map((p, i) => html`<tr key=${p.id}>
-                <td><span className="ivs-ph-dot" style=${{ background: p.color }}></span>${i + 1}. ${p.name}</td>
-                <td className="ivs-mono ivs-dim">${p.start.slice(5).replace("-", "/")} ~ ${p.end.slice(5).replace("-", "/")}</td>
-                <td>${phaseWorkLabel(p)} · 주 ${p.weekDays}일</td>
-                <td className="ivs-mono ivs-right">${p.staff}</td>
-                <td className="ivs-mono ivs-right">${((Number(p.util) || 0) * 100).toFixed(0)}%</td>
-                <td className="ivs-mono ivs-right">${p.opDays}</td>
-                <td className="ivs-mono ivs-right">${kgNum(p.kg)}</td>
-                <td className="ivs-mono ivs-right">${kgNum(p.avg)}</td>
-                <td className="ivs-dim">${p.note || "-"}</td>
-              </tr>`)}
-            </tbody>
-            <tfoot><tr className="ivs-tablefoot">
-              <td colSpan=${5}>합계</td>
-              <td className="ivs-mono ivs-right">${totOp}</td>
-              <td className="ivs-mono ivs-right">${kgNum(totKg)}</td>
-              <td className="ivs-mono ivs-right">${kgNum(totOp > 0 ? totKg / totOp : 0)}</td>
-              <td className="ivs-dim">${horizon ? `${horizon.from} ~ ${horizon.to} 누적` : ""}</td>
-            </tr></tfoot>
-          </table>
-        </div>
-      </div>
-
-      <!-- Ⅲ. 월별 생산계획 -->
-      <div className="ivs-chart-split">
+      ${scope === "month" ? html`
+        <!-- 당월 : 양산 로드맵 (이 달에 걸치는 단계만) -->
         <div className="ivs-card">
           <div className="ivs-card-head-row">
-            <h2 className="ivs-section-title">월별 생산계획</h2>
-            <span className="ivs-section-hint">막대 = 계획 생산량 · 점 = 일 평균</span>
+            <h2 className="ivs-section-title">${Number(ym.slice(5))}월 양산 로드맵</h2>
+            <div className="ivs-card-head-actions">
+              <span className="ivs-section-hint">이 달에 걸쳐 있는 단계와, 그 단계가 이 달에 만드는 양이에요</span>
+              ${canEdit ? html`<button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("phases")}>
+                <${Icon} name="pencil" size=${13} /> 단계 편집</button>` : null}
+            </div>
           </div>
-          <${PlanMonthChart} rows=${months} mes=${mes} />
-        </div>
-        <div className="ivs-card">
-          <div className="ivs-card-head-row">
-            <h2 className="ivs-section-title">월별 상세</h2>
-            <button className="ivs-btn ivs-btn-sm" onClick=${() => {
-              const rows = [["구분", "근무형태", "조업일수", "계획 생산량(kg)", "일 평균(kg/일)", "BM 계획량(kg)"]];
-              months.forEach((m) => rows.push([`${m.key.slice(0, 4)}년 ${Number(m.key.slice(5))}월`,
-                m.phaseNames.join(" · "), m.opDays, Math.round(m.kg), Math.round(m.avg), Math.round(m.bm)]));
-              rows.push(["합계", "", totOp, Math.round(totKg), Math.round(totOp > 0 ? totKg / totOp : 0), Math.round(bmOf(mes, totKg))]);
-              downloadXlsx("월별생산계획.xlsx", "월별생산계획", rows, [14, 20, 10, 16, 14, 15]);
-            }}><${Icon} name="download" size=${13} /> 엑셀</button>
+          <div className="ivs-roadmap">
+            ${monthPhases.map((p) => {
+              const ds = monthDays.filter((d) => d.phase && d.phase.id === p.id);
+              const kg = ds.reduce((a, d) => a + d.totalKg, 0);
+              const op = ds.filter((d) => !d.isStop).length;
+              return html`
+                <div className="ivs-rm-seg" key=${p.id} style=${{ flexGrow: Math.max(2, Math.min(6, ds.length / 4)), "--c": p.color }}>
+                  <div className="ivs-rm-name">${p.name}</div>
+                  <div className="ivs-rm-range">${ds[0].date.slice(5).replace("-", "/")} ~ ${ds[ds.length - 1].date.slice(5).replace("-", "/")}</div>
+                  <div className="ivs-rm-util"><i style=${{ width: `${(Number(p.util) || 0) * 100}%` }}></i><span>가동률 ${((Number(p.util) || 0) * 100).toFixed(0)}%</span></div>
+                  <div className="ivs-rm-kg">${kgTon(kg)} 톤</div>
+                  <div className="ivs-rm-sub">${phaseWorkLabel(p)} · ${op}일 · BM ${kgTon(bmOf(mes, kg))} 톤</div>
+                </div>`;
+            })}
           </div>
-          <div className="ivs-table-wrap">
+          <div className="ivs-table-wrap" style=${{ marginTop: 16 }}>
             <table className="ivs-table">
-              <thead><tr><th>구분</th><th className="ivs-right">조업일</th><th className="ivs-right">계획(kg)</th>
-                <th className="ivs-right">일평균</th><th className="ivs-right">BM 계획(kg)</th></tr></thead>
+              <thead><tr>
+                <th>단계</th><th>기간</th><th>근무형태</th><th className="ivs-right">인원</th>
+                <th className="ivs-right">가동률</th><th className="ivs-right">조업일</th>
+                <th className="ivs-right">계획 생산량(kg)</th><th className="ivs-right">BM 계획(kg)</th>
+                <th className="ivs-right">일 평균(kg/일)</th><th>비고</th>
+              </tr></thead>
               <tbody>
-                ${months.map((m) => html`<tr key=${m.key}>
-                  <td>${m.key.slice(0, 4)}년 ${Number(m.key.slice(5))}월<div className="ivs-dim" style=${{ fontSize: 11 }}>${m.phaseNames.join(" · ")}</div></td>
-                  <td className="ivs-mono ivs-right">${m.opDays}</td>
-                  <td className="ivs-mono ivs-right">${kgNum(m.kg)}</td>
-                  <td className="ivs-mono ivs-right">${kgNum(m.avg)}</td>
-                  <td className="ivs-mono ivs-right">${kgNum(m.bm)}</td>
-                </tr>`)}
+                ${monthPhases.map((p, i) => {
+                  const ds = monthDays.filter((d) => d.phase && d.phase.id === p.id);
+                  const kg = ds.reduce((a, d) => a + d.totalKg, 0);
+                  const op = ds.filter((d) => !d.isStop).length;
+                  return html`<tr key=${p.id}>
+                    <td><span className="ivs-ph-dot" style=${{ background: p.color }}></span>${i + 1}. ${p.name}</td>
+                    <td className="ivs-mono ivs-dim">${ds[0].date.slice(5).replace("-", "/")} ~ ${ds[ds.length - 1].date.slice(5).replace("-", "/")}</td>
+                    <td>${phaseWorkLabel(p)} · 주 ${p.weekDays}일</td>
+                    <td className="ivs-mono ivs-right">${p.staff}</td>
+                    <td className="ivs-mono ivs-right">${((Number(p.util) || 0) * 100).toFixed(0)}%</td>
+                    <td className="ivs-mono ivs-right">${op}</td>
+                    <td className="ivs-mono ivs-right">${kgNum(kg)}</td>
+                    <td className="ivs-mono ivs-right ivs-dim">${kgNum(bmOf(mes, kg))}</td>
+                    <td className="ivs-mono ivs-right">${kgNum(op > 0 ? kg / op : 0)}</td>
+                    <td className="ivs-dim">${p.note || "-"}</td>
+                  </tr>`;
+                })}
               </tbody>
               <tfoot><tr className="ivs-tablefoot">
-                <td>합계</td><td className="ivs-mono ivs-right">${totOp}</td>
-                <td className="ivs-mono ivs-right">${kgNum(totKg)}</td>
-                <td className="ivs-mono ivs-right">${kgNum(totOp > 0 ? totKg / totOp : 0)}</td>
-                <td className="ivs-mono ivs-right">${kgNum(bmOf(mes, totKg))}</td>
+                <td colSpan=${5}>${ym} 합계</td>
+                <td className="ivs-mono ivs-right">${monthRow.opDays}</td>
+                <td className="ivs-mono ivs-right">${kgNum(monthRow.kg)}</td>
+                <td className="ivs-mono ivs-right">${kgNum(monthRow.bm)}</td>
+                <td className="ivs-mono ivs-right">${kgNum(monthRow.avg)}</td>
+                <td></td>
               </tr></tfoot>
             </table>
           </div>
         </div>
-      </div>
+      ` : html`
+        <!-- 3개월 : 월별 생산계획 + 월별 상세 -->
+        <div className="ivs-chart-split">
+          <div className="ivs-card">
+            <div className="ivs-card-head-row">
+              <h2 className="ivs-section-title">월별 생산계획</h2>
+              <span className="ivs-section-hint">막대 = 계획 생산량 · 점 = 일 평균</span>
+            </div>
+            <${PlanMonthChart} rows=${months} mes=${mes} />
+          </div>
+          <div className="ivs-card">
+            <div className="ivs-card-head-row">
+              <h2 className="ivs-section-title">월별 상세</h2>
+              <button className="ivs-btn ivs-btn-sm" onClick=${() => {
+                const rows = [["구분", "단계", "조업일수", "계획 생산량(kg)", "일 평균(kg/일)", "BM 계획량(kg)"]];
+                months.forEach((m) => rows.push([`${m.key.slice(0, 4)}년 ${Number(m.key.slice(5))}월`,
+                  m.phaseNames.join(" · "), m.opDays, Math.round(m.kg), Math.round(m.avg), Math.round(m.bm)]));
+                rows.push(["합계", "", view.opDays, Math.round(view.kg), Math.round(view.opDays > 0 ? view.kg / view.opDays : 0), Math.round(bm)]);
+                downloadXlsx("월별생산계획.xlsx", "월별생산계획", rows, [14, 22, 10, 16, 14, 15]);
+              }}><${Icon} name="download" size=${13} /> 엑셀</button>
+            </div>
+            <div className="ivs-table-wrap">
+              <table className="ivs-table">
+                <thead><tr><th>구분</th><th className="ivs-right">조업일</th><th className="ivs-right">계획(kg)</th>
+                  <th className="ivs-right">일평균</th><th className="ivs-right">BM 계획(kg)</th></tr></thead>
+                <tbody>
+                  ${months.map((m) => html`<tr key=${m.key}>
+                    <td>${m.key.slice(0, 4)}년 ${Number(m.key.slice(5))}월<div className="ivs-dim" style=${{ fontSize: 11 }}>${m.phaseNames.join(" · ")}</div></td>
+                    <td className="ivs-mono ivs-right">${m.opDays}</td>
+                    <td className="ivs-mono ivs-right">${kgNum(m.kg)}</td>
+                    <td className="ivs-mono ivs-right">${kgNum(m.avg)}</td>
+                    <td className="ivs-mono ivs-right">${kgNum(m.bm)}</td>
+                  </tr>`)}
+                </tbody>
+                <tfoot><tr className="ivs-tablefoot">
+                  <td>합계</td><td className="ivs-mono ivs-right">${view.opDays}</td>
+                  <td className="ivs-mono ivs-right">${kgNum(view.kg)}</td>
+                  <td className="ivs-mono ivs-right">${kgNum(view.opDays > 0 ? view.kg / view.opDays : 0)}</td>
+                  <td className="ivs-mono ivs-right">${kgNum(bm)}</td>
+                </tr></tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      `}
 
-      <!-- Ⅵ. 주별 생산계획 요약 -->
+      <!-- 주별 생산계획 요약 -->
       <div className="ivs-card">
         <div className="ivs-card-head-row">
           <h2 className="ivs-section-title">주별 생산계획 요약</h2>
           <div className="ivs-card-head-actions">
             <span className="ivs-section-hint">월이 바뀌는 곳에서 주를 나누고, 3일 이하 조각은 다음 주에 붙였어요</span>
             <button className="ivs-btn ivs-btn-sm" onClick=${() => {
-              const rows = [["월", "주차", "기간", "단계", "근무형태", "조업일수", "계획 생산량(kg)", "배치 인원", "1인 주 근로시간(hr)", "비고"]];
-              weeks.forEach((w) => rows.push([`${Number(w.ym.slice(5))}월`, w.week, w.label, w.phaseName, w.workLabel,
-                w.opDays, Math.round(w.kg), w.staff, Number(w.personHours.toFixed(2)), w.note || ""]));
-              rows.push(["합계", "", "", "", "", totOp, Math.round(totKg), "", "", ""]);
-              downloadXlsx("주별생산계획.xlsx", "주별집계", rows, [7, 8, 13, 11, 13, 10, 16, 10, 17, 22]);
+              const rows = [["월", "주차", "기간", "단계", "근무형태", "조업일수", "계획 생산량(kg)", "BM 계획(kg)", "배치 인원", "1인 주 근로시간(hr)", "비고"]];
+              view.weeks.forEach((w) => rows.push([`${Number(w.ym.slice(5))}월`, w.week, w.label, w.phaseName, w.workLabel,
+                w.opDays, Math.round(w.kg), Math.round(bmOf(mes, w.kg)), w.staff, Number(w.personHours.toFixed(2)), w.note || ""]));
+              rows.push(["합계", "", "", "", "", view.opDays, Math.round(view.kg), Math.round(bm), "", "", ""]);
+              downloadXlsx(`주별생산계획_${scope === "month" ? ym : "3개월"}.xlsx`, "주별집계", rows, [7, 8, 13, 11, 13, 10, 16, 14, 10, 17, 22]);
             }}><${Icon} name="download" size=${13} /> 엑셀</button>
           </div>
         </div>
-        <${PlanWeekChart} rows=${weeks} />
-        <div className="ivs-table-wrap" style=${{ marginTop: 18 }}>
-          <table className="ivs-table">
-            <thead><tr>
-              <th>월</th><th>주차</th><th>기간</th><th>단계</th><th>근무형태</th>
-              <th className="ivs-right">조업일</th><th className="ivs-right">계획 생산량(kg)</th>
-              <th className="ivs-right">인원</th><th className="ivs-right">1인 주 근로</th><th>비고</th>
-            </tr></thead>
-            <tbody>
-              ${weeks.map((w) => {
-                const v = hourVerdict(w.personHours);
-                return html`<tr key=${w.key}>
-                  <td className="ivs-dim">${Number(w.ym.slice(5))}월</td>
-                  <td className="ivs-mono">${w.week}</td>
-                  <td className="ivs-mono ivs-dim">${w.label}</td>
-                  <td><span className="ivs-ph-dot" style=${{ background: w.color }}></span>${w.phaseName || "-"}</td>
-                  <td>${w.workLabel}</td>
-                  <td className="ivs-mono ivs-right">${w.opDays}</td>
-                  <td className="ivs-mono ivs-right">${kgNum(w.kg)}</td>
-                  <td className="ivs-mono ivs-right">${w.staff || "-"}</td>
-                  <td className="ivs-right">
-                    <span className=${`ivs-chip ${v.c === "bad" ? "bad" : v.c === "warn" ? "accent" : "ok"}`}>
-                      ${w.personHours > 0 ? `${w.personHours.toFixed(1)}h · ${v.t}` : "-"}
-                    </span>
-                  </td>
-                  <td className="ivs-dim">${w.note || "-"}</td>
-                </tr>`;
-              })}
-            </tbody>
-            <tfoot><tr className="ivs-tablefoot">
-              <td colSpan=${5}>합계 · ${weeks.length}주</td>
-              <td className="ivs-mono ivs-right">${totOp}</td>
-              <td className="ivs-mono ivs-right">${kgNum(totKg)}</td>
-              <td colSpan=${3}></td>
-            </tr></tfoot>
-          </table>
-        </div>
+        <${PlanWeekChart} rows=${view.weeks} />
+        ${weekTable(view.weeks)}
       </div>
 
-      <!-- Ⅳ. 인원 충원 계획 -->
-      <div className="ivs-chart-split">
-        <div className="ivs-card">
-          <div className="ivs-card-head-row">
-            <h2 className="ivs-section-title">인원 충원 계획</h2>
-            <div className="ivs-card-head-actions">
-              <span className="ivs-chip ${now >= cap ? "ok" : "accent"}">정원 ${cap}명 / 현재 ${now}명</span>
-              ${canEdit ? html`<button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("hiring")}>
-                <${Icon} name="pencil" size=${13} /> 편집</button>` : null}
-            </div>
-          </div>
-          <${HiringChart} rows=${hiring} cap=${cap} />
-        </div>
-        <div className="ivs-card">
-          <div className="ivs-card-head-row">
-            <h2 className="ivs-section-title">단계별 인력 소요 대비 확보</h2>
-            <span className="ivs-section-hint">
-              필요 = 교대당 ${mes.crewSize}명 × 조 수 · 판정은 가장 바쁜 주 기준 (1인 실 근무 ${mes.personHours}h)
-            </span>
-          </div>
-          <div className="ivs-table-wrap">
-            <table className="ivs-table">
-              <thead><tr><th>단계</th><th className="ivs-right">필요</th><th className="ivs-right">배치</th>
-                <th className="ivs-right">확보</th><th className="ivs-right">과부족</th>
-                <th className="ivs-right">1인 주 평균</th><th className="ivs-right">1인 주 최대</th></tr></thead>
-              <tbody>
-                ${phases.map((p) => {
-                  const need = (Number(p.crews) || 1) * (Number(mes.crewSize) || 3);
-                  const placed = Number(p.staff) || 0;
-                  const have = staffAt(mes, p.end); // 그 단계가 끝날 때까지 확보되는 인원
-                  const gap = have - need;
-                  const wks = weeks.filter((w) => w.phaseNames.includes(p.name) && w.personHours > 0);
-                  const avgH = wks.length > 0 ? wks.reduce((a, w) => a + w.personHours, 0) / wks.length : 0;
-                  // 주52시간은 "가장 많이 일한 주"로 판정해요 — 평균이 낮아도 한 주가 넘으면 걸립니다.
-                  const maxH = wks.length > 0 ? Math.max(...wks.map((w) => w.personHours)) : 0;
-                  const v = hourVerdict(maxH);
-                  return html`<tr key=${p.id}>
-                    <td><span className="ivs-ph-dot" style=${{ background: p.color }}></span>${p.name}</td>
-                    <td className="ivs-mono ivs-right">${need}</td>
-                    <td className="ivs-mono ivs-right">${placed}</td>
-                    <td className="ivs-mono ivs-right">${have}</td>
-                    <td className="ivs-mono ivs-right" style=${{ color: gap < 0 ? "var(--bad)" : "inherit", fontWeight: gap < 0 ? 700 : 400 }}>
-                      ${gap > 0 ? `+${gap}` : gap}
-                    </td>
-                    <td className="ivs-mono ivs-right">${avgH > 0 ? `${avgH.toFixed(1)}h` : "-"}</td>
-                    <td className="ivs-right"><span className=${`ivs-chip ${v.c === "bad" ? "bad" : v.c === "warn" ? "accent" : "ok"}`}>
-                      ${maxH > 0 ? `${maxH.toFixed(1)}h · ${v.t}` : "-"}</span></td>
-                  </tr>`;
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Ⅴ. 일별 계획 (달력) -->
+      <!-- 일별 생산계획 -->
       <div className="ivs-card">
         <div className="ivs-card-head-row">
           <h2 className="ivs-section-title">일별 생산계획</h2>
           <div className="ivs-card-head-actions">
-            <select className="ivs-select" value=${ym} onChange=${(e) => setYm(e.target.value)}>
-              ${months.map((m) => html`<option key=${m.key} value=${m.key}>${m.key}</option>`)}
-            </select>
-            <span className="ivs-chip accent">${ym} 계획 ${kgTon(monthKg)} 톤</span>
+            <span className="ivs-chip accent">${ym} 계획 ${kgTon(monthRow.kg)} 톤 · BM ${kgTon(monthRow.bm)} 톤</span>
             <button className="ivs-btn ivs-btn-sm" onClick=${() => {
-              const rows = [["일자", "요일", "주차", "단계", "근무형태", "조업구분", "일 교대수", "가동시간(hr)", "가동률", "계획 생산량(kg)", "계획 누계(kg)", "배치 인원", "비고"]];
+              const rows = [["일자", "요일", "주차", "단계", "근무형태", "조업구분", "일 교대수", "가동시간(hr)", "가동률", "계획 생산량(kg)", "BM 계획(kg)", "계획 누계(kg)", "배치 인원", "비고"]];
               let acc = 0;
-              days.forEach((d) => {
+              view.days.forEach((d) => {
                 acc += d.totalKg;
                 rows.push([d.date, dowOf(d.date), isoWeekKey(d.date).slice(5), d.phaseName, d.workTypeLabel,
                   d.opLabel, d.shiftsPerDay, Number(d.runHours.toFixed(2)), d.isStop ? 0 : Number(d.util),
-                  Math.round(d.totalKg), Math.round(acc), d.staff, d.holiday ? d.holiday.name : ""]);
+                  Math.round(d.totalKg), Math.round(bmOf(mes, d.totalKg)), Math.round(acc), d.staff, d.holiday ? d.holiday.name : ""]);
               });
-              downloadXlsx("일별생산계획.xlsx", "일별계획", rows, [12, 6, 7, 11, 12, 18, 10, 13, 9, 16, 15, 10, 16]);
+              downloadXlsx(`일별생산계획_${scope === "month" ? ym : "3개월"}.xlsx`, "일별계획", rows, [12, 6, 7, 11, 12, 18, 10, 13, 9, 16, 14, 15, 10, 16]);
             }}><${Icon} name="download" size=${13} /> 엑셀</button>
           </div>
         </div>
-        <${PlanCalendar} ym=${ym} days=${monthDays} mes=${mes} />
+        <${PlanCalendar} ym=${ym} days=${calDays} mes=${mes} />
       </div>
 
       <!-- 기준·가정 -->
@@ -8768,6 +9202,7 @@ function PlanTab({ mes, canEdit, onSave }) {
           <h2 className="ivs-section-title">기준 · 가정</h2>
           ${canEdit ? html`<div className="ivs-card-head-actions">
             <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("basis")}><${Icon} name="settings" size=${13} /> 기준값</button>
+            <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("phases")}><${Icon} name="pencil" size=${13} /> 단계</button>
             <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("holidays")}><${Icon} name="calendar" size=${13} /> 공휴일</button>
             <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("crew")}><${Icon} name="users" size=${13} /> 조 편성</button>
           </div>` : null}
@@ -8778,8 +9213,8 @@ function PlanTab({ mes, canEdit, onSave }) {
             ["설비 투입 가동시간 / 교대", `${mes.dayHours} hr`, "구속 12h − 투입정지 1.25h − 인수인계 0.5h"],
             ["설비 투입 가동시간 / 주간", `${mes.dayOnlyHours} hr`, "주간근무는 작업 종료 준비가 더 붙어요"],
             ["1인 교대당 실 근무시간", `${mes.personHours} hr`, "주52시간 판정 기준"],
-            ["BM 회수율", `${((Number(mes.yieldRate) || 0.88) * 100).toFixed(0)} %`, "수분 + 유기물 제외"],
-            ["생산직 정원", `${cap} 명`, "3명 × 3개조 (투입 1 · 배출 1 · 중앙제어 1)"],
+            ["BM 회수율", `${yieldPct} %`, "수분 + 유기물 제외 · BM 계획량 = 계획 생산량 × 회수율"],
+            ["생산직 정원", `${Number(mes.headcount) || 9} 명`, `교대당 ${mes.crewSize}명 (투입 1 · 배출 1 · 중앙제어 1) × 3개조`],
             ["교대 순환", "주주주주휴휴야야야야휴휴", `12일 주기 · 기준일 ${mes.shiftAnchor} (A조 주간 첫날)`],
             ["공휴일", `${(mes.holidays || []).length} 일 등록`, (mes.holidays || []).map((h) => `${h.date.slice(5)} ${h.name}`).join(" · ") || "-"],
           ].map(([k, v, sub]) => html`

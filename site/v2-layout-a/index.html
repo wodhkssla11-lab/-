@@ -792,6 +792,21 @@
   .ivs-hire-caplabel { position: absolute; right: 0; top: 3px; font-size: 10.5px; color: var(--accent);
     font-weight: 600; background: var(--surface); padding: 0 4px; }
 
+  /* 달력 — 범례 색으로 그 날이 왜 그런지 구분해요 */
+  .ivs-cal-day.k-work        { background: var(--surface-2); }
+  .ivs-cal-day.k-workWeekend { background: color-mix(in srgb, var(--c) 13%, var(--surface-2)); }
+  .ivs-cal-day.k-workHoliday { background: color-mix(in srgb, var(--c) 15%, var(--surface-2)); }
+  .ivs-cal-day.k-offWeekend  { background: color-mix(in srgb, var(--c) 11%, var(--surface-2)); }
+  .ivs-cal-day.k-offHoliday  { background: color-mix(in srgb, var(--c) 13%, var(--surface-2)); }
+  .ivs-cal-day.k-offNonProd  { background: color-mix(in srgb, var(--c) 15%, var(--surface-2)); }
+  .ivs-cal-day.stop .ivs-cal-stop { color: var(--c); }
+  .ivs-cal-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px;
+    padding-top: 13px; border-top: 1px solid var(--border); }
+  .ivs-cal-legend-item { display: inline-flex; align-items: center; gap: 7px;
+    font-size: 11.5px; color: var(--text-dim); }
+  .ivs-cal-legend-item i { width: 13px; height: 13px; border-radius: 4px; display: inline-block; opacity: .85; }
+  .ivs-cal-legend-item b { color: var(--text); font-variant-numeric: tabular-nums; }
+
   .ivs-cal-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
   .ivs-cal-hol { font-size: 9.5px; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ivs-cal-day { border-top: 2px solid var(--c); }
@@ -903,6 +918,34 @@
     .ivs-slide-issues { grid-template-columns: 1fr; }
     .ivs-slide-bar { grid-template-columns: 130px 1fr 110px; }
   }
+
+  /* ---------- 당월 주별 요약 : 그래프는 작게, 요약은 오른쪽에 ---------- */
+  .ivs-week-split { display: grid; grid-template-columns: minmax(240px, 0.85fr) 1.15fr; gap: 26px; align-items: start; }
+  /* 당월은 주가 서너 개뿐이라, 폭을 안 잡아두면 막대가 멋대로 넓어져요 */
+  .ivs-wchart.compact { gap: 14px; justify-content: center; }
+  .ivs-wchart.compact .ivs-wchart-plot { height: 150px; }
+  .ivs-wchart.compact .ivs-wchart-col { min-width: 40px; max-width: 68px; }
+  .ivs-week-side { display: flex; flex-direction: column; gap: 9px; }
+  .ivs-week-row { border: 1px solid var(--border); border-left: 3px solid var(--c);
+    border-radius: 9px; padding: 11px 14px; background: var(--surface-2); }
+  .ivs-week-row-h { display: flex; align-items: baseline; gap: 9px; }
+  .ivs-week-wk { font-size: 12px; font-weight: 700; color: var(--c); font-variant-numeric: tabular-nums; }
+  .ivs-week-range { font-size: 11px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .ivs-week-kg { margin-left: auto; font-size: 15px; font-weight: 700; color: var(--text);
+    font-variant-numeric: tabular-nums; }
+  .ivs-week-kg em { font-size: 10px; font-style: normal; color: var(--text-faint); margin-left: 2px; }
+  .ivs-week-bar { height: 4px; border-radius: 2px; background: var(--surface); margin: 8px 0 7px; overflow: hidden; }
+  .ivs-week-bar i { display: block; height: 100%; background: var(--c); }
+  .ivs-week-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    font-size: 11px; color: var(--text-dim); }
+  .ivs-week-meta .ivs-chip { margin-left: auto; }
+  .ivs-week-note { margin-top: 7px; font-size: 10.5px; color: var(--accent); }
+  .ivs-week-total { display: flex; align-items: baseline; gap: 12px; padding: 11px 14px;
+    border-radius: 9px; background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); font-size: 12px; }
+  .ivs-week-total b { font-size: 15px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .ivs-week-total span:last-child { margin-left: auto; font-size: 11px; }
+  @media (max-width: 1100px) { .ivs-week-split { grid-template-columns: 1fr; } }
 
   /* ---------- 반응형 ---------- */
   @media (max-width: 1100px) {
@@ -3854,42 +3897,35 @@ const CREWS = ["A", "B", "C"];
 const CREW_OFFSET = { A: 0, B: 4, C: 8 };
 const SHIFT_LABEL = { day: "주간", night: "야간", off: "휴무" };
 
-// ---------- 양산 램프업 단계 ----------
-// 라인을 처음 세우면 첫날부터 100%로 돌지 않아요. 시운전으로 공정조건을 잡고(시생산),
-// 인원이 차면 교대를 늘리고(양산개시), 손에 익으면 가동률이 올라갑니다(안정화 → 정상 양산).
-// 그래서 계획은 "한 달에 얼마"가 아니라 "이 단계에서는 가동률 몇 %"로 잡아요.
-// ---------- 양산 램프업 단계 ----------
-// 라인을 처음 세우면 첫날부터 100%로 돌지 않아요. 시운전으로 공정조건을 잡고(시생산),
-// 인원이 차면 교대를 늘리고(양산개시), 손에 익으면 가동률이 올라갑니다(안정화 → 정상 양산).
-// 그래서 계획은 "한 달에 얼마"가 아니라 "이 단계에서는 가동률 몇 %"로 잡아요.
+// ---------- 근무형태 기준 ----------
+// 같은 라인이라도 근무형태에 따라 "한 주에 며칠 도는지, 공휴일에 세우는지"가 달라집니다.
+// 이 세 가지를 기준값으로 빼두면 단계는 "어떤 근무형태로 얼마나 돌릴지"만 고르면 돼요.
 //
-// 단계마다 정하는 것 네 가지:
-//   workType  주간(1교대) 인지 교대(2교대) 인지 — 하루 몇 번 돌리고 가동시간이 얼마인지가 갈려요
-//   weekDays  주 며칠 도는지 (5 = 월~금, 7 = 연속)
-//   util      그 단계의 설비 가동률
-//   crews     몇 개조로 돌리는지 — 생산량이 아니라 인원 계획과 조 순환 표시에 씁니다
-const WORK_TYPES = {
-  day:   { label: "주간", shiftsPerDay: 1 },
-  shift: { label: "2교대", shiftsPerDay: 2 },
-};
-// 화면에 쓰는 이름 — "3조 2교대"처럼 조 수와 교대 수를 같이 보여줘요.
-const phaseWorkLabel = (p) =>
-  !p ? "-" : p.workType === "day" ? "주간" : `${Number(p.crews) || 3}조 2교대`;
+//   주간      월~금만 · 공휴일 휴무 · 1교대 · 작업 종료 준비가 붙어 가동시간이 짧음
+//   2조 2교대 월~금 · 공휴일은 휴일근로로 조업 · 2교대
+//   3조 2교대 토·일 공휴일 없이 연속 가동 · 2교대 (사람이 12일 주기로 쉬니까요)
+const DEFAULT_WORK_TYPES = [
+  { key: "day",    label: "주간",      shiftsPerDay: 1, weekDays: 5, holidayWork: false, crews: 1, hours: 8.25 },
+  { key: "shift2", label: "2조 2교대", shiftsPerDay: 2, weekDays: 5, holidayWork: true,  crews: 2, hours: 10.25 },
+  { key: "shift3", label: "3조 2교대", shiftsPerDay: 2, weekDays: 7, holidayWork: true,  crews: 3, hours: 10.25 },
+];
+const workTypeOf = (mes, key) =>
+  (mes.workTypes || DEFAULT_WORK_TYPES).find((w) => w.key === key)
+  || (mes.workTypes || DEFAULT_WORK_TYPES)[0]
+  || DEFAULT_WORK_TYPES[0];
+const phaseWorkLabel = (mes, p) => (p ? workTypeOf(mes, p.workType).label : "-");
 
+// ---------- 양산 램프업 단계 ----------
+// 라인을 처음 세우면 첫날부터 100%로 돌지 않아요. 시운전으로 공정조건을 잡고(시생산),
+// 인원이 차면 교대를 늘리고(양산개시), 손에 익으면 가동률이 올라갑니다(안정화 → 정상 양산).
+// 그래서 계획은 "한 달에 얼마"가 아니라 "이 단계에서는 어떤 근무형태로 가동률 몇 %"로 잡아요.
 const DEFAULT_PHASES = [
-  { id: "ph1", name: "시생산",    start: "2026-09-14", end: "2026-10-04", workType: "day",   crews: 1, weekDays: 5, holidayWork: false, util: 0.70, staff: 3, note: "설비 시운전 · 공정조건 확립 · 신규인력 OJT" },
-  { id: "ph2", name: "양산개시",  start: "2026-10-05", end: "2026-10-11", workType: "shift", crews: 2, weekDays: 7, holidayWork: true,  util: 0.80, staff: 6, note: "야간조 신설 · 교대 전환 · 공휴일 휴일근로" },
-  { id: "ph3", name: "안정화",    start: "2026-10-12", end: "2026-10-31", workType: "shift", crews: 2, weekDays: 7, holidayWork: true,  util: 0.85, staff: 9, note: "정원 9명 완비 · 3조2교대 사전 교육" },
-  { id: "ph4", name: "정상 양산", start: "2026-11-01", end: "2026-11-30", workType: "shift", crews: 3, weekDays: 7, holidayWork: true,  util: 0.90, staff: 9, note: "12일 주기 순환 · 토·일 포함 연속 가동" },
+  { id: "ph1", name: "시생산",    start: "2026-09-14", end: "2026-10-04", workType: "day",    util: 0.70, staff: 3, note: "설비 시운전 · 공정조건 확립 · 신규인력 OJT" },
+  { id: "ph2", name: "양산개시",  start: "2026-10-05", end: "2026-10-11", workType: "shift3", util: 0.80, staff: 6, note: "야간조 신설 · 교대 전환 · 연속 가동 개시" },
+  { id: "ph3", name: "안정화",    start: "2026-10-12", end: "2026-10-31", workType: "shift3", util: 0.85, staff: 9, note: "정원 9명 완비 · 3조2교대 사전 교육" },
+  { id: "ph4", name: "정상 양산", start: "2026-11-01", end: "2026-11-30", workType: "shift3", util: 0.90, staff: 9, note: "12일 주기 순환 · 토·일 포함 연속 가동" },
 ];
 const PHASE_COLOR = ["#4C8DFF", "#A855F7", "#F59E0B", "#2FBF71", "#EC4899", "#14B8A6"];
-
-const DEFAULT_HOLIDAYS = [
-  { date: "2026-09-24", name: "추석 연휴" },
-  { date: "2026-09-25", name: "추석 (당일)" },
-  { date: "2026-10-05", name: "개천절 대체" },
-  { date: "2026-10-09", name: "한글날" },
-];
 
 const DEFAULT_HIRING = [
   { id: "hr0", label: "현재",     date: "2026-08-31", add: 2, note: "기 확보 인원" },
@@ -3897,25 +3933,61 @@ const DEFAULT_HIRING = [
   { id: "hr2", label: "2차 충원", date: "2026-10-12", add: 3, note: "정원 완비" },
 ];
 
+const DEFAULT_HOLIDAYS = [
+  { date: "2026-09-24", name: "추석 연휴" },
+  { date: "2026-09-25", name: "추석 (당일)" },
+  { date: "2026-10-05", name: "개천절 대체" },
+  { date: "2026-10-09", name: "한글날" },
+  { date: "2026-12-25", name: "성탄절" },
+];
+
+// 비생산 기간 — 라인을 통째로 세우는 일정이에요. 유형에 따라 색이 달라집니다.
+const NONPROD_TYPES = [
+  { key: "oh",  label: "정기 Overhaul", color: "#A855F7" },
+  { key: "pm",  label: "예방정비",      color: "#3B82F6" },
+  { key: "off", label: "휴무",          color: "#64748B" },
+  { key: "etc", label: "기타",          color: "#F59E0B" },
+];
+const nonProdType = (k) => NONPROD_TYPES.find((t) => t.key === k) || NONPROD_TYPES[3];
+const DEFAULT_NONPROD = [
+  { id: "np1", name: "연간 Overhaul", type: "oh", start: "2026-12-28", end: "2026-12-31", shift: "both", note: "연말 정기 점검" },
+];
+
 const phaseAt = (mes, dateStr) => (mes.phases || []).find((p) => dateStr >= p.start && dateStr <= p.end) || null;
 const phaseIndex = (mes, p) => (mes.phases || []).findIndex((x) => x.id === (p && p.id));
 const phaseColor = (mes, p) => PHASE_COLOR[Math.max(0, phaseIndex(mes, p)) % PHASE_COLOR.length];
 const holidayAt = (mes, dateStr) => (mes.holidays || []).find((h) => h.date === dateStr) || null;
 
+// 달력 범례 — 그 날이 왜 그 색인지. 조업/휴무 그 자체보다 "왜"가 궁금하니까요.
+const DAY_KINDS = {
+  work:        { label: "조업일 (평일)",            color: "#94A3B8" },
+  workWeekend: { label: "주말 연속 가동",           color: "#EDC22E" },
+  workHoliday: { label: "공휴일 휴일근로",          color: "#E9692F" },
+  offWeekend:  { label: "주말 휴무",                color: "#4C8DFF" },
+  offHoliday:  { label: "공휴일 휴무",              color: "#EC4899" },
+  offNonProd:  { label: "비생산 기간",              color: "#A855F7" },
+  none:        { label: "계획 기간 밖",             color: "#334155" },
+};
+
 // 그 날 라인을 돌리는지, 안 돌리면 왜 안 돌리는지.
-// 주 5일 단계는 토·일과 공휴일에 쉬고, 주 7일 단계는 공휴일에도 휴일근로로 돌려요.
 function opStatus(mes, dateStr) {
   const ph = phaseAt(mes, dateStr);
-  if (!ph) return { run: false, why: "계획 기간 밖", ph: null };
-  const wt = WORK_TYPES[ph.workType] || WORK_TYPES.day;
-  const weekDays = Number(ph.weekDays) || 7;
+  if (!ph) return { run: false, why: "계획 기간 밖", kind: "none", ph: null };
+  const wt = workTypeOf(mes, ph.workType);
+  const weekDays = Number(wt.weekDays) || 7;
   const dow = new Date(`${dateStr}T00:00:00`).getDay(); // 0=일 … 6=토
+  const weekend = dow === 0 || dow === 6;
   const hol = holidayAt(mes, dateStr);
-  if (weekDays < 7 && (dow === 0 || dow === 6)) return { run: false, why: "휴무(주말)", ph, wt };
-  if (hol && !ph.holidayWork) return { run: false, why: `휴무(${hol.name})`, ph, wt, hol };
+
+  // 비생산 기간이 제일 셉니다 — 정기 OH가 잡히면 근무형태와 상관없이 세워요.
   const stops = nonProdHits(mes, dateStr, "day").concat(nonProdHits(mes, dateStr, "night"));
-  if (stops.length > 0) return { run: false, why: `휴무(${stops[0].name})`, ph, wt, stop: stops[0] };
-  return { run: true, why: hol ? `조업(${hol.name} 휴일근로)` : "조업", ph, wt, hol };
+  if (stops.length > 0) return { run: false, why: `휴무(${stops[0].name})`, kind: "offNonProd", ph, wt, stop: stops[0] };
+
+  if (weekDays < 7 && weekend) return { run: false, why: "휴무(주말)", kind: "offWeekend", ph, wt };
+  if (hol && !wt.holidayWork) return { run: false, why: `휴무(${hol.name})`, kind: "offHoliday", ph, wt, hol };
+  if (hol) return { run: true, why: `조업(${hol.name} 휴일근로)`, kind: "workHoliday", ph, wt, hol };
+  if (weekend) return { run: true, why: "조업(주말 연속 가동)", kind: "workWeekend", ph, wt };
+  return { run: true, why: "조업", kind: "work", ph, wt };
 }
 
 const DEFAULT_MES = {
@@ -3933,11 +4005,12 @@ const DEFAULT_MES = {
   maxShiftsPerWeek: 5, // 1인 주 최대 교대수
   crewSize: 3,       // 교대당 표준 정원 (투입 1 · 배출 1 · 중앙제어 1)
   monthly: {},       // { "2026-11": { capa, dayHours, nightHours } } — 월별로 덮어쓰기
-  nonProd: [],       // [{ id, name, start, end, shift: "both"|"day"|"night", note }]
+  nonProd: DEFAULT_NONPROD, // 비생산 기간 [{ id, name, type, start, end, shift, note }]
   crewMembers: { A: [], B: [], C: [] }, // 조별 인원 명단 (유동적이라 이름으로 관리)
-  phases: DEFAULT_PHASES,     // 양산 램프업 단계
-  holidays: DEFAULT_HOLIDAYS, // 공휴일
-  hiring: DEFAULT_HIRING,     // 인원 충원 시점
+  workTypes: DEFAULT_WORK_TYPES, // 근무형태 기준 (조업일 규칙 · 가동시간)
+  phases: DEFAULT_PHASES,        // 양산 램프업 단계
+  holidays: DEFAULT_HOLIDAYS,    // 공휴일
+  hiring: DEFAULT_HIRING,        // 인원 충원 시점
   targetUtil: 90,    // 목표 가동율(%) — 가동율 현황에서 초록/노랑/빨강 판정 기준
   targetRates: { bm: 55, cu: 12, al: 10, cd: 5 }, // 목표 회수율(%)
 };
@@ -3971,6 +4044,9 @@ function mesRates(mes, ym) {
     dayHours: Number(ov.dayHours ?? mes.dayHours) || 0,
     nightHours: Number(ov.nightHours ?? mes.nightHours) || 0,
     dayOnlyHours: Number(ov.dayOnlyHours ?? mes.dayOnlyHours ?? mes.dayHours) || 0,
+    // 그 달만 가동률을 따로 잡고 싶을 때 (비워두면 단계에 적힌 값을 씁니다)
+    util: ov.util == null || ov.util === "" ? null : Number(ov.util),
+    note: ov.note || "",
   };
 }
 // 비생산 기간(정기 OH·예방정비 등)에 걸리는지
@@ -3985,10 +4061,12 @@ function planForDay(mes, dateStr) {
   const crews = shiftCrews(dateStr, mes.shiftAnchor);
   const op = opStatus(mes, dateStr);
   const ph = op.ph;
-  const wt = op.wt || WORK_TYPES.day;
-  const util = ph ? Number(ph.util) || 0 : 0;
-  const twoShift = wt.shiftsPerDay >= 2;
-  const hoursPerShift = twoShift ? r.dayHours : r.dayOnlyHours;
+  const wt = op.wt || workTypeOf(mes, "day");
+  // 그 달에 따로 잡아둔 가동률이 있으면 그게 우선이에요 (월별 기준 설정).
+  const util = r.util != null ? r.util : (ph ? Number(ph.util) || 0 : 0);
+  const twoShift = (Number(wt.shiftsPerDay) || 1) >= 2;
+  // 가동시간도 근무형태에 붙어 있어요 — 주간근무는 작업 종료 준비가 더 붙어서 짧습니다.
+  const hoursPerShift = Number(wt.hours) || (twoShift ? r.dayHours : r.dayOnlyHours);
   // 반올림은 화면에 찍을 때만 해요 — 여기서 하루하루 반올림하면 한 달 합계가 몇 kg씩 어긋납니다.
   const runKg = op.run ? r.capa * hoursPerShift * util : 0;
 
@@ -3997,19 +4075,19 @@ function planForDay(mes, dateStr) {
   return {
     date: dateStr,
     phase: ph, phaseName: ph ? ph.name : "",
-    workType: ph ? ph.workType : null, workTypeLabel: phaseWorkLabel(ph),
-    crews: ph ? Number(ph.crews) || 1 : 0,
-    util, shiftsPerDay: op.run ? wt.shiftsPerDay : 0,
+    workType: ph ? ph.workType : null, workTypeLabel: phaseWorkLabel(mes, ph),
+    crews: Number(wt.crews) || 1, kind: op.kind,
+    util, shiftsPerDay: op.run ? Number(wt.shiftsPerDay) || 1 : 0,
     staff: op.run && ph ? Number(ph.staff) || 0 : 0,
     // 3개조로 돌 때만 A·B·C가 순환해요. 그 전 단계에서는 조 이름을 붙이지 않습니다.
-    dayCrew: op.run && ph && Number(ph.crews) === 3 ? crews.day : null,
-    nightCrew: op.run && twoShift && ph && Number(ph.crews) === 3 ? crews.night : null,
+    dayCrew: op.run && Number(wt.crews) === 3 ? crews.day : null,
+    nightCrew: op.run && twoShift && Number(wt.crews) === 3 ? crews.night : null,
     dayHours: op.run ? hoursPerShift : 0,
     nightHours: op.run && twoShift ? hoursPerShift : 0,
     dayKg, nightKg,
     get totalKg() { return this.dayKg + this.nightKg; },
     get runHours() { return this.dayHours + this.nightHours; },
-    opLabel: op.why, holiday: op.hol || null,
+    opLabel: op.why, holiday: op.hol || null, nonProd: op.stop || null,
     stopNames: op.run ? [] : [op.why.replace(/^휴무\(|\)$/g, "")],
     isStop: !op.run,
   };
@@ -4129,7 +4207,10 @@ function normalizeMes(raw) {
     ...DEFAULT_MES,
     ...m,
     monthly: m.monthly && typeof m.monthly === "object" ? m.monthly : {},
-    nonProd: Array.isArray(m.nonProd) ? m.nonProd : [],
+    nonProd: Array.isArray(m.nonProd) ? m.nonProd : DEFAULT_NONPROD.map((n) => ({ ...n })),
+    workTypes: Array.isArray(m.workTypes) && m.workTypes.length > 0
+      ? DEFAULT_WORK_TYPES.map((d) => ({ ...d, ...(m.workTypes.find((w) => w.key === d.key) || {}) }))
+      : DEFAULT_WORK_TYPES.map((w) => ({ ...w })),
     crewMembers: { A: asList(members.A), B: asList(members.B), C: asList(members.C) },
     phases: Array.isArray(m.phases) && m.phases.length > 0 ? m.phases : DEFAULT_PHASES.map((p) => ({ ...p })),
     holidays: Array.isArray(m.holidays) ? m.holidays : DEFAULT_HOLIDAYS.map((h) => ({ ...h })),
@@ -9066,7 +9147,7 @@ function PlanTab({ mes, canEdit, onSave }) {
                   <div className="ivs-rm-range">${ds[0].date.slice(5).replace("-", "/")} ~ ${ds[ds.length - 1].date.slice(5).replace("-", "/")}</div>
                   <div className="ivs-rm-util"><i style=${{ width: `${(Number(p.util) || 0) * 100}%` }}></i><span>가동률 ${((Number(p.util) || 0) * 100).toFixed(0)}%</span></div>
                   <div className="ivs-rm-kg">${kgTon(kg)} 톤</div>
-                  <div className="ivs-rm-sub">${phaseWorkLabel(p)} · ${op}일 · BM ${kgTon(bmOf(mes, kg))} 톤</div>
+                  <div className="ivs-rm-sub">${phaseWorkLabel(mes, p)} · ${op}일 · BM ${kgTon(bmOf(mes, kg))} 톤</div>
                 </div>`;
             })}
           </div>
@@ -9086,7 +9167,7 @@ function PlanTab({ mes, canEdit, onSave }) {
                   return html`<tr key=${p.id}>
                     <td><span className="ivs-ph-dot" style=${{ background: p.color }}></span>${i + 1}. ${p.name}</td>
                     <td className="ivs-mono ivs-dim">${ds[0].date.slice(5).replace("-", "/")} ~ ${ds[ds.length - 1].date.slice(5).replace("-", "/")}</td>
-                    <td>${phaseWorkLabel(p)} · 주 ${p.weekDays}일</td>
+                    <td>${phaseWorkLabel(mes, p)} · 주 ${workTypeOf(mes, p.workType).weekDays}일</td>
                     <td className="ivs-mono ivs-right">${p.staff}</td>
                     <td className="ivs-mono ivs-right">${((Number(p.util) || 0) * 100).toFixed(0)}%</td>
                     <td className="ivs-mono ivs-right">${op}</td>
@@ -9169,8 +9250,43 @@ function PlanTab({ mes, canEdit, onSave }) {
             }}><${Icon} name="download" size=${13} /> 엑셀</button>
           </div>
         </div>
-        <${PlanWeekChart} rows=${view.weeks} />
-        ${weekTable(view.weeks)}
+        ${scope === "month" ? html`
+          <!-- 당월은 주가 넷뿐이라 그래프를 크게 그릴 이유가 없어요. 옆에 요약을 세웁니다. -->
+          <div className="ivs-week-split">
+            <${PlanWeekChart} rows=${view.weeks} compact=${true} />
+            <div className="ivs-week-side">
+              ${view.weeks.map((w) => {
+                const v = hourVerdict(w.personHours);
+                const share = view.kg > 0 ? (w.kg / view.kg) * 100 : 0;
+                return html`
+                  <div className="ivs-week-row" key=${w.key} style=${{ "--c": w.color }}>
+                    <div className="ivs-week-row-h">
+                      <span className="ivs-week-wk">${w.week}</span>
+                      <span className="ivs-week-range">${w.label}</span>
+                      <span className="ivs-week-kg">${kgTon(w.kg)}<em>톤</em></span>
+                    </div>
+                    <div className="ivs-week-bar"><i style=${{ width: `${share}%` }}></i></div>
+                    <div className="ivs-week-meta">
+                      <span>${w.phaseName || "-"} · ${w.workLabel}</span>
+                      <span>조업 ${w.opDays}일 · BM ${kgTon(bmOf(mes, w.kg))}톤</span>
+                      <span className=${`ivs-chip ${v.c === "bad" ? "bad" : v.c === "warn" ? "accent" : "ok"}`}>
+                        ${w.personHours > 0 ? `${w.personHours.toFixed(1)}h` : "-"}
+                      </span>
+                    </div>
+                    ${w.note ? html`<div className="ivs-week-note">${w.note}</div>` : null}
+                  </div>`;
+              })}
+              <div className="ivs-week-total">
+                <span>${view.label} 합계</span>
+                <b>${kgNum(view.kg)} kg</b>
+                <span className="ivs-dim">조업 ${view.opDays}일 · BM ${kgNum(bm)} kg</span>
+              </div>
+            </div>
+          </div>
+        ` : html`
+          <${PlanWeekChart} rows=${view.weeks} />
+          ${weekTable(view.weeks)}
+        `}
       </div>
 
       <!-- 일별 생산계획 -->
@@ -9201,7 +9317,10 @@ function PlanTab({ mes, canEdit, onSave }) {
           <h2 className="ivs-section-title">기준 · 가정</h2>
           ${canEdit ? html`<div className="ivs-card-head-actions">
             <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("basis")}><${Icon} name="settings" size=${13} /> 기준값</button>
+            <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("monthly")}><${Icon} name="calendar" size=${13} /> 월별 기준</button>
+            <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("worktypes")}><${Icon} name="users" size=${13} /> 근무형태</button>
             <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("phases")}><${Icon} name="pencil" size=${13} /> 단계</button>
+            <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("nonprod")}><${Icon} name="alert-triangle" size=${13} /> 비생산 기간</button>
             <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("holidays")}><${Icon} name="calendar" size=${13} /> 공휴일</button>
             <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("crew")}><${Icon} name="users" size=${13} /> 조 편성</button>
           </div>` : null}
@@ -9216,6 +9335,13 @@ function PlanTab({ mes, canEdit, onSave }) {
             ["생산직 정원", `${Number(mes.headcount) || 9} 명`, `교대당 ${mes.crewSize}명 (투입 1 · 배출 1 · 중앙제어 1) × 3개조`],
             ["교대 순환", "주주주주휴휴야야야야휴휴", `12일 주기 · 기준일 ${mes.shiftAnchor} (A조 주간 첫날)`],
             ["공휴일", `${(mes.holidays || []).length} 일 등록`, (mes.holidays || []).map((h) => `${h.date.slice(5)} ${h.name}`).join(" · ") || "-"],
+            ["월별 기준 덮어쓰기", `${Object.keys(mes.monthly || {}).length} 개월`,
+              Object.entries(mes.monthly || {}).map(([k, v]) =>
+                `${k} ${[v.capa ? `${Number(v.capa).toLocaleString("ko-KR")}kg/hr` : null,
+                          v.util != null ? `가동률 ${Math.round(v.util * 100)}%` : null,
+                          v.note || null].filter(Boolean).join(" ")}`).join(" · ") || "없음 (전체 기준값 사용)"],
+            ["비생산 기간", `${(mes.nonProd || []).length} 건`,
+              (mes.nonProd || []).map((n) => `${nonProdType(n.type).label} ${n.name} ${n.start.slice(5)}~${n.end.slice(5)}`).join(" · ") || "없음"],
           ].map(([k, v, sub]) => html`
             <div className="ivs-basis-row" key=${k}>
               <div className="ivs-basis-k">${k}</div>
@@ -9223,13 +9349,36 @@ function PlanTab({ mes, canEdit, onSave }) {
               <div className="ivs-basis-s">${sub}</div>
             </div>`)}
         </div>
+        <div className="ivs-table-wrap" style=${{ marginTop: 16 }}>
+          <table className="ivs-table">
+            <thead><tr><th>근무형태</th><th className="ivs-right">일 교대수</th><th className="ivs-right">주 조업일</th>
+              <th>공휴일</th><th className="ivs-right">조 수</th><th className="ivs-right">가동시간(hr)</th>
+              <th className="ivs-right">일 생산량(kg)</th><th>조업일 규칙</th></tr></thead>
+            <tbody>
+              ${(mes.workTypes || DEFAULT_WORK_TYPES).map((w) => html`<tr key=${w.key}>
+                <td><b>${w.label}</b></td>
+                <td className="ivs-mono ivs-right">${w.shiftsPerDay}</td>
+                <td className="ivs-mono ivs-right">${w.weekDays}일</td>
+                <td>${w.holidayWork ? html`<span className="ivs-chip accent">휴일근로</span>` : html`<span className="ivs-chip neutral">휴무</span>`}</td>
+                <td className="ivs-mono ivs-right">${w.crews}</td>
+                <td className="ivs-mono ivs-right">${w.hours}</td>
+                <td className="ivs-mono ivs-right ivs-dim">
+                  ${kgNum(Number(mes.capa) * Number(w.hours) * Number(w.shiftsPerDay))} <span style=${{ fontSize: 10.5 }}>(가동률 100% 기준)</span>
+                </td>
+                <td className="ivs-dim">
+                  ${Number(w.weekDays) >= 7 ? "토·일 포함 연속 가동" : "월~금 조업 · 토·일 휴무"}
+                </td>
+              </tr>`)}
+            </tbody>
+          </table>
+        </div>
         <p className="ivs-dash-note" style=${{ marginTop: 14 }}>
           일 계획 생산량 = 설비 처리능력 × 설비 투입 가동시간 × 일 교대수 × 그 단계의 설비 가동률.
           식사·휴식 중에는 설비를 세우지 않고 2인/1인이 번갈아 자리를 지켜요.
         </p>
       </div>
 
-      ${editOpen ? html`<${PlanEditModal} which=${editOpen} mes=${mes} onClose=${() => setEditOpen(null)} onSave=${onSave} />` : null}
+      ${editOpen ? html`<${PlanEditModal} which=${editOpen} mes=${mes} months=${months} onClose=${() => setEditOpen(null)} onSave=${onSave} />` : null}
     </div>`;
 }
 
@@ -9262,14 +9411,14 @@ function PlanMonthChart({ rows, mes }) {
 }
 
 // 주별 계획 — 단계 색으로 칠해서 램프업이 눈에 보이게 해요.
-function PlanWeekChart({ rows }) {
+function PlanWeekChart({ rows, compact }) {
   if (!rows || rows.length === 0) return html`<div className="ivs-prod-empty center">계획 기간이 없어요.</div>`;
   const max = Math.max(1, ...rows.map((r) => r.kg));
   const phaseSet = [];
   rows.forEach((r) => r.phaseNames.forEach((n) => { if (!phaseSet.find((x) => x.n === n)) phaseSet.push({ n, c: r.color }); }));
   return html`
     <div>
-      <div className="ivs-wchart">
+      <div className=${`ivs-wchart ${compact ? "compact" : ""}`}>
         ${rows.map((r) => html`
           <div className="ivs-wchart-col" key=${r.key} title=${`${r.label} · ${Math.round(r.kg).toLocaleString("ko-KR")} kg`}>
             <div className="ivs-wchart-val">${(r.kg / 1000).toFixed(1)}</div>
@@ -9309,40 +9458,67 @@ function HiringChart({ rows, cap }) {
     </div>`;
 }
 
-// 일별 달력 — 단계 색을 띠로 깔고, 쉬는 날은 이유를 적어요.
+// 일별 달력 — 그 날이 왜 그 색인지가 범례로 읽히게 했어요.
+// 조업/휴무만 구분하면 "왜 쉬는지"가 안 보여서, 주말·공휴일·비생산을 각각 다른 색으로 둡니다.
 function PlanCalendar({ ym, days, mes }) {
   if (!days || days.length === 0) return html`<div className="ivs-prod-empty center">이 달에는 계획이 없어요.</div>`;
-  // 계획이 달 중간(9/14)에 시작하기도 해서, 빈 칸은 "1일"이 아니라 "첫 계획일"의 요일만큼 채워요.
   const lead = new Date(`${days[0].date}T00:00:00`).getDay();
   const kgNum = (kg) => Math.round(kg).toLocaleString("ko-KR");
+  // 이 달에 실제로 나온 종류만 범례에 띄워요 (안 쓰는 색까지 늘어놓으면 오히려 헷갈려요)
+  const used = [];
+  ["work", "workWeekend", "workHoliday", "offWeekend", "offHoliday", "offNonProd"].forEach((k) => {
+    const n = days.filter((d) => d.kind === k).length;
+    if (n > 0) used.push({ k, n, ...DAY_KINDS[k] });
+  });
   return html`
-    <div className="ivs-cal">
-      ${DOW_KR.map((d) => html`<div className="ivs-cal-dow" key=${d}>${d}</div>`)}
-      ${Array.from({ length: lead }, (_, i) => html`<div className="ivs-cal-pad" key=${`p${i}`}></div>`)}
-      ${days.map((d) => html`
-        <div className=${`ivs-cal-day ${d.isStop ? "stop" : ""}`} key=${d.date}
-          style=${{ "--c": d.phase && !d.isStop ? phaseColor(mes, d.phase) : "transparent" }}
-          title=${`${d.date} (${dowOf(d.date)}) · ${d.phaseName || "-"} · ${d.opLabel}`}>
-          <div className="ivs-cal-n">${Number(d.date.slice(8))}</div>
-          ${d.isStop
-            ? html`<div className="ivs-cal-stop">${d.opLabel.replace(/^휴무\(|\)$/g, "")}</div>`
-            : html`
-              <div className="ivs-cal-kg">${kgNum(d.totalKg)}<em>kg</em></div>
-              <div className="ivs-cal-tags">
-                <span className="ivs-cal-tag day">${d.dayCrew ? `주 ${d.dayCrew}` : "주간"}</span>
-                ${d.nightHours > 0 ? html`<span className="ivs-cal-tag night">${d.nightCrew ? `야 ${d.nightCrew}` : "야간"}</span>` : null}
-              </div>
-              ${d.holiday ? html`<div className="ivs-cal-hol">${d.holiday.name} 근로</div>` : null}`}
-        </div>`)}
+    <div>
+      <div className="ivs-cal">
+        ${DOW_KR.map((d) => html`<div className="ivs-cal-dow" key=${d}>${d}</div>`)}
+        ${Array.from({ length: lead }, (_, i) => html`<div className="ivs-cal-pad" key=${`p${i}`}></div>`)}
+        ${days.map((d) => {
+          const kind = DAY_KINDS[d.kind] || DAY_KINDS.work;
+          return html`
+            <div className=${`ivs-cal-day k-${d.kind} ${d.isStop ? "stop" : ""}`} key=${d.date}
+              style=${{ "--c": kind.color }}
+              title=${`${d.date} (${dowOf(d.date)}) · ${d.phaseName || "-"} · ${d.opLabel}`}>
+              <div className="ivs-cal-n">${Number(d.date.slice(8))}</div>
+              ${d.isStop
+                ? html`<div className="ivs-cal-stop">${d.opLabel.replace(/^휴무\(|\)$/g, "")}</div>`
+                : html`
+                  <div className="ivs-cal-kg">${kgNum(d.totalKg)}<em>kg</em></div>
+                  <div className="ivs-cal-tags">
+                    <span className="ivs-cal-tag day">${d.dayCrew ? `주 ${d.dayCrew}` : "주간"}</span>
+                    ${d.nightHours > 0 ? html`<span className="ivs-cal-tag night">${d.nightCrew ? `야 ${d.nightCrew}` : "야간"}</span>` : null}
+                  </div>
+                  ${d.holiday ? html`<div className="ivs-cal-hol">${d.holiday.name}</div>` : null}`}
+            </div>`;
+        })}
+      </div>
+      <div className="ivs-cal-legend">
+        ${used.map((u) => html`
+          <span className="ivs-cal-legend-item" key=${u.k}>
+            <i style=${{ background: u.color }}></i>${u.label}
+            <b>${u.n}일</b>
+          </span>`)}
+      </div>
     </div>`;
 }
 
-// 단계 · 공휴일 · 충원 · 기준값 편집
-function PlanEditModal({ which, mes, onClose, onSave }) {
+function PlanEditModal({ which, mes, months, onClose, onSave }) {
   const [rows, setRows] = useState(() => {
     if (which === "phases") return (mes.phases || []).map((p) => ({ ...p }));
     if (which === "holidays") return (mes.holidays || []).map((h) => ({ ...h }));
-    if (which === "hiring") return (mes.hiring || []).map((h) => ({ ...h }));
+    if (which === "nonprod") return (mes.nonProd || []).map((n) => ({ ...n }));
+    if (which === "worktypes") return (mes.workTypes || DEFAULT_WORK_TYPES).map((w) => ({ ...w }));
+    if (which === "monthly") {
+      // 계획 기간의 달 + 이미 값을 넣어둔 달을 모두 보여줘요.
+      const keys = Array.from(new Set([...(months || []).map((m) => m.key), ...Object.keys(mes.monthly || {})])).sort();
+      return keys.map((k) => {
+        const ov = (mes.monthly || {})[k] || {};
+        return { ym: k, capa: ov.capa ?? "", dayHours: ov.dayHours ?? "", dayOnlyHours: ov.dayOnlyHours ?? "",
+          util: ov.util == null ? "" : Math.round(Number(ov.util) * 100), note: ov.note || "" };
+      });
+    }
     return [];
   });
   const [basis, setBasis] = useState(() => ({
@@ -9352,13 +9528,19 @@ function PlanEditModal({ which, mes, onClose, onSave }) {
   }));
   const [crew, setCrew] = useState(() => ({ ...mes.crewMembers }));
 
-  const title = { phases: "양산 단계", holidays: "공휴일", hiring: "인원 충원 시점", basis: "기준값", crew: "조 편성" }[which];
+  const title = { phases: "양산 단계", holidays: "공휴일", nonprod: "비생산 기간",
+    worktypes: "근무형태 기준", monthly: "월별 기준", basis: "기준값", crew: "조 편성" }[which];
   const upd = (i, k, v) => setRows(rows.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
   const del = (i) => setRows(rows.filter((_, j) => j !== i));
+  const addYm = () => {
+    const last = rows.length > 0 ? rows[rows.length - 1].ym : new Date().toISOString().slice(0, 7);
+    setRows([...rows, { ym: ymShift(last, 1), capa: "", dayHours: "", dayOnlyHours: "", util: "", note: "" }]);
+  };
   const add = () => {
-    if (which === "phases") setRows([...rows, { id: `ph-${Date.now()}`, name: "새 단계", start: "", end: "", workType: "shift", crews: 3, weekDays: 7, holidayWork: true, util: 0.9, staff: 9, note: "" }]);
+    if (which === "phases") setRows([...rows, { id: `ph-${Date.now()}`, name: "새 단계", start: "", end: "", workType: "shift3", util: 0.9, staff: 9, note: "" }]);
     if (which === "holidays") setRows([...rows, { date: "", name: "" }]);
-    if (which === "hiring") setRows([...rows, { id: `hr-${Date.now()}`, label: "추가 충원", date: "", add: 0, note: "" }]);
+    if (which === "nonprod") setRows([...rows, { id: `np-${Date.now()}`, name: "", type: "pm", start: "", end: "", shift: "both", note: "" }]);
+    if (which === "monthly") addYm();
   };
   const save = () => {
     if (which === "basis") {
@@ -9369,20 +9551,40 @@ function PlanEditModal({ which, mes, onClose, onSave }) {
         targetUtil: Number(basis.targetUtil) || 90 }, "기준값을 저장했어요.");
     } else if (which === "crew") {
       onSave({ ...mes, crewMembers: crew }, "조 편성을 저장했어요.");
+    } else if (which === "worktypes") {
+      onSave({ ...mes, workTypes: rows.map((w) => ({ ...w,
+        shiftsPerDay: Number(w.shiftsPerDay) || 1, weekDays: Number(w.weekDays) || 7,
+        crews: Number(w.crews) || 1, hours: Number(w.hours) || 0, holidayWork: !!w.holidayWork })) },
+        "근무형태 기준을 저장했어요.");
+    } else if (which === "monthly") {
+      // 비어 있는 칸은 저장하지 않아요 — 기본 기준값을 그대로 쓴다는 뜻이니까요.
+      const next = {};
+      rows.forEach((r) => {
+        if (!r.ym) return;
+        const o = {};
+        if (r.capa !== "" && r.capa != null) o.capa = Number(r.capa);
+        if (r.dayHours !== "" && r.dayHours != null) o.dayHours = Number(r.dayHours);
+        if (r.dayOnlyHours !== "" && r.dayOnlyHours != null) o.dayOnlyHours = Number(r.dayOnlyHours);
+        if (r.util !== "" && r.util != null) o.util = Number(r.util) / 100;
+        if (r.note) o.note = r.note;
+        if (Object.keys(o).length > 0) next[r.ym] = o;
+      });
+      onSave({ ...mes, monthly: next }, "월별 기준을 저장했어요.");
     } else {
       const clean = which === "phases"
         ? rows.filter((r) => r.name && r.start && r.end).map((r) => ({ ...r,
-            util: Number(r.util) || 0, staff: Number(r.staff) || 0, crews: Number(r.crews) || 1, weekDays: Number(r.weekDays) || 7 }))
+            util: Number(r.util) || 0, staff: Number(r.staff) || 0 }))
         : which === "holidays" ? rows.filter((r) => r.date && r.name)
-        : rows.filter((r) => r.date).map((r) => ({ ...r, add: Number(r.add) || 0 }));
-      onSave({ ...mes, [which]: clean }, `${title}을(를) 저장했어요.`);
+        : rows.filter((r) => r.name && r.start && r.end);
+      onSave({ ...mes, [which === "nonprod" ? "nonProd" : which]: clean }, `${title}을(를) 저장했어요.`);
     }
     onClose();
   };
 
+  const wide = which !== "basis" && which !== "crew";
   return html`
     <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onClose)}>
-      <div className=${`ivs-modal ${which === "basis" || which === "crew" ? "ivs-modal-lg" : "ivs-modal-xl"}`}>
+      <div className=${`ivs-modal ${wide ? "ivs-modal-xl" : "ivs-modal-lg"}`}>
         <div className="ivs-modal-head">
           <h3>${title} 편집</h3>
           <button className="ivs-icon-btn" onClick=${onClose}><${Icon} name="x" /></button>
@@ -9391,16 +9593,19 @@ function PlanEditModal({ which, mes, onClose, onSave }) {
           ${which === "basis" ? html`
             <div className="ivs-form-grid">
               <${Field} label="설비 처리능력 (kg/hr)"><input type="number" value=${basis.capa} onChange=${(e) => setBasis({ ...basis, capa: e.target.value })} /><//>
-              <${Field} label="설비 투입 가동시간 / 교대 (hr)"><input type="number" step="0.25" value=${basis.dayHours} onChange=${(e) => setBasis({ ...basis, dayHours: e.target.value })} /><//>
-              <${Field} label="설비 투입 가동시간 / 주간 (hr)"><input type="number" step="0.25" value=${basis.dayOnlyHours} onChange=${(e) => setBasis({ ...basis, dayOnlyHours: e.target.value })} /><//>
+              <${Field} label="교대 가동시간 기본값 (hr)"><input type="number" step="0.25" value=${basis.dayHours} onChange=${(e) => setBasis({ ...basis, dayHours: e.target.value })} /><//>
+              <${Field} label="주간 가동시간 기본값 (hr)"><input type="number" step="0.25" value=${basis.dayOnlyHours} onChange=${(e) => setBasis({ ...basis, dayOnlyHours: e.target.value })} /><//>
               <${Field} label="1인 교대당 실 근무시간 (hr)"><input type="number" step="0.25" value=${basis.personHours} onChange=${(e) => setBasis({ ...basis, personHours: e.target.value })} /><//>
               <${Field} label="BM 회수율 (%)"><input type="number" step="0.5" value=${basis.yieldRate} onChange=${(e) => setBasis({ ...basis, yieldRate: e.target.value })} /><//>
               <${Field} label="생산직 정원 (명)"><input type="number" value=${basis.headcount} onChange=${(e) => setBasis({ ...basis, headcount: e.target.value })} /><//>
               <${Field} label="교대 기준일 (A조 주간 첫날)"><input type="date" value=${basis.shiftAnchor} onChange=${(e) => setBasis({ ...basis, shiftAnchor: e.target.value })} /><//>
               <${Field} label="목표 가동율 (%)"><input type="number" value=${basis.targetUtil} onChange=${(e) => setBasis({ ...basis, targetUtil: e.target.value })} /><//>
             </div>
+            <p className="ivs-section-hint" style=${{ marginTop: 14 }}>
+              여기 값은 전체 기본값이에요. 달마다 다르게 잡으려면 “월별 기준”에서, 근무형태마다 다르게 잡으려면 “근무형태 기준”에서 덮어써요.
+            </p>
           ` : which === "crew" ? html`
-            <p className="ivs-section-hint" style=${{ marginBottom: 14 }}>조별 인원 이름을 쉼표나 줄바꿈으로 구분해서 넣어주세요. 인원이 바뀌면 여기만 고치면 돼요.</p>
+            <p className="ivs-section-hint" style=${{ marginBottom: 14 }}>조별 인원 이름을 쉼표나 줄바꿈으로 구분해서 넣어주세요.</p>
             <div className="ivs-crew-grid">
               ${CREWS.map((c) => html`
                 <${Field} key=${c} label=${`${c}조 (${(crew[c] || []).length}명)`}>
@@ -9409,48 +9614,86 @@ function PlanEditModal({ which, mes, onClose, onSave }) {
                 <//>`)}
             </div>
           ` : html`
+            ${which === "worktypes" ? html`<p className="ivs-section-hint" style=${{ marginBottom: 12 }}>
+              여기서 정한 규칙이 달력의 조업/휴무 색을 결정해요. 단계는 이 중 하나를 고르기만 합니다.
+            </p>` : null}
+            ${which === "monthly" ? html`<p className="ivs-section-hint" style=${{ marginBottom: 12 }}>
+              비워두면 기본 기준값을 그대로 씁니다. 그 달만 다르게 잡고 싶은 칸에만 값을 넣으세요.<br />
+              아직 계획에 없는 달(예: 12월)을 세우려면 “단계”에서 그 기간의 양산 단계를 먼저 추가해주세요 — 계획 기간은 단계가 정합니다.
+            </p>` : null}
             <div className="ivs-table-wrap" style=${{ maxHeight: 420 }}>
               <table className="ivs-table">
                 ${which === "phases" ? html`
-                  <thead><tr><th>단계명</th><th>시작</th><th>종료</th><th>근무</th><th className="ivs-right">조</th>
-                    <th className="ivs-right">주 조업일</th><th>공휴일</th><th className="ivs-right">가동률(%)</th>
-                    <th className="ivs-right">인원</th><th>비고</th><th></th></tr></thead>
+                  <thead><tr><th>단계명</th><th>시작</th><th>종료</th><th>근무형태</th>
+                    <th className="ivs-right">가동률(%)</th><th className="ivs-right">인원</th><th>비고</th><th></th></tr></thead>
                   <tbody>${rows.map((r, i) => html`<tr key=${r.id || i}>
                     <td><input className="ivs-cellinput wide" value=${r.name} onChange=${(e) => upd(i, "name", e.target.value)} /></td>
                     <td><input className="ivs-cellinput wide" type="date" value=${r.start} onChange=${(e) => upd(i, "start", e.target.value)} /></td>
                     <td><input className="ivs-cellinput wide" type="date" value=${r.end} onChange=${(e) => upd(i, "end", e.target.value)} /></td>
                     <td><select className="ivs-cellinput wide" value=${r.workType} onChange=${(e) => upd(i, "workType", e.target.value)}>
-                      <option value="day">주간 (1교대)</option><option value="shift">2교대</option></select></td>
-                    <td><input className="ivs-cellinput" style=${{ width: 52 }} type="number" value=${r.crews} onChange=${(e) => upd(i, "crews", e.target.value)} /></td>
-                    <td><input className="ivs-cellinput" style=${{ width: 52 }} type="number" value=${r.weekDays} onChange=${(e) => upd(i, "weekDays", e.target.value)} /></td>
-                    <td><label className="ivs-checkbox-label"><input type="checkbox" checked=${!!r.holidayWork} onChange=${(e) => upd(i, "holidayWork", e.target.checked)} /> 근무</label></td>
+                      ${(mes.workTypes || DEFAULT_WORK_TYPES).map((w) => html`<option key=${w.key} value=${w.key}>${w.label}</option>`)}
+                    </select></td>
                     <td><input className="ivs-cellinput" type="number" value=${Math.round((Number(r.util) || 0) * 100)} onChange=${(e) => upd(i, "util", (Number(e.target.value) || 0) / 100)} /></td>
                     <td><input className="ivs-cellinput" style=${{ width: 56 }} type="number" value=${r.staff} onChange=${(e) => upd(i, "staff", e.target.value)} /></td>
                     <td><input className="ivs-cellinput wide" value=${r.note || ""} onChange=${(e) => upd(i, "note", e.target.value)} /></td>
                     <td><button className="ivs-icon-btn" onClick=${() => del(i)}><${Icon} name="trash-2" size=${14} /></button></td>
                   </tr>`)}</tbody>
-                ` : which === "holidays" ? html`
+                ` : which === "worktypes" ? html`
+                  <thead><tr><th>근무형태</th><th className="ivs-right">일 교대수</th><th className="ivs-right">주 조업일</th>
+                    <th>공휴일</th><th className="ivs-right">조 수</th><th className="ivs-right">가동시간(hr)</th><th>조업일 규칙</th></tr></thead>
+                  <tbody>${rows.map((r, i) => html`<tr key=${r.key}>
+                    <td><input className="ivs-cellinput wide" value=${r.label} onChange=${(e) => upd(i, "label", e.target.value)} /></td>
+                    <td><input className="ivs-cellinput" style=${{ width: 56 }} type="number" value=${r.shiftsPerDay} onChange=${(e) => upd(i, "shiftsPerDay", e.target.value)} /></td>
+                    <td><input className="ivs-cellinput" style=${{ width: 56 }} type="number" value=${r.weekDays} onChange=${(e) => upd(i, "weekDays", e.target.value)} /></td>
+                    <td><label className="ivs-checkbox-label"><input type="checkbox" checked=${!!r.holidayWork} onChange=${(e) => upd(i, "holidayWork", e.target.checked)} /> 휴일근로</label></td>
+                    <td><input className="ivs-cellinput" style=${{ width: 52 }} type="number" value=${r.crews} onChange=${(e) => upd(i, "crews", e.target.value)} /></td>
+                    <td><input className="ivs-cellinput" type="number" step="0.25" value=${r.hours} onChange=${(e) => upd(i, "hours", e.target.value)} /></td>
+                    <td className="ivs-dim" style=${{ fontSize: 11.5 }}>
+                      ${Number(r.weekDays) >= 7 ? "토·일 포함 연속 가동" : "월~금 조업 · 토·일 휴무"}
+                      ${r.holidayWork ? " · 공휴일 휴일근로" : " · 공휴일 휴무"}
+                    </td>
+                  </tr>`)}</tbody>
+                ` : which === "monthly" ? html`
+                  <thead><tr><th>월</th><th className="ivs-right">처리능력(kg/hr)</th><th className="ivs-right">교대 가동시간</th>
+                    <th className="ivs-right">주간 가동시간</th><th className="ivs-right">가동률(%)</th><th>비고</th><th></th></tr></thead>
+                  <tbody>${rows.map((r, i) => html`<tr key=${r.ym}>
+                    <td><input className="ivs-cellinput wide" type="month" value=${r.ym} onChange=${(e) => upd(i, "ym", e.target.value)} /></td>
+                    <td><input className="ivs-cellinput" type="number" value=${r.capa} placeholder=${String(mes.capa)} onChange=${(e) => upd(i, "capa", e.target.value)} /></td>
+                    <td><input className="ivs-cellinput" type="number" step="0.25" value=${r.dayHours} placeholder=${String(mes.dayHours)} onChange=${(e) => upd(i, "dayHours", e.target.value)} /></td>
+                    <td><input className="ivs-cellinput" type="number" step="0.25" value=${r.dayOnlyHours} placeholder=${String(mes.dayOnlyHours)} onChange=${(e) => upd(i, "dayOnlyHours", e.target.value)} /></td>
+                    <td><input className="ivs-cellinput" type="number" value=${r.util} placeholder="단계값" onChange=${(e) => upd(i, "util", e.target.value)} /></td>
+                    <td><input className="ivs-cellinput wide" value=${r.note} onChange=${(e) => upd(i, "note", e.target.value)} /></td>
+                    <td><button className="ivs-icon-btn" onClick=${() => del(i)}><${Icon} name="trash-2" size=${14} /></button></td>
+                  </tr>`)}</tbody>
+                ` : which === "nonprod" ? html`
+                  <thead><tr><th>명칭</th><th>유형</th><th>시작</th><th>종료</th><th>대상 교대</th><th>비고</th><th></th></tr></thead>
+                  <tbody>${rows.map((r, i) => html`<tr key=${r.id || i}>
+                    <td><input className="ivs-cellinput wide" value=${r.name} placeholder="예: 연간 Overhaul" onChange=${(e) => upd(i, "name", e.target.value)} /></td>
+                    <td><select className="ivs-cellinput wide" value=${r.type || "pm"} onChange=${(e) => upd(i, "type", e.target.value)}>
+                      ${NONPROD_TYPES.map((t) => html`<option key=${t.key} value=${t.key}>${t.label}</option>`)}
+                    </select></td>
+                    <td><input className="ivs-cellinput wide" type="date" value=${r.start} onChange=${(e) => upd(i, "start", e.target.value)} /></td>
+                    <td><input className="ivs-cellinput wide" type="date" value=${r.end} onChange=${(e) => upd(i, "end", e.target.value)} /></td>
+                    <td><select className="ivs-cellinput wide" value=${r.shift || "both"} onChange=${(e) => upd(i, "shift", e.target.value)}>
+                      <option value="both">주·야 전체</option><option value="day">주간만</option><option value="night">야간만</option>
+                    </select></td>
+                    <td><input className="ivs-cellinput wide" value=${r.note || ""} onChange=${(e) => upd(i, "note", e.target.value)} /></td>
+                    <td><button className="ivs-icon-btn" onClick=${() => del(i)}><${Icon} name="trash-2" size=${14} /></button></td>
+                  </tr>`)}</tbody>
+                ` : html`
                   <thead><tr><th>일자</th><th>명칭</th><th></th></tr></thead>
                   <tbody>${rows.map((r, i) => html`<tr key=${i}>
                     <td><input className="ivs-cellinput wide" type="date" value=${r.date} onChange=${(e) => upd(i, "date", e.target.value)} /></td>
                     <td><input className="ivs-cellinput wide" value=${r.name} onChange=${(e) => upd(i, "name", e.target.value)} /></td>
                     <td><button className="ivs-icon-btn" onClick=${() => del(i)}><${Icon} name="trash-2" size=${14} /></button></td>
                   </tr>`)}</tbody>
-                ` : html`
-                  <thead><tr><th>시점</th><th>일자</th><th className="ivs-right">충원(명)</th><th>비고</th><th></th></tr></thead>
-                  <tbody>${rows.map((r, i) => html`<tr key=${r.id || i}>
-                    <td><input className="ivs-cellinput wide" value=${r.label} onChange=${(e) => upd(i, "label", e.target.value)} /></td>
-                    <td><input className="ivs-cellinput wide" type="date" value=${r.date} onChange=${(e) => upd(i, "date", e.target.value)} /></td>
-                    <td><input className="ivs-cellinput" type="number" value=${r.add} onChange=${(e) => upd(i, "add", e.target.value)} /></td>
-                    <td><input className="ivs-cellinput wide" value=${r.note || ""} onChange=${(e) => upd(i, "note", e.target.value)} /></td>
-                    <td><button className="ivs-icon-btn" onClick=${() => del(i)}><${Icon} name="trash-2" size=${14} /></button></td>
-                  </tr>`)}</tbody>
                 `}
               </table>
             </div>
-            <button className="ivs-btn ivs-btn-sm" style=${{ marginTop: 12 }} onClick=${add}>
-              <${Icon} name="plus" size=${13} /> 줄 추가
-            </button>
+            ${which !== "worktypes" ? html`
+              <button className="ivs-btn ivs-btn-sm" style=${{ marginTop: 12 }} onClick=${add}>
+                <${Icon} name="plus" size=${13} /> 줄 추가
+              </button>` : null}
           `}
         </div>
         <div className="ivs-modal-foot">
@@ -9460,7 +9703,6 @@ function PlanEditModal({ which, mes, onClose, onSave }) {
       </div>
     </div>`;
 }
-
 function ProductionTab({ lots, moves, canEdit, onClearMoves, onDeleteMoves }) {
   const todayStr = new Date().toISOString().slice(0, 10);
   const [selectedDate, setSelectedDate] = useState(todayStr);

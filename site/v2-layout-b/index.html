@@ -127,6 +127,9 @@
   /* ---------- KPI 카드 ---------- */
   .ivs-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
   .ivs-kpis.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .ivs-kpis.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .ivs-kpis.cols-5 { grid-template-columns: repeat(5, 1fr); }
+  .ivs-kpi-bm { color: var(--accent); font-weight: 600; }
   .ivs-kpis.cols-5 { grid-template-columns: repeat(5, 1fr); }
   .ivs-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
     padding: 15px 16px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; }
@@ -739,10 +742,6 @@
     display: flex; flex-direction: column; gap: 6px; }
   .ivs-rm-name { font-size: 13px; font-weight: 700; color: var(--text); }
   .ivs-rm-range { font-size: 11px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
-  .ivs-rm-util { position: relative; height: 16px; border-radius: 4px; background: var(--surface);
-    border: 1px solid var(--border); overflow: hidden; display: flex; align-items: center; }
-  .ivs-rm-util i { position: absolute; inset: 0 auto 0 0; background: color-mix(in srgb, var(--c) 45%, transparent); }
-  .ivs-rm-util span { position: relative; font-size: 10px; color: var(--text); padding-left: 6px; font-weight: 600; }
   .ivs-rm-kg { font-size: 17px; font-weight: 700; color: var(--c); font-variant-numeric: tabular-nums; }
   .ivs-rm-sub { font-size: 10.5px; color: var(--text-faint); }
   .ivs-ph-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: 0; }
@@ -928,14 +927,12 @@
   .ivs-week-side { display: flex; flex-direction: column; gap: 9px; }
   .ivs-week-row { border: 1px solid var(--border); border-left: 3px solid var(--c);
     border-radius: 9px; padding: 11px 14px; background: var(--surface-2); }
-  .ivs-week-row-h { display: flex; align-items: baseline; gap: 9px; }
+  .ivs-week-row-h { display: flex; align-items: baseline; gap: 9px; margin-bottom: 8px; }
   .ivs-week-wk { font-size: 12px; font-weight: 700; color: var(--c); font-variant-numeric: tabular-nums; }
   .ivs-week-range { font-size: 11px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
   .ivs-week-kg { margin-left: auto; font-size: 15px; font-weight: 700; color: var(--text);
     font-variant-numeric: tabular-nums; }
   .ivs-week-kg em { font-size: 10px; font-style: normal; color: var(--text-faint); margin-left: 2px; }
-  .ivs-week-bar { height: 4px; border-radius: 2px; background: var(--surface); margin: 8px 0 7px; overflow: hidden; }
-  .ivs-week-bar i { display: block; height: 100%; background: var(--c); }
   .ivs-week-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     font-size: 11px; color: var(--text-dim); }
   .ivs-week-meta .ivs-chip { margin-left: auto; }
@@ -946,6 +943,16 @@
   .ivs-week-total b { font-size: 15px; color: var(--text); font-variant-numeric: tabular-nums; }
   .ivs-week-total span:last-child { margin-left: auto; font-size: 11px; }
   @media (max-width: 1100px) { .ivs-week-split { grid-template-columns: 1fr; } }
+
+  /* ---------- 기준정보 : 조 편성 보기 ---------- */
+  .ivs-crew-view { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .ivs-crew-card { border: 1px solid var(--border); border-top: 3px solid var(--c);
+    border-radius: 10px; padding: 13px 15px; background: var(--surface-2); }
+  .ivs-crew-card-h { display: flex; align-items: baseline; gap: 8px; font-size: 13px;
+    font-weight: 700; color: var(--c); margin-bottom: 10px; }
+  .ivs-crew-card-h span { margin-left: auto; font-size: 11px; color: var(--text-faint); font-weight: 500; }
+  .ivs-crew-names { display: flex; flex-wrap: wrap; gap: 5px; font-size: 11.5px; }
+  @media (max-width: 900px) { .ivs-crew-view { grid-template-columns: 1fr; } }
 
   /* ---------- 반응형 ---------- */
   @media (max-width: 1100px) {
@@ -3788,6 +3795,7 @@ const MENU_GROUPS = [
     { key: "down", label: "비가동 현황", icon: "alert-triangle" },
     { key: "dashboard", label: "집계", icon: "package" },
     { key: "report", label: "보고서", icon: "printer" },
+    { key: "basis", label: "기준정보", icon: "settings" },
   ] },
 ];
 const MENU_ITEMS = MENU_GROUPS.flatMap((g) => g.items);
@@ -3803,6 +3811,7 @@ const PAGE_SUB = {
   down: "비가동 유형별 집계와 Pareto",
   dashboard: "기간별 재고 · 입고 집계",
   report: "주간 · 월간 생산실적 보고서 (PPT)",
+  basis: "생산계획의 기준값 · 근무형태 · 단계 · 비생산 기간",
 };
 const menuLabel = (key) => (MENU_ITEMS.find((m) => m.key === key) || {}).label || "";
 // 미리보기 모드: 페이지에서 window.IVS_PREVIEW = true 로 켜면 Firebase를 아예 건드리지 않고
@@ -5156,6 +5165,8 @@ function InventorySystem() {
   const [mes, setMes] = useState(() => LIVE_DATA.mes); // 생산관리(계획·교대·설비) 설정
   const [runs, setRuns] = useState(() => LIVE_DATA.runs); // 생산실적 (투입↔산출 Lot 연결 포함)
   const [downs, setDowns] = useState(() => LIVE_DATA.downs); // 비가동 기록 (설비 · 유형 · 분)
+  // 생산실적이 어느 달을 보고 있는지 — 화면 제목을 "9월 생산실적"처럼 쓰려고 위로 올렸어요.
+  const [actYm, setActYm] = useState(() => new Date().toISOString().slice(0, 10).slice(0, 7));
   const [masterModalOpen, setMasterModalOpen] = useState(false);
   const [unlocked, setUnlocked] = useState(false); // 세션에서만 유지 (보안을 위해 저장하지 않음)
   const [viewUnlocked, setViewUnlocked] = useState(false); // 세션에서만 유지
@@ -5716,7 +5727,11 @@ function InventorySystem() {
       <div className="ivs-header">
         <div>
           <div className="ivs-title-row">
-            <h1 className="ivs-title">${LAYOUT === "sidebar" ? menuLabel(activeTab) : settings.title}</h1>
+            <h1 className="ivs-title">
+              ${LAYOUT === "sidebar"
+                ? (activeTab === "act" ? `${Number(actYm.slice(5))}월 생산실적` : menuLabel(activeTab))
+                : settings.title}
+            </h1>
             <button className="ivs-icon-btn ivs-title-edit" onClick=${() => setSettingsModalOpen(true)} title="설정 (이름 변경 · 편집 잠금)">
               <${SettingsIcon} size=${14} />
             </button>
@@ -6005,7 +6020,9 @@ function InventorySystem() {
         : activeTab === "dashboard" ? html`<${DashboardTab} lots=${lots} moves=${moves} dayDelta=${dayDelta} />`
         : activeTab === "plan" ? html`<${PlanTab} mes=${mes} canEdit=${canEdit} onSave=${persistMes} />`
         : activeTab === "act" ? html`<${ActualTab} lots=${lots} runs=${runs} mes=${mes} canEdit=${canEdit}
+            ym=${actYm} onYm=${setActYm}
             onSave=${handleSaveRun} onDelete=${handleDeleteRun} />`
+        : activeTab === "basis" ? html`<${BasisTab} mes=${mes} canEdit=${canEdit} onSave=${persistMes} />`
         : activeTab === "report" ? html`<${ReportTab} mes=${mes} runs=${runs} downs=${downs} lots=${lots} settings=${settings} />`
         : activeTab === "util" ? html`<${UtilTab} mes=${mes} runs=${runs} downs=${downs} />`
         : activeTab === "down" ? html`<${DownTab} mes=${mes} runs=${runs} downs=${downs} canEdit=${canEdit}
@@ -8470,9 +8487,9 @@ function ShipTab({ lots, moves, canEdit, onShip, onLabel }) {
     </div>`;
 }
 
-function ActualTab({ lots, runs, mes, canEdit, onSave, onDelete }) {
+function ActualTab({ lots, runs, mes, canEdit, onSave, onDelete, ym, onYm }) {
   const today = new Date().toISOString().slice(0, 10);
-  const [ym, setYm] = useState(today.slice(0, 7));
+  const setYm = onYm; // 화면 제목("9월 생산실적")과 같은 달을 봐야 해서 위에서 내려받아요
   const [form, setForm] = useState(() => ({
     date: today, shift: "day", workers: "", note: "",
     inputIds: [], outputs: { bm: "", cu: "", al: "", cd: "" },
@@ -9017,7 +9034,7 @@ function PlanTab({ mes, canEdit, onSave }) {
   const phases = useMemo(() => planByPhase(mes, days), [mes, days]);
   const months = useMemo(() => planByMonth(mes, days), [mes, days]);
   const weeksAll = useMemo(() => planByWeek(mes, days), [mes, days]);
-  const [editOpen, setEditOpen] = useState(null); // "basis" | "phases" | "holidays" | "crew"
+  const [editOpen, setEditOpen] = useState(null); // 로드맵의 "단계 편집"에서만 씁니다
 
   // 계획을 두 가지 눈으로 봐요 — 이번 달 하나만 파고들 때와, 3개월 전체 흐름을 볼 때.
   const today = new Date().toISOString().slice(0, 10);
@@ -9109,22 +9126,37 @@ function PlanTab({ mes, canEdit, onSave }) {
         </span>
       </div>
 
-      <!-- 핵심 요약 -->
-      <div className="ivs-kpis">
-        <${SummaryCard} label=${`${view.label} 계획 생산량`} value=${kgTon(view.kg)} unit="톤" accent=${true}
-          icon=${html`<${Icon} name="package" size=${13} />`}
-          sub=${`조업 ${view.opDays}일 · 일평균 ${kgNum(view.opDays > 0 ? view.kg / view.opDays : 0)} kg`} />
-        <${SummaryCard} label=${`${view.label} BM 계획량`} value=${kgTon(bm)} unit="톤"
-          icon=${html`<${Icon} name="layers" size=${13} />`}
-          sub=${`회수율 ${yieldPct}% 적용 · 수분 + 유기물 제외`} />
-        <${SummaryCard} label="일 평균 BM" value=${kgNum(view.opDays > 0 ? bm / view.opDays : 0)} unit="kg"
-          icon=${html`<${Icon} name="trending-up" size=${13} />`}
-          sub=${`조업일 기준`} />
-        <${SummaryCard} label=${scope === "month" ? "이 달의 단계" : "양산 단계"}
-          value=${scope === "month" ? (monthPhases.length || "-") : phases.length} unit="단계"
-          icon=${html`<${Icon} name="calendar" size=${13} />`}
-          sub=${(scope === "month" ? monthPhases : phases).map((p) => p.name).join(" · ") || "-"} />
-      </div>
+      <!-- 핵심 요약 : 달마다 한 장씩 세우고, 맨 끝에 평균 -->
+      ${scope === "month" ? html`
+        <div className="ivs-kpis">
+          <${SummaryCard} label=${`${view.label} 계획 생산량`} value=${kgTon(view.kg)} unit="톤" accent=${true}
+            icon=${html`<${Icon} name="package" size=${13} />`}
+            sub=${`조업 ${view.opDays}일 · 일평균 ${kgNum(view.opDays > 0 ? view.kg / view.opDays : 0)} kg`} />
+          <${SummaryCard} label=${`${view.label} BM 계획량`} value=${kgTon(bm)} unit="톤"
+            icon=${html`<${Icon} name="layers" size=${13} />`}
+            sub=${`회수율 ${yieldPct}% 적용 · 일평균 ${kgNum(view.opDays > 0 ? bm / view.opDays : 0)} kg`} />
+          <${SummaryCard} label="이 달의 단계" value=${monthPhases.length || "-"} unit="단계"
+            icon=${html`<${Icon} name="calendar" size=${13} />`}
+            sub=${monthPhases.map((p) => p.name).join(" · ") || "-"} />
+          <${SummaryCard} label="근무형태" value=${Array.from(new Set(monthDays.filter((d) => !d.isStop).map((d) => d.workTypeLabel))).length || "-"} unit="종"
+            icon=${html`<${Icon} name="users" size=${13} />`}
+            sub=${Array.from(new Set(monthDays.filter((d) => !d.isStop).map((d) => d.workTypeLabel))).join(" · ") || "-"} />
+        </div>
+      ` : html`
+        <div className=${`ivs-kpis cols-${Math.min(5, months.length + 1)}`}>
+          ${months.map((m) => html`
+            <${SummaryCard} key=${m.key}
+              label=${`${Number(m.key.slice(5))}월 계획 생산량`}
+              value=${kgTon(m.kg)} unit="톤"
+              icon=${html`<${Icon} name="package" size=${13} />`}
+              sub=${html`<span className="ivs-kpi-bm">BM ${kgTon(m.bm)} 톤</span> · 조업 ${m.opDays}일 · 일평균 ${kgNum(m.avg)} kg`} />`)}
+          <${SummaryCard}
+            label=${`${months.length}개월 평균 계획 생산량`}
+            value=${kgTon(months.length > 0 ? view.kg / months.length : 0)} unit="톤" accent=${true}
+            icon=${html`<${Icon} name="trending-up" size=${13} />`}
+            sub=${html`<span className="ivs-kpi-bm">평균 BM ${kgTon(months.length > 0 ? bm / months.length : 0)} 톤</span> · 합계 ${kgTon(view.kg)} 톤`} />
+        </div>
+      `}
 
       ${scope === "month" ? html`
         <!-- 당월 : 양산 로드맵 (이 달에 걸치는 단계만) -->
@@ -9146,9 +9178,9 @@ function PlanTab({ mes, canEdit, onSave }) {
                 <div className="ivs-rm-seg" key=${p.id} style=${{ flexGrow: Math.max(2, Math.min(6, ds.length / 4)), "--c": p.color }}>
                   <div className="ivs-rm-name">${p.name}</div>
                   <div className="ivs-rm-range">${ds[0].date.slice(5).replace("-", "/")} ~ ${ds[ds.length - 1].date.slice(5).replace("-", "/")}</div>
-                  <div className="ivs-rm-util"><i style=${{ width: `${(Number(p.util) || 0) * 100}%` }}></i><span>가동률 ${((Number(p.util) || 0) * 100).toFixed(0)}%</span></div>
                   <div className="ivs-rm-kg">${kgTon(kg)} 톤</div>
-                  <div className="ivs-rm-sub">${phaseWorkLabel(mes, p)} · ${op}일 · BM ${kgTon(bmOf(mes, kg))} 톤</div>
+                  <div className="ivs-rm-sub">가동률 ${((Number(p.util) || 0) * 100).toFixed(0)}% · ${phaseWorkLabel(mes, p)} · ${op}일</div>
+                  <div className="ivs-rm-sub">BM ${kgTon(bmOf(mes, kg))} 톤</div>
                 </div>`;
             })}
           </div>
@@ -9266,10 +9298,9 @@ function PlanTab({ mes, canEdit, onSave }) {
                       <span className="ivs-week-range">${w.label}</span>
                       <span className="ivs-week-kg">${kgTon(w.kg)}<em>톤</em></span>
                     </div>
-                    <div className="ivs-week-bar"><i style=${{ width: `${share}%` }}></i></div>
                     <div className="ivs-week-meta">
                       <span>${w.phaseName || "-"} · ${w.workLabel}</span>
-                      <span>조업 ${w.opDays}일 · BM ${kgTon(bmOf(mes, w.kg))}톤</span>
+                      <span>조업 ${w.opDays}일 · BM ${kgTon(bmOf(mes, w.kg))}톤 · 월 대비 ${share.toFixed(0)}%</span>
                       <span className=${`ivs-chip ${v.c === "bad" ? "bad" : v.c === "warn" ? "accent" : "ok"}`}>
                         ${w.personHours > 0 ? `${w.personHours.toFixed(1)}h` : "-"}
                       </span>
@@ -9310,73 +9341,6 @@ function PlanTab({ mes, canEdit, onSave }) {
           </div>
         </div>
         <${PlanCalendar} ym=${ym} days=${calDays} mes=${mes} />
-      </div>
-
-      <!-- 기준·가정 -->
-      <div className="ivs-card">
-        <div className="ivs-card-head-row">
-          <h2 className="ivs-section-title">기준 · 가정</h2>
-          ${canEdit ? html`<div className="ivs-card-head-actions">
-            <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("basis")}><${Icon} name="settings" size=${13} /> 기준값</button>
-            <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("monthly")}><${Icon} name="calendar" size=${13} /> 월별 기준</button>
-            <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("worktypes")}><${Icon} name="users" size=${13} /> 근무형태</button>
-            <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("phases")}><${Icon} name="pencil" size=${13} /> 단계</button>
-            <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("nonprod")}><${Icon} name="alert-triangle" size=${13} /> 비생산 기간</button>
-            <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("holidays")}><${Icon} name="calendar" size=${13} /> 공휴일</button>
-            <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen("crew")}><${Icon} name="users" size=${13} /> 조 편성</button>
-          </div>` : null}
-        </div>
-        <div className="ivs-basis">
-          ${[
-            ["설비 처리능력", `${Number(mes.capa).toLocaleString("ko-KR")} kg/hr`, "분말 기준"],
-            ["설비 투입 가동시간 / 교대", `${mes.dayHours} hr`, "구속 12h − 투입정지 1.25h − 인수인계 0.5h"],
-            ["설비 투입 가동시간 / 주간", `${mes.dayOnlyHours} hr`, "주간근무는 작업 종료 준비가 더 붙어요"],
-            ["1인 교대당 실 근무시간", `${mes.personHours} hr`, "주52시간 판정 기준"],
-            ["BM 회수율", `${yieldPct} %`, "수분 + 유기물 제외 · BM 계획량 = 계획 생산량 × 회수율"],
-            ["생산직 정원", `${Number(mes.headcount) || 9} 명`, `교대당 ${mes.crewSize}명 (투입 1 · 배출 1 · 중앙제어 1) × 3개조`],
-            ["교대 순환", "주주주주휴휴야야야야휴휴", `12일 주기 · 기준일 ${mes.shiftAnchor} (A조 주간 첫날)`],
-            ["공휴일", `${(mes.holidays || []).length} 일 등록`, (mes.holidays || []).map((h) => `${h.date.slice(5)} ${h.name}`).join(" · ") || "-"],
-            ["월별 기준 덮어쓰기", `${Object.keys(mes.monthly || {}).length} 개월`,
-              Object.entries(mes.monthly || {}).map(([k, v]) =>
-                `${k} ${[v.capa ? `${Number(v.capa).toLocaleString("ko-KR")}kg/hr` : null,
-                          v.util != null ? `가동률 ${Math.round(v.util * 100)}%` : null,
-                          v.note || null].filter(Boolean).join(" ")}`).join(" · ") || "없음 (전체 기준값 사용)"],
-            ["비생산 기간", `${(mes.nonProd || []).length} 건`,
-              (mes.nonProd || []).map((n) => `${nonProdType(n.type).label} ${n.name} ${n.start.slice(5)}~${n.end.slice(5)}`).join(" · ") || "없음"],
-          ].map(([k, v, sub]) => html`
-            <div className="ivs-basis-row" key=${k}>
-              <div className="ivs-basis-k">${k}</div>
-              <div className="ivs-basis-v">${v}</div>
-              <div className="ivs-basis-s">${sub}</div>
-            </div>`)}
-        </div>
-        <div className="ivs-table-wrap" style=${{ marginTop: 16 }}>
-          <table className="ivs-table">
-            <thead><tr><th>근무형태</th><th className="ivs-right">일 교대수</th><th className="ivs-right">주 조업일</th>
-              <th>공휴일</th><th className="ivs-right">조 수</th><th className="ivs-right">가동시간(hr)</th>
-              <th className="ivs-right">일 생산량(kg)</th><th>조업일 규칙</th></tr></thead>
-            <tbody>
-              ${(mes.workTypes || DEFAULT_WORK_TYPES).map((w) => html`<tr key=${w.key}>
-                <td><b>${w.label}</b></td>
-                <td className="ivs-mono ivs-right">${w.shiftsPerDay}</td>
-                <td className="ivs-mono ivs-right">${w.weekDays}일</td>
-                <td>${w.holidayWork ? html`<span className="ivs-chip accent">휴일근로</span>` : html`<span className="ivs-chip neutral">휴무</span>`}</td>
-                <td className="ivs-mono ivs-right">${w.crews}</td>
-                <td className="ivs-mono ivs-right">${w.hours}</td>
-                <td className="ivs-mono ivs-right ivs-dim">
-                  ${kgNum(Number(mes.capa) * Number(w.hours) * Number(w.shiftsPerDay))} <span style=${{ fontSize: 10.5 }}>(가동률 100% 기준)</span>
-                </td>
-                <td className="ivs-dim">
-                  ${Number(w.weekDays) >= 7 ? "토·일 포함 연속 가동" : "월~금 조업 · 토·일 휴무"}
-                </td>
-              </tr>`)}
-            </tbody>
-          </table>
-        </div>
-        <p className="ivs-dash-note" style=${{ marginTop: 14 }}>
-          일 계획 생산량 = 설비 처리능력 × 설비 투입 가동시간 × 일 교대수 × 그 단계의 설비 가동률.
-          식사·휴식 중에는 설비를 세우지 않고 2인/1인이 번갈아 자리를 지켜요.
-        </p>
       </div>
 
       ${editOpen ? html`<${PlanEditModal} which=${editOpen} mes=${mes} months=${months} onClose=${() => setEditOpen(null)} onSave=${onSave} />` : null}
@@ -9502,6 +9466,214 @@ function PlanCalendar({ ym, days, mes }) {
             <b>${u.n}일</b>
           </span>`)}
       </div>
+    </div>`;
+}
+
+// ---------- 기준정보 ----------
+// 계획을 만드는 데 쓰는 값들을 한곳에 모았어요. 생산계획 화면에서는 결과만 보고,
+// "왜 그 숫자가 나오는지"와 그걸 바꾸는 일은 여기서 합니다.
+function BasisTab({ mes, canEdit, onSave }) {
+  const [editOpen, setEditOpen] = useState(null);
+  const days = useMemo(() => planDays(mes), [mes]);
+  const months = useMemo(() => planByMonth(mes, days), [mes, days]);
+  const phases = useMemo(() => planByPhase(mes, days), [mes, days]);
+  const horizon = planHorizon(mes);
+  const yieldPct = ((Number(mes.yieldRate) || 0.88) * 100).toFixed(0);
+  const kgNum = (kg) => Math.round(kg).toLocaleString("ko-KR");
+  const wts = mes.workTypes || DEFAULT_WORK_TYPES;
+
+  const Section = ({ title, hint, actions, children }) => html`
+    <div className="ivs-card">
+      <div className="ivs-card-head-row">
+        <h2 className="ivs-section-title">${title}</h2>
+        <div className="ivs-card-head-actions">
+          ${hint ? html`<span className="ivs-section-hint">${hint}</span>` : null}
+          ${actions || null}
+        </div>
+      </div>
+      ${children}
+    </div>`;
+  const EditBtn = ({ which, icon, label }) => (canEdit ? html`
+    <button className="ivs-btn ivs-btn-sm" onClick=${() => setEditOpen(which)}>
+      <${Icon} name=${icon} size=${13} /> ${label}
+    </button>` : null);
+
+  return html`
+    <div className="ivs-plan">
+      <div className="ivs-section-head">
+        <h2 className="ivs-section-title">기준정보</h2>
+        <span className="ivs-section-hint">
+          ${horizon ? `계획 기간 ${horizon.from} ~ ${horizon.to}` : "단계를 먼저 등록해주세요"}
+          ${" · "}여기 값이 바뀌면 생산계획이 곧바로 다시 계산돼요
+        </span>
+      </div>
+
+      <${Section} title="기준값" hint="전체에 적용되는 기본값이에요"
+        actions=${html`<${EditBtn} which="basis" icon="settings" label="기준값 편집" />`}>
+        <div className="ivs-basis">
+          ${[
+            ["설비 처리능력", `${Number(mes.capa).toLocaleString("ko-KR")} kg/hr`, "분말 기준"],
+            ["설비 투입 가동시간 / 교대", `${mes.dayHours} hr`, "구속 12h − 투입정지 1.25h − 인수인계 0.5h"],
+            ["설비 투입 가동시간 / 주간", `${mes.dayOnlyHours} hr`, "주간근무는 작업 종료 준비가 더 붙어요"],
+            ["1인 교대당 실 근무시간", `${mes.personHours} hr`, "주52시간 판정 기준"],
+            ["BM 회수율", `${yieldPct} %`, "수분 + 유기물 제외 · BM 계획량 = 계획 생산량 × 회수율"],
+            ["생산직 정원", `${Number(mes.headcount) || 9} 명`, `교대당 ${mes.crewSize}명 (투입 1 · 배출 1 · 중앙제어 1) × 3개조`],
+            ["교대 순환", "주주주주휴휴야야야야휴휴", `12일 주기 · 기준일 ${mes.shiftAnchor} (A조 주간 첫날)`],
+            ["목표 가동율", `${mes.targetUtil} %`, "가동율 현황에서 초록/노랑/빨강 판정 기준"],
+          ].map(([k, v, sub]) => html`
+            <div className="ivs-basis-row" key=${k}>
+              <div className="ivs-basis-k">${k}</div>
+              <div className="ivs-basis-v">${v}</div>
+              <div className="ivs-basis-s">${sub}</div>
+            </div>`)}
+        </div>
+        <p className="ivs-dash-note" style=${{ marginTop: 14 }}>
+          일 계획 생산량 = 설비 처리능력 × 설비 투입 가동시간 × 일 교대수 × 그 단계의 설비 가동률.
+          식사·휴식 중에는 설비를 세우지 않고 2인/1인이 번갈아 자리를 지켜요.
+        </p>
+      <//>
+
+      <${Section} title="근무형태 기준" hint="여기서 정한 규칙이 달력의 조업 · 휴무를 결정해요"
+        actions=${html`<${EditBtn} which="worktypes" icon="users" label="근무형태 편집" />`}>
+        <div className="ivs-table-wrap">
+          <table className="ivs-table">
+            <thead><tr><th>근무형태</th><th className="ivs-right">일 교대수</th><th className="ivs-right">주 조업일</th>
+              <th>공휴일</th><th className="ivs-right">조 수</th><th className="ivs-right">가동시간(hr)</th>
+              <th className="ivs-right">일 생산량(kg)</th><th>조업일 규칙</th></tr></thead>
+            <tbody>
+              ${wts.map((w) => html`<tr key=${w.key}>
+                <td><b>${w.label}</b></td>
+                <td className="ivs-mono ivs-right">${w.shiftsPerDay}</td>
+                <td className="ivs-mono ivs-right">${w.weekDays}일</td>
+                <td>${w.holidayWork ? html`<span className="ivs-chip accent">휴일근로</span>` : html`<span className="ivs-chip neutral">휴무</span>`}</td>
+                <td className="ivs-mono ivs-right">${w.crews}</td>
+                <td className="ivs-mono ivs-right">${w.hours}</td>
+                <td className="ivs-mono ivs-right ivs-dim">
+                  ${kgNum(Number(mes.capa) * Number(w.hours) * Number(w.shiftsPerDay))}
+                  <span style=${{ fontSize: 10.5 }}> (가동률 100% 기준)</span>
+                </td>
+                <td className="ivs-dim">
+                  ${Number(w.weekDays) >= 7 ? "토·일 포함 연속 가동" : "월~금 조업 · 토·일 휴무"}
+                  ${w.holidayWork ? " · 공휴일 휴일근로" : " · 공휴일 휴무"}
+                </td>
+              </tr>`)}
+            </tbody>
+          </table>
+        </div>
+      <//>
+
+      <${Section} title="양산 단계" hint="단계마다 근무형태와 가동률을 정해요"
+        actions=${html`<${EditBtn} which="phases" icon="pencil" label="단계 편집" />`}>
+        <div className="ivs-table-wrap">
+          <table className="ivs-table">
+            <thead><tr><th>단계</th><th>기간</th><th>근무형태</th><th className="ivs-right">가동률</th>
+              <th className="ivs-right">인원</th><th className="ivs-right">조업일</th>
+              <th className="ivs-right">계획 생산량(kg)</th><th>비고</th></tr></thead>
+            <tbody>
+              ${phases.map((p, i) => html`<tr key=${p.id}>
+                <td><span className="ivs-ph-dot" style=${{ background: p.color }}></span>${i + 1}. ${p.name}</td>
+                <td className="ivs-mono ivs-dim">${p.start} ~ ${p.end}</td>
+                <td>${phaseWorkLabel(mes, p)}</td>
+                <td className="ivs-mono ivs-right">${((Number(p.util) || 0) * 100).toFixed(0)}%</td>
+                <td className="ivs-mono ivs-right">${p.staff}</td>
+                <td className="ivs-mono ivs-right">${p.opDays}</td>
+                <td className="ivs-mono ivs-right">${kgNum(p.kg)}</td>
+                <td className="ivs-dim">${p.note || "-"}</td>
+              </tr>`)}
+            </tbody>
+          </table>
+        </div>
+      <//>
+
+      <div className="ivs-half-grid">
+        <${Section} title="월별 기준" hint="그 달만 다르게 잡고 싶을 때"
+          actions=${html`<${EditBtn} which="monthly" icon="calendar" label="월별 기준 편집" />`}>
+          <div className="ivs-table-wrap">
+            <table className="ivs-table">
+              <thead><tr><th>월</th><th className="ivs-right">처리능력</th><th className="ivs-right">교대 가동</th>
+                <th className="ivs-right">가동률</th><th>비고</th></tr></thead>
+              <tbody>
+                ${months.length === 0
+                  ? html`<tr><td colSpan=${5} className="ivs-prod-empty center">계획 기간이 없어요.</td></tr>`
+                  : months.map((m) => {
+                      const ov = (mes.monthly || {})[m.key] || {};
+                      const has = Object.keys(ov).length > 0;
+                      return html`<tr key=${m.key} className=${has ? "" : "ivs-dim-row"}>
+                        <td className="ivs-mono">${m.key}</td>
+                        <td className="ivs-mono ivs-right">${ov.capa ? Number(ov.capa).toLocaleString("ko-KR") : html`<span className="ivs-dim">${Number(mes.capa).toLocaleString("ko-KR")}</span>`}</td>
+                        <td className="ivs-mono ivs-right">${ov.dayHours ?? html`<span className="ivs-dim">${mes.dayHours}</span>`}</td>
+                        <td className="ivs-mono ivs-right">${ov.util != null ? `${Math.round(ov.util * 100)}%` : html`<span className="ivs-dim">단계값</span>`}</td>
+                        <td className="ivs-dim">${ov.note || (has ? "" : "기본값 사용")}</td>
+                      </tr>`;
+                    })}
+              </tbody>
+            </table>
+          </div>
+        <//>
+
+        <${Section} title="비생산 기간" hint="정기 OH · 예방정비 등 라인을 세우는 일정"
+          actions=${html`<${EditBtn} which="nonprod" icon="alert-triangle" label="비생산 기간 편집" />`}>
+          <div className="ivs-table-wrap">
+            <table className="ivs-table">
+              <thead><tr><th>유형</th><th>명칭</th><th>기간</th><th className="ivs-right">일수</th><th>대상</th></tr></thead>
+              <tbody>
+                ${(mes.nonProd || []).length === 0
+                  ? html`<tr><td colSpan=${5} className="ivs-prod-empty center">등록된 비생산 기간이 없어요.</td></tr>`
+                  : (mes.nonProd || []).map((n) => {
+                      const t = nonProdType(n.type);
+                      const d = dateRange(n.start, n.end).length;
+                      return html`<tr key=${n.id || n.name}>
+                        <td><span className="ivs-chip" style=${{ color: t.color, borderColor: t.color }}>${t.label}</span></td>
+                        <td>${n.name}</td>
+                        <td className="ivs-mono ivs-dim">${n.start} ~ ${n.end}</td>
+                        <td className="ivs-mono ivs-right">${d}일</td>
+                        <td className="ivs-dim">${n.shift === "day" ? "주간만" : n.shift === "night" ? "야간만" : "주·야 전체"}</td>
+                      </tr>`;
+                    })}
+              </tbody>
+            </table>
+          </div>
+        <//>
+      </div>
+
+      <div className="ivs-half-grid">
+        <${Section} title="공휴일" hint="근무형태에 따라 쉬거나 휴일근로로 돌아가요"
+          actions=${html`<${EditBtn} which="holidays" icon="calendar" label="공휴일 편집" />`}>
+          <div className="ivs-table-wrap">
+            <table className="ivs-table">
+              <thead><tr><th>일자</th><th>요일</th><th>명칭</th></tr></thead>
+              <tbody>
+                ${(mes.holidays || []).length === 0
+                  ? html`<tr><td colSpan=${3} className="ivs-prod-empty center">등록된 공휴일이 없어요.</td></tr>`
+                  : [...(mes.holidays || [])].sort((a, b) => a.date.localeCompare(b.date)).map((h) => html`
+                      <tr key=${h.date}>
+                        <td className="ivs-mono">${h.date}</td>
+                        <td className="ivs-dim">${dowOf(h.date)}</td>
+                        <td>${h.name}</td>
+                      </tr>`)}
+              </tbody>
+            </table>
+          </div>
+        <//>
+
+        <${Section} title="조 편성" hint="인원이 바뀌면 여기만 고치면 돼요"
+          actions=${html`<${EditBtn} which="crew" icon="users" label="조 편성 편집" />`}>
+          <div className="ivs-crew-view">
+            ${CREWS.map((c) => html`
+              <div className="ivs-crew-card" key=${c} style=${{ "--c": CREW_COLOR[c] }}>
+                <div className="ivs-crew-card-h">${c}조<span>${(mes.crewMembers[c] || []).length}명</span></div>
+                <div className="ivs-crew-names">
+                  ${(mes.crewMembers[c] || []).length === 0
+                    ? html`<span className="ivs-dim">등록된 인원이 없어요</span>`
+                    : (mes.crewMembers[c] || []).map((n) => html`<span className="ivs-chip neutral" key=${n}>${n}</span>`)}
+                </div>
+              </div>`)}
+          </div>
+        <//>
+      </div>
+
+      ${editOpen ? html`<${PlanEditModal} which=${editOpen} mes=${mes} months=${months}
+        onClose=${() => setEditOpen(null)} onSave=${onSave} />` : null}
     </div>`;
 }
 

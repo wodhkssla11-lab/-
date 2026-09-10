@@ -971,8 +971,13 @@
   .ivs-slide-trend-svg { width: 100%; height: 170px; display: block; }
   .ivs-slide-trend-x { display: flex; margin-top: 10px; }
   .ivs-slide-trend-x span { flex: 1 1 0; text-align: center; font-size: 10px; color: #94A3B8;
-    display: flex; flex-direction: column; gap: 2px; }
-  .ivs-slide-trend-x b { font-size: 12.5px; color: #fff; font-variant-numeric: tabular-nums; }
+    display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .ivs-slide-trend-x b { font-size: 12.5px; color: #fff; font-variant-numeric: tabular-nums; margin-bottom: 3px; }
+  .ivs-slide-trend-tick { display: block; width: 1px; height: 6px; background: #2E3B52; margin-bottom: 4px; }
+  .ivs-slide-trend-x em { font-style: normal; font-size: 9.5px; color: #64748B; }
+  .ivs-slide-trend-x em.hd { font-size: 11px; font-weight: 700; color: #E8EDF5; }
+  .ivs-slide-trend { border-bottom: none; }
+  .ivs-slide-trend-svg { border-bottom: 1px solid #2E3B52; }
 
   .ivs-slide-issues { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
   .ivs-slide-issue { background: #1B2437; border-radius: 10px; border-top: 3px solid var(--c); padding: 18px 18px 20px; }
@@ -4431,6 +4436,13 @@ const isAutoItemName = (name) => !String(name || "").trim() || CATEGORIES.some((
 const procOutputs = (proc) => (proc && proc.outputs ? proc.outputs.map((k) => outputKindByKey[k]).filter(Boolean) : []);
 const stageLabels = (keys) => (keys || []).map((k) => getStage(k).label).join(" · ");
 // 축 라벨이 길면 가운데 근처 띄어쓰기에서 두 줄로 접어요 (옆 라벨과 붙어버리는 걸 막습니다).
+// 그래프 축에 "언제"를 두 줄로 적어요 — 첫 줄은 몇 주차/며칠인지, 둘째 줄은 실제 날짜.
+const mmdd = (d) => (d ? d.slice(5).replace("-", "/") : "");
+const weekTag = (i) => `${i + 1}주차`;
+const weekAxis = (w, i) => `${weekTag(i)}\n${mmdd(w.from)}~${mmdd(w.to)}`;
+const dayAxis = (r) => `${mmdd(r.date)}\n(${r.dow})`;
+const periodAxis = (isMonth, r, i) => (isMonth ? weekAxis(r, i) : dayAxis(r));
+
 function wrapLabel(text, limit) {
   const t = String(text || "");
   const lim = limit || 9;
@@ -5247,7 +5259,7 @@ function bodyTrend(v, s) {
   const hasBanner = !!s.banner;
   const top = 206, boxH = hasBanner ? 356 : 420;
   let out = ppRect(64, top, 1152, boxH, PT.card, { geom: "roundRect", alpha: 0.55 });
-  const padL = 56, padR = 56, padT = 62, padB = 52;
+  const padL = 56, padR = 56, padT = 62, padB = 76;
   const x0 = 64 + padL, y0 = top + padT;
   const w = 1152 - padL - padR, h = boxH - padT - padB;
   const vals = rows.map((r) => Number(r.value) || 0);
@@ -5256,17 +5268,24 @@ function bodyTrend(v, s) {
   const pad = span * 0.28;
   const yOf = (val) => y0 + h - ((val - (lo - pad)) / (span + pad * 2)) * h;
   const xOf = (i) => x0 + (rows.length === 1 ? w / 2 : (w * i) / (rows.length - 1));
-  // 은은한 가로 눈금
+  // 은은한 가로 눈금 + 바닥 축
   [0.25, 0.5, 0.75].forEach((g) => { out += ppRect(x0, y0 + h * g, w, 0.8, PT.line, { alpha: 0.5 }); });
+  out += ppRect(x0 - 10, y0 + h, w + 20, 1.4, PT.line);
   const pts = rows.map((r, i) => [xOf(i), yOf(Number(r.value) || 0)]);
   const color = v.color || PT.green;
   out += ppLine(pts.concat([[xOf(rows.length - 1), y0 + h], [x0, y0 + h]]), color, 0.5, { fill: color, fillAlpha: 0.16, close: true });
   out += ppLine(pts, color, 3);
+  const slotW = rows.length > 1 ? w / (rows.length - 1) : w;
   rows.forEach((r, i) => {
     const [cx, cy] = pts[i];
+    // 점에서 축까지 내려오는 얇은 세로선 — "이 값이 어느 기간의 것인가"를 눈으로 잇게
+    out += ppRect(cx, cy + 8, 1, y0 + h - cy - 8, PT.line, { alpha: 0.7 });
+    out += ppRect(cx, y0 + h, 1, 6, PT.line);
     out += ppShape(cx - 7, cy - 7, 14, 14, PT.bg, { geom: "ellipse", line: color, lineW: 28000 });
     out += ppText(cx - 60, cy - 34, 120, 20, [{ t: r.text != null ? r.text : String(r.value), size: 11.5, bold: true, color: PT.text, align: "ctr" }]);
-    out += ppText(cx - 60, y0 + h + 14, 120, 20, [{ t: r.label, size: 10, color: PT.dim, align: "ctr" }]);
+    out += ppText(cx - slotW / 2, y0 + h + 14, slotW, 40,
+      String(r.label).split("\n").map((t, j) => ({ t, size: j === 0 ? 11 : 9.5, bold: j === 0,
+        color: j === 0 ? PT.text : PT.faint, align: "ctr", lnSpc: 116000 })));
   });
   if (hasBanner) out += ppBanner(586, s.banner.kind, s.banner.label, s.banner.text);
   return out;
@@ -5517,7 +5536,7 @@ function bodyPlanActual(v, s) {
   out += ppText(64, cy + 112, gW, 22, [{ t: v.gapText || "", size: 12, bold: true, color: v.gapColor || PT.dim, align: "ctr" }]);
   // 오른쪽 짝 막대
   const px0 = 64 + gW + 26, plotW = 1216 - 30 - px0;
-  const padT = 62, padB = 70;
+  const padT = 62, padB = 84;
   const y0 = top + padT, plotH = boxH - padT - padB;
   if (rows.length === 0) {
     out += ppText(px0, y0 + plotH / 2 - 12, plotW, 24, [{ t: "기간별 계획이 없습니다.", size: 12, color: PT.faint, align: "ctr" }]);
@@ -5535,7 +5554,10 @@ function bodyPlanActual(v, s) {
       out += ppRect(bx + 3, y0 + plotH - ah, bw, ah, met ? PT.green : PT.amber, { geom: "roundRect" });
       out += ppText(bx - slot / 2, y0 + plotH - Math.max(ph, ah) - 26, slot, 24,
         [{ t: r.actualText || "", size: 10.5, bold: true, color: met ? PT.green : PT.amber, align: "ctr" }], { anchor: "b" });
-      out += ppText(bx - slot / 2, y0 + plotH + 12, slot, 22, [{ t: r.label, size: 10, color: PT.dim, align: "ctr" }]);
+      out += ppRect(bx, y0 + plotH, 1, 5, PT.line);
+      out += ppText(bx - slot / 2, y0 + plotH + 12, slot, 38,
+        String(r.label).split("\n").map((t, j) => ({ t, size: j === 0 ? 10.5 : 9, bold: j === 0,
+          color: j === 0 ? PT.text : PT.faint, align: "ctr", lnSpc: 114000 })));
     });
     // 범례
     out += ppRect(px0, top + 30, 13, 13, PT.faint, { geom: "roundRect", alpha: 0.55 });
@@ -8427,7 +8449,7 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
   S.push({
     kicker: "요약", accent: okAch && okUtil ? PT.green : PT.red,
     title: headline,
-    subtitle: "Executive Summary : Key Performance Indicators",
+    subtitle: `핵심 성과 지표 · ${label}`,
     points,
     visual: { type: "kpi", items: [
       // ① 투입 계획 대비 실적 ② BM 생산량·회수율 ③ 종합가동율(비가동 포함) ④ 응축수 회수
@@ -8458,8 +8480,8 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
   {
     const paSrc = isMonth ? weeks.filter((w) => w.planKg > 0 || w.inputKg > 0)
                           : recs.filter((r) => r.planKg > 0 || r.inputKg > 0);
-    const paRows = paSrc.slice(0, 7).map((r) => ({
-      label: isMonth ? r.label : `${r.date.slice(5)}\n(${r.dow})`.split("\n")[0],
+    const paRows = paSrc.slice(0, 7).map((r, i) => ({
+      label: periodAxis(isMonth, r, i),
       plan: r.planKg, actual: r.inputKg,
       actualText: r.planKg > 0 ? `${((r.inputKg / r.planKg) * 100).toFixed(0)}%`
         : r.inputKg > 0 ? `${fmtTon(r.inputKg)}톤` : "",
@@ -8470,7 +8492,7 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
       title: noPlan ? `${label} 조업 계획 미수립, 투입 실적 ${fmtTon(tot.inputKg)}톤`
         : okAch ? `계획 ${fmtTon(tot.planKg)}톤 대비 ${fmtTon(tot.inputKg)}톤 투입,\n달성율 ${achieve.toFixed(0)}%로 목표 상회`
         : `계획 ${fmtTon(tot.planKg)}톤 대비 ${fmtTon(tot.inputKg)}톤 투입,\n${fmtTon(Math.abs(gap))}톤 미달 (달성율 ${achieve == null ? "-" : achieve.toFixed(0)}%)`,
-      subtitle: `Plan vs. Actual Input · ${label}`,
+      subtitle: `${isMonth ? "주차별" : "일자별"} 계획 대비 투입 실적 · ${label} (단위: 톤)`,
       visual: { type: "planActual", achieve, achieveColor: okAch ? PT.green : PT.amber,
         planText: `${fmtTon(tot.planKg)}톤`, actualText: `${fmtTon(tot.inputKg)}톤`,
         gapText: noPlan ? "" : `${gap >= 0 ? "+" : "−"}${fmtTon(Math.abs(gap))}톤`,
@@ -8492,21 +8514,26 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
     const peak = trendWeeks.reduce((a, w) => (w.inputKg > a.inputKg ? w : a), trendWeeks[0]);
     const rising = (last.inputKg || 0) >= (first.inputKg || 0);
     const anyInput = trendWeeks.some((w) => w.inputKg > 0);
+    const unit = isMonth ? "주차별" : "일자별";
+    const flow = isMonth ? "주차가 지날수록" : "날이 갈수록";
+    // 제목에는 몇 주차인지만 — 날짜 범위는 축에 적혀 있어요 (제목이 세 줄로 넘어가면 부제와 겹칩니다).
+    const peakTag = isMonth ? weekTag(trendWeeks.indexOf(peak)) : `${mmdd(peak.date)}(${peak.dow})`;
+    const lastTag = isMonth ? weekTag(trendWeeks.length - 1) : `${mmdd(last.date)}(${last.dow})`;
     const title = !anyInput
-      ? `기간 내 투입 실적 미기록,\n주차별 계획 ${fmtTon(first.planKg)} ~ ${fmtTon(last.planKg)}톤 편성`
+      ? `기간 내 투입 실적 미기록,\n${unit} 계획 ${fmtTon(first.planKg)} ~ ${fmtTon(last.planKg)}톤 편성`
       : last.inputKg >= peak.inputKg
-        ? `주차 경과에 따라 투입량 상승,\n최종 주 ${fmtTon(last.inputKg)}톤으로 기간 내 최고 수준 도달`
+        ? `${flow} 투입량 상승,\n마지막 ${lastTag} ${fmtTon(last.inputKg)}톤으로 기간 내 최고 수준 도달`
         : rising
-          ? `주차 경과에 따라 투입량 증가 추세,\n최고 ${peak.label} ${fmtTon(peak.inputKg)}톤 기록`
-          : `주차 경과에 따라 투입량 감소,\n최종 주 ${fmtTon(last.inputKg)}톤으로 최고 대비 ${fmtTon(peak.inputKg - last.inputKg)}톤 하락`;
+          ? `${flow} 투입량 증가 추세,\n최고 ${peakTag} ${fmtTon(peak.inputKg)}톤 기록`
+          : `${flow} 투입량 감소,\n마지막 ${lastTag} ${fmtTon(last.inputKg)}톤으로 최고 ${peakTag} 대비 ${fmtTon(peak.inputKg - last.inputKg)}톤 하락`;
     S.push({
       kicker: "분석", accent: !anyInput ? PT.faint : rising ? PT.green : PT.red,
       title,
-      subtitle: "Weekly Production Trend (단위: 톤)",
+      subtitle: `${isMonth ? "주차별" : "일자별"} 투입량 · ${from} ~ ${to} (단위: 톤)`,
       visual: { type: "trend", color: !anyInput ? PT.faint : rising ? PT.green : PT.red,
-        rows: trendWeeks.map((w) => ({ label: w.label, value: w.inputKg / 1000, text: (w.inputKg / 1000).toFixed(1) })) },
+        rows: trendWeeks.map((w, i) => ({ label: periodAxis(isMonth, w, i), value: w.inputKg / 1000, text: (w.inputKg / 1000).toFixed(1) })) },
       banner: { kind: "insight", label: "Insight",
-        text: `주 평균 ${fmtTon(tot.inputKg / Math.max(1, trendWeeks.length))}톤 투입 · 최고 ${fmtTon(peak.inputKg)}톤 / 최저 ${fmtTon(Math.min(...trendWeeks.map((w) => w.inputKg)))}톤 · 편차 ${fmtTon(peak.inputKg - Math.min(...trendWeeks.map((w) => w.inputKg)))}톤` },
+        text: `${isMonth ? "주" : "일"} 평균 ${fmtTon(tot.inputKg / Math.max(1, trendWeeks.length))}톤 투입 · 최고 ${peakTag} ${fmtTon(peak.inputKg)}톤 / 최저 ${fmtTon(Math.min(...trendWeeks.map((w) => w.inputKg)))}톤 · 편차 ${fmtTon(peak.inputKg - Math.min(...trendWeeks.map((w) => w.inputKg)))}톤` },
     });
   }
 
@@ -8523,7 +8550,7 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
       : worstPerf && worstPerf.v < worstPerf.t
         ? `${worstPerf.key} ${worstPerf.v.toFixed(1)}%로 목표 ${worstPerf.t}% 대비 ${(worstPerf.t - worstPerf.v).toFixed(1)}%p 미달,\n${byMajor[0] ? execTerm(byMajor[0].key) : "가동 저해"}${josa(byMajor[0] ? execTerm(byMajor[0].key) : "가동 저해", ["이", "가"])} 직접 원인`
         : "전 지표 목표 달성, 현 조업 조건 유지 필요",
-    subtitle: "Target vs. Actual",
+    subtitle: `목표 대비 실적 · ${label}`,
     visual: { type: "gauges",
       items: perfRows.map((r) => {
         const worst = worstPerf && r.key === worstPerf.key;
@@ -8547,7 +8574,7 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
     title: byMajor.length === 0
       ? "기간 내 비가동 발생 없음, 안정 조업 유지"
       : `${execTerm(byMajor[0].key)}${josa(execTerm(byMajor[0].key), ["이", "가"])} 총 정지시간의 ${((byMajor[0].min / totMin) * 100).toFixed(0)}% 점유,\n상위 2개 요인 집중 관리 시 ${((top2 / totMin) * 100).toFixed(0)}% 개선 가능`,
-    subtitle: "Downtime Pareto by Root Cause · 막대 = 정지시간, 선 = 누적 비중",
+    subtitle: `비가동 요인별 정지시간 · ${label} · 막대 = 정지시간, 선 = 누적 비중`,
     visual: { type: "pareto",
       rows: byMajor.slice(0, 6).map((m, i) => ({
         label: wrapLabel(execTerm(m.key), 9), value: m.min, text: `${fmtMin(m.min)} · ${m.count}건`,
@@ -8568,7 +8595,7 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
       kicker: "분석", accent: under.length ? PT.amber : PT.green,
       title: tot.inputKg === 0 ? "투입 실적 없음, 회수율 산출 불가"
         : `투입 ${fmtTon(tot.inputKg)}톤 대비 BM ${fmtTon(bmKg)}톤 회수 (${fmtPct(tot.rate.bm)}),\n응축액 ${fmtTon(cdKg)}톤 (${fmtPct(tot.rate.cd)})`,
-      subtitle: `Recovery vs. Target · ${label} (막대 = 회수율 %, 아래 = 회수량)`,
+      subtitle: `투입 대비 회수율 · ${label} (막대 = 회수율 %, 위 = 회수량)`,
       visual: { type: "columns",
         rows: OUTPUT_KINDS.map((k) => {
           const v = tot.rate[k.key];
@@ -8594,7 +8621,7 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
     S.push({
       kicker: "분석", accent: gap > (best.perCap || 1) * 0.15 ? PT.amber : PT.green,
       title: `${best.crew}조 인당 생산성 ${Math.round(best.perCap || 0).toLocaleString("ko-KR")}kg로 최고 수준,\n최저 ${worst.crew}조 대비 편차 ${Math.round(gap).toLocaleString("ko-KR")}kg`,
-      subtitle: "Productivity per Head by Shift Crew (단위: kg/인)",
+      subtitle: `교대조별 인당 생산성 · ${label} (단위: kg/인)`,
       visual: { type: "columns", mark: crewRows.reduce((a, c) => a + (c.perCap || 0), 0) / crewRows.length,
         markLabel: "조 평균",
         rows: sorted.map((c, i) => ({
@@ -8672,7 +8699,7 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
     title: cards.length > 0
       ? `상위 ${allCards.length}개 과제에 대한 대응 방안 수립,\n${cards[0].title} 우선 조치로 정지시간 ${fmtMin(byMajor[0].min * 0.4)} 절감 목표`
       : `${allCards[0].title} 해소를 최우선으로 ${allCards.length}개 과제 도출,\n원인별 대응 방안 확정`,
-    subtitle: "Key Issues & Action Plans",
+    subtitle: `현안 과제와 대응 방안 · ${label}`,
     visual: { type: "issues", cards: allCards },
   });
 
@@ -8705,7 +8732,7 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
     title: okAch && okUtil
       ? `현 조업 조건 유지 시 차기 ${fmtTon(nextPlan.planKg)}톤 달성 가능,\n추가 자원 투입 불요`
       : `${byMajor[0] ? execTerm(byMajor[0].key) : allCards[0].title} 해소가 최우선 과제,\n${byMajor[0] ? "정비 예산 및 예비품 확보 승인 요청" : "차기 기간 자원 배분 승인 요청"}`,
-    subtitle: "Conclusion & Request to Management",
+    subtitle: `결론 및 요청사항 · ${label}`,
     points: [
       { label: "결론", color: okAch && okUtil ? PT.green : PT.amber,
         text: noPlan ? "평가 대상 구간 아님"
@@ -8732,12 +8759,12 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
   S.push({
     kicker: "별첨", accent: PT.faint,
     title: "별첨 : 기간 상세 실적",
-    subtitle: "Appendix : Detailed Records",
+    subtitle: `별첨 · ${isMonth ? "주차별" : "일자별"} 상세 · ${from} ~ ${to}`,
     visual: { type: "table",
       head: ["구분", "계획(톤)", "투입(톤)", "달성율", "비가동", "시간가동율", "성능가동율", "종합가동율"],
       colRatio: [0.22, 0.11, 0.11, 0.11, 0.12, 0.11, 0.11, 0.11],
-      rows: src.slice(0, 13).map((r) => [
-        isMonth ? r.label : `${r.date.slice(5)} (${r.dow})`,
+      rows: src.slice(0, 13).map((r, i) => [
+        isMonth ? `${weekTag(i)} ${mmdd(r.from)}~${mmdd(r.to)}` : `${mmdd(r.date)} (${r.dow})`,
         fmtTon(r.planKg), fmtTon(r.inputKg), fmtPct(r.achieve),
         r.dtMin > 0 ? fmtMin(r.dtMin) : "-", fmtPct(r.utilTime), fmtPct(r.utilPerf), fmtPct(r.utilAll),
       ]),
@@ -9012,7 +9039,9 @@ function SlideVisual({ v }) {
                   <span className="plan" style=${{ height: `${((Number(r.plan) || 0) / max) * 100}%` }}></span>
                   <span className=${met ? "act ok" : "act"} style=${{ height: `${((Number(r.actual) || 0) / max) * 100}%` }}></span>
                 </div>
-                <div className="ivs-sv-col-l"><span>${r.label}</span></div>
+                <div className="ivs-sv-col-l">
+                  ${String(r.label).split("\n").map((t, j) => html`<span key=${j}>${t}</span>`)}
+                </div>
               </div>`;
             })}
           </div>`}
@@ -9031,7 +9060,11 @@ function SlideVisual({ v }) {
         <polyline points=${pts.map(([a, b]) => `${a},${b}`).join(" ")} fill="none" stroke=${hx2(v.color)} strokeWidth="2" vectorEffect="non-scaling-stroke" />
       </svg>
       <div className="ivs-slide-trend-x">
-        ${rows.map((r, i) => html`<span key=${i}><b>${r.text}</b>${r.label}</span>`)}
+        ${rows.map((r, i) => html`<span key=${i}>
+          <b>${r.text}</b>
+          <i className="ivs-slide-trend-tick"></i>
+          ${String(r.label).split("\n").map((t, j) => html`<em key=${j} className=${j === 0 ? "hd" : ""}>${t}</em>`)}
+        </span>`)}
       </div>
     </div>`;
   }

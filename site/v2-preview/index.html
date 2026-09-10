@@ -909,6 +909,64 @@
   .ivs-slide-bar-t u { position: absolute; top: -4px; bottom: -4px; width: 1.5px; background: #94A3B8; opacity: .6; }
   .ivs-slide-bar-v { font-size: 12px; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
 
+  .ivs-slide-kpi-bar { position: relative; height: 7px; border-radius: 4px; background: #232F45;
+    margin: 10px 0 8px; }
+  .ivs-slide-kpi-bar i { display: block; height: 100%; border-radius: 4px; min-width: 4px; }
+  .ivs-slide-kpi-bar u { position: absolute; top: -3px; bottom: -3px; width: 1.5px; background: #fff; opacity: .85; }
+
+  /* ---------- 보고서 도형: 게이지 · 세로막대 · 파레토 · 계획대비실적 ---------- */
+  .ivs-sv-gauges { display: flex; gap: 16px; background: rgba(27,36,55,.55); border-radius: 10px; padding: 22px 20px 18px; }
+  .ivs-sv-gauge { flex: 1 1 0; min-width: 0; text-align: center; }
+  .ivs-sv-gauge-svg { width: 100%; max-width: 240px; height: auto; display: block; margin: 0 auto; }
+  .ivs-sv-gauge-bg { fill: none; stroke: #232F45; stroke-width: 12; stroke-linecap: round; }
+  .ivs-sv-gauge-fg { fill: none; stroke-width: 12; stroke-linecap: round; }
+  .ivs-sv-gauge-mark { stroke: #fff; stroke-width: 2; }
+  .ivs-sv-gauge-v { margin-top: 4px; font-size: 32px; font-weight: 800; letter-spacing: -.5px;
+    font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .ivs-sv-gauge-v em { font-size: 14px; font-style: normal; color: #94A3B8; margin-left: 3px; }
+  .ivs-sv-gauge-l { margin-top: 10px; font-size: 13px; font-weight: 700; color: #fff; }
+  .ivs-sv-gauge-m { margin-top: 3px; font-size: 10px; color: #94A3B8; }
+  .ivs-sv-gauge-s { margin-top: 4px; font-size: 11px; color: #94A3B8; line-height: 1.45; }
+  .ivs-sv-gauge-gap { margin-top: 4px; font-size: 11px; font-weight: 700; }
+
+  .ivs-sv-cols, .ivs-sv-pareto { position: relative; background: rgba(27,36,55,.55); border-radius: 10px; padding: 20px 22px 12px; }
+  .ivs-sv-colrow { display: flex; align-items: flex-end; gap: 8px; }
+  .ivs-sv-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; }
+  .ivs-sv-col-v { font-variant-numeric: tabular-nums; color: #fff; display: flex; flex-direction: column;
+    align-items: center; line-height: 1.2; margin-bottom: 6px; }
+  .ivs-sv-col-v b { font-size: 15px; font-weight: 800; }
+  .ivs-sv-col-v span { font-size: 10px; color: #64748B; }
+  .ivs-sv-col-track { width: min(76px, 82%); height: 150px; background: rgba(35,47,69,.5);
+    border-radius: 8px; display: flex; align-items: flex-end; }
+  .ivs-sv-col-track i { display: block; width: 100%; background: var(--c); border-radius: 8px; min-height: 3px; }
+  .ivs-sv-col-l { margin-top: 9px; padding-top: 8px; border-top: 1px solid #2E3B52; width: 100%;
+    display: flex; flex-direction: column; gap: 2px; text-align: center; font-size: 11px; color: #94A3B8; }
+  .ivs-sv-col-l span + span { font-size: 9.5px; color: #64748B; }
+  .ivs-sv-col-l.strong { color: var(--c); font-weight: 700; }
+  .ivs-sv-cum { color: #F59E0B !important; font-weight: 700; }
+  .ivs-sv-mark { position: absolute; left: 22px; right: 22px; border-top: 1.5px dashed #F59E0B; }
+  .ivs-sv-mark span { position: absolute; right: 0; top: -17px; font-size: 10px; font-weight: 700; color: #F59E0B; }
+  .ivs-sv-pareto-svg { position: absolute; left: 22px; right: 22px; top: 46px; width: calc(100% - 44px); height: 150px; }
+  .ivs-sv-pareto-line { fill: none; stroke: #F59E0B; stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .ivs-sv-pareto-dot { fill: #0F172A; stroke: #F59E0B; stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+  .ivs-sv-pareto-80 { stroke: #94A3B8; stroke-width: 1; stroke-dasharray: 4 4; opacity: .5; vector-effect: non-scaling-stroke; }
+
+  .ivs-sv-pa { display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 18px;
+    background: rgba(27,36,55,.55); border-radius: 10px; padding: 22px 22px 14px; align-items: start; }
+  .ivs-sv-pacols { min-width: 0; }
+  .ivs-sv-legend { display: flex; align-items: center; gap: 14px; font-size: 11px; color: #94A3B8; margin-bottom: 12px; }
+  .ivs-sv-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .ivs-sv-legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+  .ivs-sv-legend i.plan { background: rgba(100,116,139,.7); }
+  .ivs-sv-legend i.act { background: #10B981; }
+  .ivs-sv-pacol { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; }
+  .ivs-sv-pair { display: flex; align-items: flex-end; justify-content: center; gap: 5px; height: 140px; width: 100%; }
+  .ivs-sv-pair span { width: 26px; border-radius: 6px; min-height: 2px; }
+  .ivs-sv-pair span.plan { background: rgba(100,116,139,.55); }
+  .ivs-sv-pair span.act { background: #F59E0B; }
+  .ivs-sv-pair span.act.ok { background: #10B981; }
+  @media (max-width: 860px) { .ivs-sv-pa { grid-template-columns: 1fr; } .ivs-sv-gauges { flex-wrap: wrap; } }
+
   .ivs-slide-trend { background: rgba(27,36,55,.55); border-radius: 10px; padding: 22px 26px 16px; }
   .ivs-slide-trend-svg { width: 100%; height: 170px; display: block; }
   .ivs-slide-trend-x { display: flex; margin-top: 10px; }
@@ -3981,6 +4039,24 @@ function moveSeedData() {
   return out;
 }
 
+// 비가동 샘플 — 보고서 파레토가 어떻게 보이는지 확인하려면 정지 기록이 있어야 해요.
+const SEED_DOWNS = [
+  [-1, "day",   "EQ02", "설비고장", "기계",      "커터 파손",        95, "1차 파쇄기 커터 2매 교체"],
+  [-2, "night", "EQ02", "설비고장", "기계",      "베어링 손상",      70, "구동부 베어링 교체"],
+  [-3, "day",   "EQ03", "설비고장", "전기/제어", "센서 오류",        45, "온도센서 재교정"],
+  [-2, "day",   "EQ06", "공정이상", "막힘",      "스크린 막힘 조치", 55, "타공망 청소"],
+  [-4, "day",   "EQ06", "공정이상", "막힘",      "슈트 막힘 조치",   30, ""],
+  [-5, "night", "EQ01", "물류/자재", "원료",     "원료 대기",        40, "입고 지연"],
+  [-3, "night", "EQ09", "준비/교체", "소모품 교체", "톤백 교체",     25, ""],
+  [-6, "day",   "EQ04", "계획정지", "예방정비(PM)", "오일 교환",     35, "월 정기"],
+];
+function downSeedData() {
+  return SEED_DOWNS.map((r, i) => ({
+    id: `dt-seed-${i}`, date: dayOffset(r[0]), shift: r[1], eqId: r[2],
+    major: r[3], minor: r[4], detail: r[5], min: r[6], note: r[7] || "",
+  }));
+}
+
 // 생산실적 원장 샘플
 function runSeedData() {
   const lots = new Map(seedData().map((l) => [l.id, l]));
@@ -4354,6 +4430,20 @@ const autoItemName = (catId) => CATEGORY_ITEM_NAME[catId] || (categoryById[catId
 const isAutoItemName = (name) => !String(name || "").trim() || CATEGORIES.some((c) => name === autoItemName(c.id));
 const procOutputs = (proc) => (proc && proc.outputs ? proc.outputs.map((k) => outputKindByKey[k]).filter(Boolean) : []);
 const stageLabels = (keys) => (keys || []).map((k) => getStage(k).label).join(" · ");
+// 축 라벨이 길면 가운데 근처 띄어쓰기에서 두 줄로 접어요 (옆 라벨과 붙어버리는 걸 막습니다).
+function wrapLabel(text, limit) {
+  const t = String(text || "");
+  const lim = limit || 9;
+  if (t.length <= lim) return t;
+  const mid = Math.floor(t.length / 2);
+  let best = -1;
+  for (let i = 0; i < t.length; i++) {
+    if (t[i] !== " ") continue;
+    if (best < 0 || Math.abs(i - mid) < Math.abs(best - mid)) best = i;
+  }
+  if (best < 0) return t;
+  return `${t.slice(0, best)}\n${t.slice(best + 1)}`;
+}
 
 // ---------- Lot 추적 ----------
 // 생산 Lot이 어떤 Lot에서 나왔는지 거슬러 올라가요.
@@ -5064,21 +5154,34 @@ function bodyKpi(v, s) {
   let out = "";
   items.forEach((k, i) => {
     const x = x0 + (w + gap) * i;
-    out += ppRect(x, 196, w, 168, PT.card, { geom: "roundRect", line: PT.line, lineW: 9525 });
+    const cardH = k.bar ? 202 : 168;
+    out += ppRect(x, 196, w, cardH, PT.card, { geom: "roundRect", line: PT.line, lineW: 9525 });
     out += ppText(x + 26, 220, w - 52, 20, [{ t: k.label, size: 11, color: PT.dim }]);
-    out += ppText(x + 26, 250, w - 52, 66, [{ t: [
-      { t: k.value, size: 40, bold: true, color: k.color || PT.text },
+    out += ppText(x + 26, 248, w - 52, 62, [{ t: [
+      { t: k.value, size: 38, bold: true, color: k.color || PT.text },
       { t: k.unit ? ` ${k.unit}` : "", size: 14, color: PT.dim },
     ] }]);
+    if (k.bar) {
+      const bw = w - 52, by = 314;
+      const mx = Math.max(1e-6, Number(k.bar.max) || 100);
+      out += ppRect(x + 26, by, bw, 9, PT.cardAlt, { geom: "roundRect" });
+      out += ppRect(x + 26, by, Math.max(4, Math.min(1, (Number(k.bar.pct) || 0) / mx) * bw), 9,
+        k.bar.color || PT.green, { geom: "roundRect" });
+      if (k.bar.mark != null && k.bar.mark > 0 && k.bar.mark <= mx) {
+        out += ppRect(x + 26 + (k.bar.mark / mx) * bw, by - 4, 1.8, 17, PT.text, { alpha: 0.85 });
+      }
+    }
     if (k.delta) {
-      out += ppShape(x + 26, 328, 13, 13, k.deltaColor || PT.dim,
+      const dy = k.bar ? 336 : 328;
+      out += ppShape(x + 26, dy + 3, 12, 12, k.deltaColor || PT.dim,
         { geom: k.deltaDir === "up" ? "upArrow" : k.deltaDir === "down" ? "downArrow" : "ellipse" });
-      out += ppText(x + 46, 325, w - 72, 20, [{ t: k.delta, size: 10.5, bold: true, color: k.deltaColor || PT.dim }]);
+      out += ppText(x + 44, dy, w - 70, 34, [{ t: k.delta, size: 10, bold: true, color: k.deltaColor || PT.dim, lnSpc: 118000 }]);
     }
   });
   // 시사점 세 가지 — 결론 밑에 근거를 개조식으로.
   if (s.points && s.points.length) {
-    out += ppText(64, 400, 1152, 24, [{ t: "핵심 시사점", size: 11, bold: true, color: PT.dim, spc: 1 }]);
+    const py = items.some((k) => k.bar) ? 418 : 400;
+    out += ppText(64, py, 1152, 24, [{ t: "핵심 시사점", size: 11, bold: true, color: PT.dim, spc: 1 }]);
     s.points.forEach((p, i) => {
       const y = 432 + i * 62;
       out += ppRect(64, y, 1152, 50, PT.card, { geom: "roundRect", alpha: 0.55 });
@@ -5096,7 +5199,8 @@ function bodyKpi(v, s) {
 // 2) 가로 막대 — 목표선까지의 트랙을 깔고, 문제 있는 항목 하나만 빨강.
 function bodyBars(v, s) {
   const rows = v.rows || [];
-  if (rows.length === 0) return ppText(64, 300, 1152, 40, [{ t: "표시할 데이터가 없습니다.", size: 13, color: PT.faint, align: "ctr" }]);
+  if (rows.length === 0) return ppRect(64, 200, 1152, !!s.banner ? 362 : 424, PT.card, { geom: "roundRect", alpha: 0.55 }) +
+    ppText(64, 390, 1152, 40, [{ t: "표시할 데이터가 없습니다.", size: 13, color: PT.faint, align: "ctr" }]);
   const hasBanner = !!s.banner;
   const top = 206, boxH = hasBanner ? 356 : 420;
   let out = ppRect(64, top, 1152, boxH, PT.card, { geom: "roundRect", alpha: 0.55 });
@@ -5237,11 +5341,222 @@ function bodyCover(v) {
   return out;
 }
 
+// ── 눈에 들어오는 도형들 ───────────────────────────────────
+// 가로 막대만 늘어놓으면 "표를 그림으로 바꾼 것"에 그쳐요. 무엇을 묻는 장표냐에 따라
+// 게이지(목표까지 얼마나 왔나) · 세로 막대(누가 크고 작나) · 파레토(어디부터 손대나)로 나눠 씁니다.
+
+// 원호 위의 점들 — 파워포인트 기본 도형에는 "값만큼 채운 게이지"가 없어서 직접 그려요.
+function arcPts(cx, cy, r, a0, a1, n) {
+  const out = [];
+  const steps = n || 44;
+  for (let i = 0; i <= steps; i++) {
+    const a = a0 + ((a1 - a0) * i) / steps;
+    out.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+  }
+  return out;
+}
+// ppLine의 두께는 pt 단위예요. 우리 좌표는 px라서 0.75를 곱해 맞춰줍니다.
+const pxLine = (pts, color, thPx, opts) => ppLine(pts, color, thPx * 0.75, opts);
+
+// A) 반원 게이지 — "목표까지 얼마나 왔나"를 묻는 장표에.
+function bodyGauges(v, s) {
+  const items = (v.items || []).slice(0, 3);
+  if (items.length === 0) return ppRect(64, 200, 1152, !!s.banner ? 362 : 424, PT.card, { geom: "roundRect", alpha: 0.55 }) +
+    ppText(64, 390, 1152, 40, [{ t: "표시할 데이터가 없습니다.", size: 13, color: PT.faint, align: "ctr" }]);
+  const hasBanner = !!s.banner;
+  const top = 200, boxH = hasBanner ? 362 : 424;
+  let out = ppRect(64, top, 1152, boxH, PT.card, { geom: "roundRect", alpha: 0.55 });
+  const n = items.length, gap = 18, w = (1152 - gap * (n - 1)) / n;
+  items.forEach((it, i) => {
+    const x = 64 + (w + gap) * i;
+    const cx = x + w / 2;
+    const r = Math.min(w * 0.31, boxH * 0.30);
+    const cy = top + Math.max(40, (boxH - (r + 138)) / 2) + r;
+    const th = Math.max(15, r * 0.24);
+    const max = Number(it.max) || 100;
+    const val = Number(it.value);
+    const f = Number.isFinite(val) ? Math.max(0, Math.min(1, val / max)) : 0;
+    const c = hex(it.color || PT.blue);
+    out += pxLine(arcPts(cx, cy, r, Math.PI, Math.PI * 2), PT.cardAlt, th);
+    if (f > 0.004) out += pxLine(arcPts(cx, cy, r, Math.PI, Math.PI * (1 + f)), c, th);
+    // 목표 눈금 — 호를 가로지르는 흰 선. "여기까지 갔어야 한다"를 한눈에.
+    if (it.mark != null && it.mark > 0 && it.mark <= max) {
+      const a = Math.PI * (1 + it.mark / max);
+      out += pxLine([[cx + (r - th / 2 - 2) * Math.cos(a), cy + (r - th / 2 - 2) * Math.sin(a)],
+                     [cx + (r + th / 2 + 2) * Math.cos(a), cy + (r + th / 2 + 2) * Math.sin(a)]], PT.text, 3.2);
+    }
+    // 숫자는 반원 아래에 — 호 위에 겹쳐 놓으면 둘 다 안 읽혀요.
+    out += ppText(x, cy + 8, w, 56, [{ t: [
+      { t: Number.isFinite(val) ? it.text || String(val) : "실적 없음", size: Number.isFinite(val) ? 36 : 22,
+        bold: true, color: Number.isFinite(val) ? c : PT.faint },
+      { t: Number.isFinite(val) && it.unit ? ` ${it.unit}` : "", size: 14, color: PT.dim },
+    ], align: "ctr" }]);
+    out += ppText(x, cy + 62, w, 24, [{ t: it.label, size: 13, bold: true, color: PT.text, align: "ctr" }]);
+    if (it.markLabel) out += ppText(x, cy + 86, w, 18, [{ t: it.markLabel, size: 10, color: PT.faint, align: "ctr" }]);
+    if (it.sub) out += ppText(x, cy + 106, w, 40, [{ t: it.sub, size: 11, bold: true, color: c, align: "ctr", lnSpc: 124000 }]);
+  });
+  if (hasBanner) out += ppBanner(586, s.banner.kind, s.banner.label, s.banner.text);
+  return out;
+}
+
+// B) 세로 막대 — "누가 크고 누가 작나"를 묻는 장표에. 목표선을 가로로 그어 대비시킵니다.
+function bodyColumns(v, s) {
+  const rows = (v.rows || []).slice(0, 8);
+  if (rows.length === 0) return ppText(64, 300, 1152, 40, [{ t: "표시할 데이터가 없습니다.", size: 13, color: PT.faint, align: "ctr" }]);
+  const hasBanner = !!s.banner;
+  const top = 200, boxH = hasBanner ? 362 : 424;
+  let out = ppRect(64, top, 1152, boxH, PT.card, { geom: "roundRect", alpha: 0.55 });
+  const padT = 62, padB = 74, padX = 54;
+  const x0 = 64 + padX, plotW = 1152 - padX * 2;
+  const y0 = top + padT, plotH = boxH - padT - padB;
+  const max = Math.max(1e-6, ...rows.map((r) => Math.abs(Number(r.value) || 0)), v.axisMax || 0, v.mark || 0);
+  const slot = plotW / rows.length;
+  const barW = Math.min(112, slot * 0.46);
+  // 바닥선
+  out += ppRect(x0, y0 + plotH, plotW, 1.4, PT.line);
+  rows.forEach((r, i) => {
+    const cx = x0 + slot * i + slot / 2;
+    const val = Math.abs(Number(r.value) || 0);
+    const h = Math.max(3, (val / max) * plotH);
+    const c = hex(r.color || PT.blue);
+    // 옅은 배경 기둥으로 "최대치까지의 여백"을 보여줘요
+    out += ppRect(cx - barW / 2, y0, barW, plotH, PT.cardAlt, { geom: "roundRect", alpha: 0.5 });
+    out += ppRect(cx - barW / 2, y0 + plotH - h, barW, h, c, { geom: "roundRect" });
+    const txt = r.text != null ? String(r.text) : String(val);
+    const cut = txt.indexOf(" · ");
+    out += ppText(cx - slot / 2, y0 + plotH - h - 40, slot, 38, cut > 0
+      ? [{ t: txt.slice(0, cut), size: 14, bold: true, color: r.strong ? c : PT.text, align: "ctr" },
+         { t: txt.slice(cut + 3), size: 9.5, color: PT.faint, align: "ctr" }]
+      : [{ t: txt, size: 15, bold: true, color: r.strong ? c : PT.text, align: "ctr" }], { anchor: "b" });
+    out += ppText(cx - slot / 2, y0 + plotH + 14, slot, 40,
+      String(r.label).split("\n").map((t, j) => ({ t, size: j === 0 ? 11.5 : 9.5, bold: j === 0 && !!r.strong,
+        color: j === 0 ? (r.strong ? c : PT.dim) : PT.faint, align: "ctr" })));
+  });
+  if (v.mark != null && v.mark > 0) {
+    const my = y0 + plotH - (v.mark / max) * plotH;
+    out += ppRect(x0, my, plotW, 1.6, PT.amber, { alpha: 0.85 });
+    out += ppText(x0, my - 20, plotW, 18, [{ t: v.markLabel || `목표 ${v.mark}`, size: 10, bold: true, color: PT.amber, align: "r" }]);
+  }
+  if (hasBanner) out += ppBanner(586, s.banner.kind, s.banner.label, s.banner.text);
+  return out;
+}
+
+// C) 파레토 — 세로 막대 + 누적 곡선. "어디부터 손대야 80%가 잡히나"를 바로 읽게.
+function bodyPareto(v, s) {
+  const rows = (v.rows || []).slice(0, 6);
+  if (rows.length === 0) return ppRect(64, 200, 1152, !!s.banner ? 362 : 424, PT.card, { geom: "roundRect", alpha: 0.55 }) +
+    ppText(64, 390, 1152, 40, [{ t: "기간 내 발생 건이 없습니다.", size: 13, color: PT.faint, align: "ctr" }]);
+  const hasBanner = !!s.banner;
+  const top = 200, boxH = hasBanner ? 362 : 424;
+  let out = ppRect(64, top, 1152, boxH, PT.card, { geom: "roundRect", alpha: 0.55 });
+  const padT = 66, padB = 74, padX = 66;
+  const x0 = 64 + padX, plotW = 1152 - padX * 2;
+  const y0 = top + padT, plotH = boxH - padT - padB;
+  const total = rows.reduce((a, r) => a + (Number(r.value) || 0), 0) || 1;
+  const max = Math.max(1e-6, ...rows.map((r) => Number(r.value) || 0));
+  const slot = plotW / rows.length;
+  const barW = Math.min(96, slot * 0.5);
+  out += ppRect(x0, y0 + plotH, plotW, 1.4, PT.line);
+  // 80% 기준선
+  const y80 = y0 + plotH * 0.2;
+  out += ppRect(x0, y80, plotW, 1.2, PT.dim, { alpha: 0.5 });
+  out += ppText(x0 + plotW - 120, y80 - 18, 120, 16, [{ t: "누적 80%", size: 9.5, color: PT.dim, align: "r" }]);
+  let cum = 0;
+  const pts = [];
+  rows.forEach((r, i) => {
+    const cx = x0 + slot * i + slot / 2;
+    const val = Number(r.value) || 0;
+    const h = Math.max(3, (val / max) * plotH);
+    const c = hex(r.color || PT.faint);
+    out += ppRect(cx - barW / 2, y0 + plotH - h, barW, h, c, { geom: "roundRect" });
+    cum += val;
+    pts.push([cx, y0 + plotH - (cum / total) * plotH]);
+    const txt = r.text != null ? String(r.text) : String(val);
+    const cut = txt.indexOf(" · ");
+    out += ppText(cx - slot / 2, y0 + plotH - h - 38, slot, 36, cut > 0
+      ? [{ t: txt.slice(0, cut), size: 13, bold: true, color: i === 0 ? c : PT.text, align: "ctr" },
+         { t: txt.slice(cut + 3), size: 9.5, color: PT.faint, align: "ctr" }]
+      : [{ t: txt, size: 13.5, bold: true, color: i === 0 ? c : PT.text, align: "ctr" }], { anchor: "b" });
+    out += ppText(cx - slot / 2, y0 + plotH + 14, slot, 44,
+      String(r.label).split("\n").map((t) => ({ t, size: 11, bold: i === 0, color: i === 0 ? c : PT.dim, align: "ctr", lnSpc: 116000 })));
+  });
+  out += pxLine(pts, PT.amber, 2.6);
+  pts.forEach((p, i) => {
+    out += ppShape(p[0] - 6, p[1] - 6, 12, 12, PT.bg, { geom: "ellipse", line: PT.amber, lineW: 25400 });
+    const pct = ((rows.slice(0, i + 1).reduce((a, r) => a + (Number(r.value) || 0), 0) / total) * 100).toFixed(0);
+    out += ppText(p[0] + 10, p[1] - 26, 70, 18, [{ t: `${pct}%`, size: 10, bold: true, color: PT.amber, align: "l" }]);
+  });
+  if (hasBanner) out += ppBanner(586, s.banner.kind, s.banner.label, s.banner.text);
+  return out;
+}
+
+// D) 계획 대비 실적 — 왼쪽에 달성율 게이지, 오른쪽에 기간별 계획·실적 짝 막대.
+function bodyPlanActual(v, s) {
+  const rows = (v.rows || []).slice(0, 7);
+  const hasBanner = !!s.banner;
+  const top = 200, boxH = hasBanner ? 362 : 424;
+  let out = ppRect(64, top, 1152, boxH, PT.card, { geom: "roundRect", alpha: 0.55 });
+  // 왼쪽 게이지
+  const gW = 330;
+  const cx = 64 + gW / 2, r = Math.min(gW * 0.36, boxH * 0.30);
+  const cy = top + Math.max(34, (boxH - (r + 150)) / 2) + r;
+  const th = Math.max(17, r * 0.24);
+  const ach = v.achieve;
+  const f = ach == null ? 0 : Math.max(0, Math.min(1, ach / 120));
+  const c = hex(v.achieveColor || PT.green);
+  out += pxLine(arcPts(cx, cy, r, Math.PI, Math.PI * 2), PT.cardAlt, th);
+  if (f > 0.004) out += pxLine(arcPts(cx, cy, r, Math.PI, Math.PI * (1 + f)), c, th);
+  const a100 = Math.PI * (1 + 100 / 120);
+  out += pxLine([[cx + (r - th / 2 - 2) * Math.cos(a100), cy + (r - th / 2 - 2) * Math.sin(a100)],
+                 [cx + (r + th / 2 + 2) * Math.cos(a100), cy + (r + th / 2 + 2) * Math.sin(a100)]], PT.text, 3.2);
+  out += ppText(64, cy + 6, gW, 60, ach == null
+    ? [{ t: "계획 없음", size: 24, bold: true, color: PT.faint, align: "ctr" }]
+    : [{ t: [{ t: ach.toFixed(1), size: 40, bold: true, color: c }, { t: " %", size: 15, color: PT.dim }], align: "ctr" }]);
+  out += ppText(64, cy + 62, gW, 22, [{ t: "계획 대비 달성율 (눈금 = 100%)", size: 12.5, bold: true, color: PT.text, align: "ctr" }]);
+  out += ppText(64, cy + 88, gW, 22, [{ t: `계획 ${v.planText} · 실적 ${v.actualText}`, size: 11, color: PT.dim, align: "ctr" }]);
+  out += ppText(64, cy + 112, gW, 22, [{ t: v.gapText || "", size: 12, bold: true, color: v.gapColor || PT.dim, align: "ctr" }]);
+  // 오른쪽 짝 막대
+  const px0 = 64 + gW + 26, plotW = 1216 - 30 - px0;
+  const padT = 62, padB = 70;
+  const y0 = top + padT, plotH = boxH - padT - padB;
+  if (rows.length === 0) {
+    out += ppText(px0, y0 + plotH / 2 - 12, plotW, 24, [{ t: "기간별 계획이 없습니다.", size: 12, color: PT.faint, align: "ctr" }]);
+  } else {
+    const max = Math.max(1e-6, ...rows.map((r) => Math.max(Number(r.plan) || 0, Number(r.actual) || 0)));
+    const slot = plotW / rows.length;
+    const bw = Math.min(38, slot * 0.30);
+    out += ppRect(px0, y0 + plotH, plotW, 1.4, PT.line);
+    rows.forEach((r, i) => {
+      const bx = px0 + slot * i + slot / 2;
+      const ph = Math.max(2, ((Number(r.plan) || 0) / max) * plotH);
+      const ah = Math.max(2, ((Number(r.actual) || 0) / max) * plotH);
+      const met = (Number(r.actual) || 0) >= (Number(r.plan) || 0) && (Number(r.plan) || 0) > 0;
+      out += ppRect(bx - bw - 3, y0 + plotH - ph, bw, ph, PT.faint, { geom: "roundRect", alpha: 0.55 });
+      out += ppRect(bx + 3, y0 + plotH - ah, bw, ah, met ? PT.green : PT.amber, { geom: "roundRect" });
+      out += ppText(bx - slot / 2, y0 + plotH - Math.max(ph, ah) - 26, slot, 24,
+        [{ t: r.actualText || "", size: 10.5, bold: true, color: met ? PT.green : PT.amber, align: "ctr" }], { anchor: "b" });
+      out += ppText(bx - slot / 2, y0 + plotH + 12, slot, 22, [{ t: r.label, size: 10, color: PT.dim, align: "ctr" }]);
+    });
+    // 범례
+    out += ppRect(px0, top + 30, 13, 13, PT.faint, { geom: "roundRect", alpha: 0.55 });
+    out += ppText(px0 + 20, top + 29, 60, 16, [{ t: "계획", size: 10.5, color: PT.dim }]);
+    out += ppRect(px0 + 72, top + 30, 13, 13, PT.green, { geom: "roundRect" });
+    out += ppText(px0 + 92, top + 29, 60, 16, [{ t: "실적", size: 10.5, color: PT.dim }]);
+    out += ppText(px0, top + 29, plotW, 16, [{ t: v.unit || "단위: 톤", size: 10, color: PT.faint, align: "r" }]);
+  }
+  if (hasBanner) out += ppBanner(586, s.banner.kind, s.banner.label, s.banner.text);
+  return out;
+}
+
 function slideBody(s) {
   const v = s.visual || {};
   if (v.type === "cover") return bodyCover(v);
   if (v.type === "kpi") return bodyKpi(v, s);
   if (v.type === "bars") return bodyBars(v, s);
+  if (v.type === "gauges") return bodyGauges(v, s);
+  if (v.type === "columns") return bodyColumns(v, s);
+  if (v.type === "pareto") return bodyPareto(v, s);
+  if (v.type === "planActual") return bodyPlanActual(v, s);
   if (v.type === "trend") return bodyTrend(v, s);
   if (v.type === "issues") return bodyIssues(v);
   if (v.type === "plan") return bodyPlan(v);
@@ -8089,7 +8404,9 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
 
   // ── 1. Executive Summary : 결론을 제목에 ────────────────
   const headline = noPlan
-    ? `${label} 조업 계획 미수립 구간으로, 실적 평가 대상에서 제외`
+    ? (tot.inputKg > 0
+        ? `${label} 조업 계획 미수립 구간, 투입 ${fmtTon(tot.inputKg)}톤 실적 기록,\n달성율 평가는 차기 계획 확정 후 적용`
+        : `${label} 조업 계획 미수립 구간으로, 실적 평가 대상에서 제외`)
     : okAch && okUtil
       ? `${label} 생산량 ${fmtTon(tot.inputKg)}톤으로 목표 ${achieve.toFixed(0)}% 달성,\n종합가동율 ${utilAll.toFixed(1)}%로 목표 수준 유지`
       : okAch
@@ -8113,30 +8430,64 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
     subtitle: "Executive Summary : Key Performance Indicators",
     points,
     visual: { type: "kpi", items: [
-      { label: "투입량 (톤)", value: fmtTon(tot.inputKg), color: PT.text,
-        delta: `계획 ${fmtTon(tot.planKg)}톤 대비 ${fmtPct(achieve)}`, deltaColor: okAch ? PT.green : PT.amber,
-        deltaDir: okAch ? "up" : "down" },
-      { label: "종합 가동율", value: utilAll == null ? "-" : utilAll.toFixed(1), unit: "%", color: okUtil ? PT.green : PT.red,
-        delta: `목표 ${target}% 대비 ${pp(dPt(utilAll, target))}`, deltaColor: okUtil ? PT.green : PT.red,
-        deltaDir: okUtil ? "up" : "down" },
-      { label: "BM 회수율", value: rateBm == null ? "-" : rateBm.toFixed(1), unit: "%",
+      // ① 투입 계획 대비 실적 ② BM 생산량·회수율 ③ 종합가동율(비가동 포함) ④ 응축수 회수
+      { label: "투입 계획 대비 실적", value: fmtTon(tot.inputKg), unit: "톤", color: PT.text,
+        delta: `계획 ${fmtTon(tot.planKg)}톤 · 달성율 ${fmtPct(achieve)}`,
+        deltaColor: okAch ? PT.green : PT.amber, deltaDir: okAch ? "up" : "down",
+        bar: { pct: tot.planKg > 0 ? Math.min(120, (tot.inputKg / tot.planKg) * 100) : 0, max: 120, mark: 100,
+          color: okAch ? PT.green : PT.amber } },
+      { label: "BM 생산량 · 회수율", value: fmtTon(tot.out.bm), unit: "톤",
         color: rateBm != null && rateBm >= tr.bm ? PT.green : PT.amber,
-        delta: `${fmtTon(tot.out.bm)}톤 · 목표 대비 ${pp(dPt(rateBm, tr.bm))}`,
+        delta: `회수율 ${fmtPct(rateBm)} · 목표 ${tr.bm}%`,
         deltaColor: rateBm != null && rateBm >= tr.bm ? PT.green : PT.amber,
-        deltaDir: rateBm != null && rateBm >= tr.bm ? "up" : "down" },
-      { label: "응축액 회수", value: fmtTon(tot.out.cd), unit: "톤", color: PT.text,
-        delta: `투입 대비 ${fmtPct(tot.rate.cd)} · 탱크 실측`, deltaColor: PT.dim, deltaDir: "flat" },
-      { label: "비가동 시간", value: (totMin / 60).toFixed(1), unit: "h", color: totMin > 0 ? PT.amber : PT.green,
-        delta: `${dtRows.length}건 · 계획시간의 ${tot.planMin > 0 ? ((totMin / tot.planMin) * 100).toFixed(1) : "0.0"}%`,
-        deltaColor: PT.dim, deltaDir: "flat" },
+        deltaDir: rateBm != null && rateBm >= tr.bm ? "up" : "down",
+        bar: { pct: rateBm || 0, max: Math.max(tr.bm * 1.2, rateBm || 0), mark: tr.bm,
+          color: rateBm != null && rateBm >= tr.bm ? PT.green : PT.amber } },
+      { label: "종합 가동율 (비가동 포함)", value: utilAll == null ? "-" : utilAll.toFixed(1), unit: "%",
+        color: okUtil ? PT.green : PT.red,
+        delta: `비가동 ${fmtMin(totMin)} ${dtRows.length}건 · 목표 ${target}%`,
+        deltaColor: okUtil ? PT.green : PT.red, deltaDir: okUtil ? "up" : "down",
+        bar: { pct: utilAll || 0, max: 100, mark: target, color: okUtil ? PT.green : PT.red } },
+      { label: "응축수 회수", value: fmtTon(tot.out.cd), unit: "톤", color: PT.text,
+        delta: `투입 대비 ${fmtPct(tot.rate.cd)} · 탱크 실측`, deltaColor: PT.dim, deltaDir: "flat",
+        bar: { pct: tot.rate.cd || 0, max: Math.max(tr.cd * 1.5, tot.rate.cd || 0), mark: tr.cd, color: PT.blue } },
     ] },
   });
 
-  // ── 2. 생산 실적 추이 (월간만) ──────────────────────────
+  // ── 2. 투입 계획 대비 실적 — 숫자만으로는 눈에 안 들어와서 게이지와 짝 막대로 ──
+  {
+    const paSrc = isMonth ? weeks.filter((w) => w.planKg > 0 || w.inputKg > 0)
+                          : recs.filter((r) => r.planKg > 0 || r.inputKg > 0);
+    const paRows = paSrc.slice(0, 7).map((r) => ({
+      label: isMonth ? r.label : `${r.date.slice(5)}\n(${r.dow})`.split("\n")[0],
+      plan: r.planKg, actual: r.inputKg,
+      actualText: r.planKg > 0 ? `${((r.inputKg / r.planKg) * 100).toFixed(0)}%`
+        : r.inputKg > 0 ? `${fmtTon(r.inputKg)}톤` : "",
+    }));
+    const gap = tot.inputKg - tot.planKg;
+    S.push({
+      kicker: "배경", accent: okAch ? PT.green : PT.amber,
+      title: noPlan ? `${label} 조업 계획 미수립, 투입 실적 ${fmtTon(tot.inputKg)}톤`
+        : okAch ? `계획 ${fmtTon(tot.planKg)}톤 대비 ${fmtTon(tot.inputKg)}톤 투입,\n달성율 ${achieve.toFixed(0)}%로 목표 상회`
+        : `계획 ${fmtTon(tot.planKg)}톤 대비 ${fmtTon(tot.inputKg)}톤 투입,\n${fmtTon(Math.abs(gap))}톤 미달 (달성율 ${achieve == null ? "-" : achieve.toFixed(0)}%)`,
+      subtitle: `Plan vs. Actual Input · ${label}`,
+      visual: { type: "planActual", achieve, achieveColor: okAch ? PT.green : PT.amber,
+        planText: `${fmtTon(tot.planKg)}톤`, actualText: `${fmtTon(tot.inputKg)}톤`,
+        gapText: noPlan ? "" : `${gap >= 0 ? "+" : "−"}${fmtTon(Math.abs(gap))}톤`,
+        gapColor: gap >= 0 ? PT.green : PT.red,
+        unit: isMonth ? "주차별 · 단위 톤" : "일자별 · 단위 톤", rows: paRows },
+      banner: noPlan ? null : { kind: okAch ? "insight" : "action", label: okAch ? "Insight" : "Action Required",
+        text: okAch
+          ? `조업 ${tot.opDays}일 · 일평균 ${fmtTon(tot.opDays > 0 ? tot.inputKg / tot.opDays : 0)}톤 — 현 투입 수준 유지`
+          : `조업 ${tot.opDays}일 · 일평균 ${fmtTon(tot.opDays > 0 ? tot.inputKg / tot.opDays : 0)}톤 — 계획 도달까지 일 ${fmtTon(tot.opDays > 0 ? Math.abs(gap) / tot.opDays : 0)}톤 추가 투입 필요` },
+    });
+  }
+
+  // ── 3. 생산 실적 추이 ───────────────────────────────────
   // 조업 계획이 있는 주만 그려요 — 계획이 아예 없는 주까지 넣으면 선이 바닥으로 떨어져서
   // "감소 추세"처럼 보이는데, 실제로는 그냥 조업일이 아닌 겁니다.
-  const trendWeeks = weeks.filter((w) => w.planKg > 0);
-  if (isMonth && trendWeeks.length >= 2) {
+  const trendWeeks = (isMonth ? weeks : recs).filter((r) => r.planKg > 0 || r.inputKg > 0);
+  if (trendWeeks.length >= 2) {
     const first = trendWeeks[0], last = trendWeeks[trendWeeks.length - 1];
     const peak = trendWeeks.reduce((a, w) => (w.inputKg > a.inputKg ? w : a), trendWeeks[0]);
     const rising = (last.inputKg || 0) >= (first.inputKg || 0);
@@ -8161,10 +8512,9 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
 
   // ── 3. 계획 대비 달성 ───────────────────────────────────
   const perfRows = [
-    { key: "계획 대비 달성율", v: achieve, t: 100 },
-    { key: "시간 가동율", v: tot.utilTime, t: target },
-    { key: "성능 가동율", v: tot.utilPerf, t: target },
-    { key: "종합 가동율", v: utilAll, t: target },
+    { key: "계획 대비 달성율", v: achieve, t: 100, note: `계획 ${fmtTon(tot.planKg)}톤 · 실적 ${fmtTon(tot.inputKg)}톤` },
+    { key: "종합 가동율", v: utilAll, t: target, note: `시간 ${fmtPct(tot.utilTime)} × 성능 ${fmtPct(tot.utilPerf)}` },
+    { key: "BM 회수율", v: rateBm, t: tr.bm, note: `BM ${fmtTon(tot.out.bm)}톤 회수` },
   ];
   const worstPerf = perfRows.filter((r) => r.v != null).sort((a, b) => (a.v - a.t) - (b.v - b.t))[0];
   S.push({
@@ -8173,13 +8523,16 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
       : worstPerf && worstPerf.v < worstPerf.t
         ? `${worstPerf.key} ${worstPerf.v.toFixed(1)}%로 목표 ${worstPerf.t}% 대비 ${(worstPerf.t - worstPerf.v).toFixed(1)}%p 미달,\n${byMajor[0] ? execTerm(byMajor[0].key) : "가동 저해"}${josa(byMajor[0] ? execTerm(byMajor[0].key) : "가동 저해", ["이", "가"])} 직접 원인`
         : "전 지표 목표 달성, 현 조업 조건 유지 필요",
-    subtitle: "Target vs. Actual (단위: %)",
-    visual: { type: "bars", mark: 100, markLabel: "목표 100%", axisMax: 120,
-      rows: perfRows.map((r) => {
+    subtitle: "Target vs. Actual",
+    visual: { type: "gauges",
+      items: perfRows.map((r) => {
         const worst = worstPerf && r.key === worstPerf.key;
         const met = r.v != null && r.v >= r.t;
-        return { label: r.key, value: r.v || 0, text: fmtPct(r.v),
-          color: worst ? PT.red : met ? PT.green : PT.faint, strong: worst };
+        return { label: r.key, value: r.v, max: Math.max(r.t * 1.25, r.v || 0, 1),
+          text: r.v == null ? "-" : r.v.toFixed(1), unit: "%",
+          mark: r.t, markLabel: `목표 ${r.t}% · ${r.note}`,
+          sub: r.v == null ? "실적 없음" : `목표 대비 ${pp(dPt(r.v, r.t))}`,
+          color: worst ? PT.red : met ? PT.green : PT.amber };
       }) },
     banner: worstPerf && worstPerf.v < worstPerf.t ? { kind: "action", label: "Action Required",
       text: byMajor[0]
@@ -8194,11 +8547,11 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
     title: byMajor.length === 0
       ? "기간 내 비가동 발생 없음, 안정 조업 유지"
       : `${execTerm(byMajor[0].key)}${josa(execTerm(byMajor[0].key), ["이", "가"])} 총 정지시간의 ${((byMajor[0].min / totMin) * 100).toFixed(0)}% 점유,\n상위 2개 요인 집중 관리 시 ${((top2 / totMin) * 100).toFixed(0)}% 개선 가능`,
-    subtitle: "Downtime Pareto by Root Cause",
-    visual: { type: "bars",
+    subtitle: "Downtime Pareto by Root Cause · 막대 = 정지시간, 선 = 누적 비중",
+    visual: { type: "pareto",
       rows: byMajor.slice(0, 6).map((m, i) => ({
-        label: execTerm(m.key), value: m.min, text: `${fmtMin(m.min)} · ${m.count}건`,
-        color: i === 0 ? PT.red : i === 1 ? PT.amber : PT.faint, strong: i === 0,
+        label: wrapLabel(execTerm(m.key), 9), value: m.min, text: `${fmtMin(m.min)} · ${m.count}건`,
+        color: i === 0 ? PT.red : i === 1 ? PT.amber : PT.faint,
       })) },
     banner: byMajor.length > 0 ? { kind: "insight", label: "Insight",
       text: `최다 정지 설비 ${byEq[0] ? eqName(byEq[0].key) : "-"} ${byEq[0] ? fmtMin(byEq[0].min) : ""} · 최빈 상세원인 ${byDetail[0] ? `${byDetail[0].key} ${byDetail[0].count}건` : "-"}` } : null,
@@ -8215,13 +8568,13 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
       kicker: "분석", accent: under.length ? PT.amber : PT.green,
       title: tot.inputKg === 0 ? "투입 실적 없음, 회수율 산출 불가"
         : `투입 ${fmtTon(tot.inputKg)}톤 대비 BM ${fmtTon(bmKg)}톤 회수 (${fmtPct(tot.rate.bm)}),\n응축액 ${fmtTon(cdKg)}톤 (${fmtPct(tot.rate.cd)})`,
-      subtitle: `Recovery vs. Target · ${label} (단위: %)`,
-      visual: { type: "bars", mark: tr.bm, markLabel: `BM 목표 ${tr.bm}%`,
+      subtitle: `Recovery vs. Target · ${label} (막대 = 회수율 %, 아래 = 회수량)`,
+      visual: { type: "columns",
         rows: OUTPUT_KINDS.map((k) => {
           const v = tot.rate[k.key];
           const met = v != null && v >= tr[k.key];
           const worst = under[0] && k.key === under[0].key;
-          return { label: `${k.label} (목표 ${tr[k.key]}%)`, value: v || 0,
+          return { label: `${k.label}\n목표 ${tr[k.key]}%`, value: v || 0,
             text: `${fmtPct(v)} · ${fmtTon(tot.out[k.key])}톤`,
             color: worst ? PT.red : met ? PT.green : PT.faint, strong: worst };
         }) },
@@ -8241,11 +8594,12 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
     S.push({
       kicker: "분석", accent: gap > (best.perCap || 1) * 0.15 ? PT.amber : PT.green,
       title: `${best.crew}조 인당 생산성 ${Math.round(best.perCap || 0).toLocaleString("ko-KR")}kg로 최고 수준,\n최저 ${worst.crew}조 대비 편차 ${Math.round(gap).toLocaleString("ko-KR")}kg`,
-      subtitle: "Productivity per Head by Shift Crew",
-      visual: { type: "bars",
+      subtitle: "Productivity per Head by Shift Crew (단위: kg/인)",
+      visual: { type: "columns", mark: crewRows.reduce((a, c) => a + (c.perCap || 0), 0) / crewRows.length,
+        markLabel: "조 평균",
         rows: sorted.map((c, i) => ({
-          label: `${c.crew}조 · ${c.shifts}교대`, value: c.perCap || 0,
-          text: `${Math.round(c.perCap || 0).toLocaleString("ko-KR")} kg/인`,
+          label: `${c.crew}조\n${c.shifts}교대 · ${c.workers}명`, value: c.perCap || 0,
+          text: `${Math.round(c.perCap || 0).toLocaleString("ko-KR")} · kg/인`,
           color: i === 0 ? PT.green : i === sorted.length - 1 ? PT.red : PT.faint,
           strong: i === 0 || i === sorted.length - 1,
         })) },
@@ -8270,14 +8624,57 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
       ],
     };
   });
-  if (cards.length > 0) {
-    S.push({
-      kicker: "대안", accent: PT.red,
-      title: `상위 ${cards.length}개 요인에 대한 대응 방안 수립,\n${cards[0].title} 우선 조치로 정지시간 ${fmtMin(byMajor[0].min * 0.4)} 절감 목표`,
-      subtitle: "Key Issues & Action Plans",
-      visual: { type: "issues", cards },
-    });
+  // 비가동이 한 건도 없으면 대안 장표가 통째로 비어버려요. 그때는 "무엇이 목표에 못 미쳤나"를
+  // 근거로 과제를 세웁니다 — 달성율 · 가동율 · BM 회수율 · 응축수 회수 순으로 미달 폭이 큰 것부터.
+  const gapCards = [];
+  if (cards.length < 3) {
+    const cand = [
+      { on: achieve != null && achieve < 100, color: PT.amber, icon: "chart",
+        title: "계획 대비 투입 미달",
+        cur: `계획 ${fmtTon(tot.planKg)}톤 대비 ${fmtTon(tot.inputKg)}톤 (달성율 ${fmtPct(achieve)})`,
+        why: "원료 입고 지연 및 조업일 손실 누적",
+        act: `차기 기간 일 ${fmtTon(tot.opDays > 0 ? Math.abs(tot.planKg - tot.inputKg) / tot.opDays : 0)}톤 추가 투입 및 입고 일정 사전 확정` },
+      { on: utilAll != null && utilAll < target, color: PT.red, icon: "gear",
+        title: "종합 가동율 목표 미달",
+        cur: `종합 ${fmtPct(utilAll)} (시간 ${fmtPct(tot.utilTime)} × 성능 ${fmtPct(tot.utilPerf)}) · 목표 ${target}%`,
+        why: totMin > 0 ? `비가동 ${fmtMin(totMin)} 발생` : "설비 성능 저하 및 조업 조건 미정착",
+        act: "표준작업 재정립 및 성능가동율 저해 구간 집중 점검" },
+      { on: rateBm != null && rateBm < tr.bm, color: PT.amber, icon: "cycle",
+        title: "BM 회수율 목표 미달",
+        cur: `회수율 ${fmtPct(rateBm)} · ${fmtTon(tot.out.bm)}톤 · 목표 ${tr.bm}%`,
+        why: "열분해 · 파쇄 공정조건 미최적화",
+        act: "공정조건(온도 · 체류시간 · 분급) 재설정 및 회수율 일 단위 추적" },
+      { on: tot.rate.cd != null && tot.rate.cd < tr.cd, color: PT.blue, icon: "truck",
+        title: "응축수 회수율 목표 미달",
+        cur: `투입 대비 ${fmtPct(tot.rate.cd)} · ${fmtTon(tot.out.cd)}톤 · 목표 ${tr.cd}%`,
+        why: "저장탱크 배출 주기가 길어 기간별 편차 발생",
+        act: "탱크 배출 주기 단축 및 배출 시 실측 중량 당일 등록" },
+      { on: noPlan, color: PT.blue, icon: "flag",
+        title: "조업 계획 미수립",
+        cur: `${label} 구간 계획 0톤`,
+        why: "램프업 단계 경계 구간으로 계획 미편성",
+        act: "차기 기간 단계별 가동률 · 근무형태 확정 후 계획 등록" },
+    ].filter((x) => x.on);
+    const fill = cand.length ? cand : [{
+      color: PT.green, icon: "flag", title: "전 지표 목표 달성",
+      cur: `달성율 ${fmtPct(achieve)} · 종합가동율 ${fmtPct(utilAll)} · BM 회수율 ${fmtPct(rateBm)}`,
+      why: "현 조업 조건이 목표 수준을 만족",
+      act: "현 조업 조건 표준화 및 차기 기간 목표 상향 검토" }];
+    fill.slice(0, 3 - cards.length).forEach((x) => gapCards.push({
+      title: x.title, icon: x.icon, color: x.color,
+      badge: "개선 과제 (Improvement)",
+      rows: [{ k: "현상", v: x.cur }, { k: "원인", v: x.why }, { k: "대응", v: x.act }],
+    }));
   }
+  const allCards = cards.concat(gapCards);
+  S.push({
+    kicker: "대안", accent: cards.length > 0 ? PT.red : allCards[0].color,
+    title: cards.length > 0
+      ? `상위 ${allCards.length}개 과제에 대한 대응 방안 수립,\n${cards[0].title} 우선 조치로 정지시간 ${fmtMin(byMajor[0].min * 0.4)} 절감 목표`
+      : `${allCards[0].title} 해소를 최우선으로 ${allCards.length}개 과제 도출,\n원인별 대응 방안 확정`,
+    subtitle: "Key Issues & Action Plans",
+    visual: { type: "issues", cards: allCards },
+  });
 
   // ── 8. 실행계획 ─────────────────────────────────────────
   const nextFrom = addDaysStr(to, 1);
@@ -8287,6 +8684,11 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
     const meta = dtMeta(m.key);
     return { title: meta.action[0], detail: `${execTerm(m.key)} 대응 · 목표 정지시간 ${fmtMin(m.min * 0.6)} 이내`,
       owner: i === 0 ? "설비팀" : i === 1 ? "생산팀" : "공무팀", due: i === 0 ? "즉시" : isMonth ? "차월 중" : "차주 중", color: meta.color };
+  });
+  gapCards.forEach((c, i) => {
+    if (planRows.length >= 3) return;
+    planRows.push({ title: c.rows[2].v, detail: `${c.title} 대응 · ${c.rows[0].v}`,
+      owner: i === 0 ? "생산팀" : "공정팀", due: isMonth ? "차월 중" : "차주 중", color: c.color });
   });
   planRows.push({ title: `차기 기간 계획 ${fmtTon(nextPlan.planKg)}톤 확정 및 원료 확보`,
     detail: `${nextFrom} ~ ${nextTo} · 조업 ${nextPlan.opDays}일`, owner: "생산팀", due: "착수 전", color: PT.blue });
@@ -8302,14 +8704,14 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
     kicker: "결론", accent: okAch && okUtil ? PT.green : PT.red,
     title: okAch && okUtil
       ? `현 조업 조건 유지 시 차기 ${fmtTon(nextPlan.planKg)}톤 달성 가능,\n추가 자원 투입 불요`
-      : `${byMajor[0] ? execTerm(byMajor[0].key) : "가동 저해 요인"} 해소가 최우선 과제,\n정비 예산 및 예비품 확보 승인 요청`,
+      : `${byMajor[0] ? execTerm(byMajor[0].key) : allCards[0].title} 해소가 최우선 과제,\n${byMajor[0] ? "정비 예산 및 예비품 확보 승인 요청" : "차기 기간 자원 배분 승인 요청"}`,
     subtitle: "Conclusion & Request to Management",
     points: [
       { label: "결론", color: okAch && okUtil ? PT.green : PT.amber,
         text: noPlan ? "평가 대상 구간 아님"
           : `${label} 달성율 ${fmtPct(achieve)} · 종합가동율 ${fmtPct(utilAll)} · 차기 목표 ${fmtTon(nextPlan.planKg)}톤` },
       { label: "요청 1", color: PT.red,
-        text: byMajor[0] ? `${execTerm(byMajor[0].key)} 대응 예비품 및 정비 예산 반영` : "현 정비 주기 유지" },
+        text: byMajor[0] ? `${execTerm(byMajor[0].key)} 대응 예비품 및 정비 예산 반영` : allCards[0].rows[2].v },
       { label: "요청 2", color: PT.blue,
         text: `차기 기간 원료 ${fmtTon(nextPlan.planKg)}톤 입고 일정 사전 확정` },
     ],
@@ -8342,19 +8744,9 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
       note: `합계 · 조업 ${tot.opDays}일 · 계획 ${fmtTon(tot.planKg)}톤 / 투입 ${fmtTon(tot.inputKg)}톤 · 비가동 ${fmtMin(tot.dtMin)}` },
   });
 
-  // 장수 맞추기 — 주간 5장(표지 제외), 월간 10장 이내.
-  const cover = S[0];
-  const rest = S.slice(1);
-  let keep;
-  if (isMonth) {
-    keep = rest.slice(0, 9); // 표지까지 합쳐 10장
-  } else {
-    // 주간은 다섯 장. 여섯 단계(배경·문제·분석·대안·실행계획·결론)를 다 거치되,
-    // 실행계획은 결론 장표의 요청사항으로 흡수해요.
-    const pick = (k) => rest.find((x) => x.kicker === k);
-    keep = [pick("요약"), pick("문제"), pick("분석"), pick("대안") || pick("실행계획"), pick("결론")].filter(Boolean);
-  }
-  return { label, kind, from, to, tot, prev, slides: [cover, ...keep] };
+  // 장수는 고정하지 않아요. 배경·문제·분석·대안·실행계획·결론이 다 들어가면 되고,
+  // 데이터가 없는 장표는 애초에 만들지 않으니 기간에 따라 자연스럽게 길이가 달라집니다.
+  return { label, kind, from, to, tot, prev, slides: S };
 }
 
 function ReportTab({ mes, runs, downs, lots, settings }) {
@@ -8382,7 +8774,7 @@ function ReportTab({ mes, runs, downs, lots, settings }) {
     <div>
       <div className="ivs-periodbar">
         <div className="ivs-seg">
-          ${[["week", "주간 (5장)"], ["month", "월간 (10장 이내)"]].map(([k, t]) => html`
+          ${[["week", "주간"], ["month", "월간"]].map(([k, t]) => html`
             <button key=${k} className=${`ivs-seg-btn ${kind === k ? "on" : ""}`} onClick=${() => setKind(k)}>${t}</button>`)}
         </div>
         <input className="ivs-input" type=${kind === "month" ? "month" : "date"}
@@ -8466,6 +8858,11 @@ function SlideVisual({ v }) {
       ${v.items.map((k, i) => html`<div className="ivs-slide-kpi" key=${i}>
         <div className="ivs-slide-kpi-l">${k.label}</div>
         <div className="ivs-slide-kpi-v" style=${{ color: hx2(k.color) }}>${k.value}<em>${k.unit || ""}</em></div>
+        ${k.bar ? html`<div className="ivs-slide-kpi-bar">
+          <i style=${{ width: `${Math.min(100, ((Number(k.bar.pct) || 0) / (Number(k.bar.max) || 100)) * 100)}%`,
+            background: hx2(k.bar.color) }}></i>
+          ${k.bar.mark != null && k.bar.mark > 0 ? html`<u style=${{ left: `${Math.min(100, (k.bar.mark / (Number(k.bar.max) || 100)) * 100)}%` }}></u>` : null}
+        </div>` : null}
         ${k.delta ? html`<div className="ivs-slide-kpi-d" style=${{ color: hx2(k.deltaColor) }}>
           ${k.deltaDir === "up" ? "▲" : k.deltaDir === "down" ? "▼" : "●"} ${k.delta}
         </div>` : null}
@@ -8483,6 +8880,143 @@ function SlideVisual({ v }) {
         </span>
         <span className="ivs-slide-bar-v" style=${r.strong ? { color: hx2(r.color) } : null}>${r.text}</span>
       </div>`)}
+    </div>`;
+  }
+  // 반원 게이지 — 목표까지 얼마나 왔는지
+  if (v.type === "gauges") {
+    return html`<div className="ivs-sv-gauges">
+      ${(v.items || []).map((it, i) => {
+        const max = Number(it.max) || 100;
+        const val = Number(it.value);
+        const f = Number.isFinite(val) ? Math.max(0, Math.min(1, val / max)) : 0;
+        const R = 42, C = Math.PI * R; // 반원 둘레
+        return html`<div className="ivs-sv-gauge" key=${i} style=${{ "--c": hx2(it.color) }}>
+          <svg viewBox="0 0 100 56" className="ivs-sv-gauge-svg">
+            <path d=${`M 8 50 A ${R} ${R} 0 0 1 92 50`} className="ivs-sv-gauge-bg" />
+            <path d=${`M 8 50 A ${R} ${R} 0 0 1 92 50`} className="ivs-sv-gauge-fg"
+              style=${{ stroke: hx2(it.color), strokeDasharray: `${C * f} ${C}` }} />
+            ${it.mark != null && it.mark > 0 && it.mark <= max ? (() => {
+              const a = Math.PI * (1 + it.mark / max);
+              const x1 = 50 + (R - 7) * Math.cos(a), y1 = 50 + (R - 7) * Math.sin(a);
+              const x2 = 50 + (R + 7) * Math.cos(a), y2 = 50 + (R + 7) * Math.sin(a);
+              return html`<line x1=${x1} y1=${y1} x2=${x2} y2=${y2} className="ivs-sv-gauge-mark" />`;
+            })() : null}
+          </svg>
+          <div className="ivs-sv-gauge-v" style=${{ color: Number.isFinite(val) ? hx2(it.color) : "#64748B",
+            fontSize: Number.isFinite(val) ? null : 20 }}>
+            ${Number.isFinite(val) ? html`${it.text || String(val)}<em>${it.unit || ""}</em>` : "실적 없음"}
+          </div>
+          <div className="ivs-sv-gauge-l">${it.label}</div>
+          ${it.markLabel ? html`<div className="ivs-sv-gauge-m">${it.markLabel}</div>` : null}
+          ${it.sub ? html`<div className="ivs-sv-gauge-s">${it.sub}</div>` : null}
+        </div>`;
+      })}
+    </div>`;
+  }
+  // 세로 막대 — 누가 크고 작은지
+  if (v.type === "columns") {
+    const rows = v.rows || [];
+    const max = Math.max(1e-6, ...rows.map((r) => Math.abs(Number(r.value) || 0)), v.axisMax || 0, v.mark || 0);
+    return html`<div className="ivs-sv-cols">
+      ${v.mark != null && v.mark > 0 ? html`
+        <div className="ivs-sv-mark" style=${{ bottom: `calc(56px + ${(v.mark / max) * 100}% * 0.78)` }}>
+          <span>${v.markLabel || `목표 ${v.mark}`}</span>
+        </div>` : null}
+      <div className="ivs-sv-colrow">
+        ${rows.map((r, i) => {
+          const val = Math.abs(Number(r.value) || 0);
+          const txt = r.text != null ? String(r.text) : String(val);
+          const cut = txt.indexOf(" · ");
+          return html`<div className="ivs-sv-col" key=${i} style=${{ "--c": hx2(r.color) }}>
+            <div className="ivs-sv-col-v" style=${r.strong ? { color: hx2(r.color) } : null}>
+              ${cut > 0 ? html`<b>${txt.slice(0, cut)}</b><span>${txt.slice(cut + 3)}</span>` : html`<b>${txt}</b>`}
+            </div>
+            <div className="ivs-sv-col-track"><i style=${{ height: `${Math.max(2, (val / max) * 100)}%` }}></i></div>
+            <div className=${`ivs-sv-col-l ${r.strong ? "strong" : ""}`}>
+              ${String(r.label).split("\n").map((t, j) => html`<span key=${j}>${t}</span>`)}
+            </div>
+          </div>`;
+        })}
+      </div>
+    </div>`;
+  }
+  // 파레토 — 세로 막대 + 누적 곡선
+  if (v.type === "pareto") {
+    const rows = v.rows || [];
+    if (rows.length === 0) return html`<div className="ivs-prod-empty">기간 내 발생 건이 없습니다.</div>`;
+    const total = rows.reduce((a, r) => a + (Number(r.value) || 0), 0) || 1;
+    const max = Math.max(1e-6, ...rows.map((r) => Number(r.value) || 0));
+    let cum = 0;
+    const cums = rows.map((r) => { cum += Number(r.value) || 0; return (cum / total) * 100; });
+    const pts = cums.map((c, i) => [((i + 0.5) / rows.length) * 100, 100 - c]);
+    return html`<div className="ivs-sv-pareto">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="ivs-sv-pareto-svg">
+        <line x1="0" y1="20" x2="100" y2="20" className="ivs-sv-pareto-80" />
+        <polyline points=${pts.map(([a, b]) => `${a},${b}`).join(" ")} className="ivs-sv-pareto-line" />
+        ${pts.map(([a, b], i) => html`<circle key=${i} cx=${a} cy=${b} r="1.4" className="ivs-sv-pareto-dot" />`)}
+      </svg>
+      <div className="ivs-sv-colrow">
+        ${rows.map((r, i) => {
+          const val = Number(r.value) || 0;
+          const txt = r.text != null ? String(r.text) : String(val);
+          const cut = txt.indexOf(" · ");
+          return html`<div className="ivs-sv-col" key=${i} style=${{ "--c": hx2(r.color) }}>
+            <div className="ivs-sv-col-v" style=${i === 0 ? { color: hx2(r.color) } : null}>
+              ${cut > 0 ? html`<b>${txt.slice(0, cut)}</b><span>${txt.slice(cut + 3)}</span>` : html`<b>${txt}</b>`}
+            </div>
+            <div className="ivs-sv-col-track"><i style=${{ height: `${Math.max(2, (val / max) * 100)}%` }}></i></div>
+            <div className=${`ivs-sv-col-l ${i === 0 ? "strong" : ""}`}>
+              <span>${String(r.label).replace(/\n/g, " ")}</span>
+              <span className="ivs-sv-cum">누적 ${cums[i].toFixed(0)}%</span></div>
+          </div>`;
+        })}
+      </div>
+    </div>`;
+  }
+  // 계획 대비 실적 — 게이지 + 기간별 짝 막대
+  if (v.type === "planActual") {
+    const rows = v.rows || [];
+    const max = Math.max(1e-6, ...rows.map((r) => Math.max(Number(r.plan) || 0, Number(r.actual) || 0)));
+    const f = v.achieve == null ? 0 : Math.max(0, Math.min(1, v.achieve / 120));
+    const R = 42, C = Math.PI * R;
+    return html`<div className="ivs-sv-pa">
+      <div className="ivs-sv-gauge" style=${{ "--c": hx2(v.achieveColor) }}>
+        <svg viewBox="0 0 100 56" className="ivs-sv-gauge-svg">
+          <path d=${`M 8 50 A ${R} ${R} 0 0 1 92 50`} className="ivs-sv-gauge-bg" />
+          <path d=${`M 8 50 A ${R} ${R} 0 0 1 92 50`} className="ivs-sv-gauge-fg"
+            style=${{ stroke: hx2(v.achieveColor), strokeDasharray: `${C * f} ${C}` }} />
+          ${(() => { const a = Math.PI * (1 + 100 / 120);
+            return html`<line x1=${50 + 35 * Math.cos(a)} y1=${50 + 35 * Math.sin(a)}
+              x2=${50 + 49 * Math.cos(a)} y2=${50 + 49 * Math.sin(a)} className="ivs-sv-gauge-mark" />`; })()}
+        </svg>
+        <div className="ivs-sv-gauge-v" style=${{ color: v.achieve == null ? "#64748B" : hx2(v.achieveColor),
+          fontSize: v.achieve == null ? 20 : null }}>
+          ${v.achieve == null ? "계획 없음" : html`${v.achieve.toFixed(1)}<em>%</em>`}
+        </div>
+        <div className="ivs-sv-gauge-l">계획 대비 달성율 (눈금 = 100%)</div>
+        <div className="ivs-sv-gauge-s">계획 ${v.planText} · 실적 ${v.actualText}</div>
+        ${v.gapText ? html`<div className="ivs-sv-gauge-gap" style=${{ color: hx2(v.gapColor) }}>${v.gapText}</div>` : null}
+      </div>
+      <div className="ivs-sv-pacols">
+        <div className="ivs-sv-legend">
+          <span><i className="plan"></i>계획</span><span><i className="act"></i>실적</span>
+          <span className="ivs-spacer"></span><span className="ivs-dim">${v.unit || "단위: 톤"}</span>
+        </div>
+        ${rows.length === 0 ? html`<div className="ivs-prod-empty">기간별 계획이 없습니다.</div>` : html`
+          <div className="ivs-sv-colrow">
+            ${rows.map((r, i) => {
+              const met = (Number(r.actual) || 0) >= (Number(r.plan) || 0) && (Number(r.plan) || 0) > 0;
+              return html`<div className="ivs-sv-pacol" key=${i}>
+                <div className="ivs-sv-col-v" style=${{ color: met ? "#10B981" : "#F59E0B" }}><b>${r.actualText || ""}</b></div>
+                <div className="ivs-sv-pair">
+                  <span className="plan" style=${{ height: `${((Number(r.plan) || 0) / max) * 100}%` }}></span>
+                  <span className=${met ? "act ok" : "act"} style=${{ height: `${((Number(r.actual) || 0) / max) * 100}%` }}></span>
+                </div>
+                <div className="ivs-sv-col-l"><span>${r.label}</span></div>
+              </div>`;
+            })}
+          </div>`}
+      </div>
     </div>`;
   }
   if (v.type === "trend") {
@@ -11389,7 +11923,7 @@ function ConfirmModal({ icon, title, body, confirmLabel, danger, onCancel, onCon
   if (PREVIEW_MODE) {
     // 샘플 화면 — 실제 팀 데이터(Firebase)는 읽지도 쓰지도 않아요. 잠금 PIN도 없이 바로 보여줘요.
     LIVE_DATA = normalizeLive({
-      lots: seedData(), moves: moveSeedData(), runs: runSeedData(), master: {},
+      lots: seedData(), moves: moveSeedData(), runs: runSeedData(), downs: downSeedData(), master: {},
       settings: { title: "DRT · 재고관리", subtitle: "로트 단위 공정 흐름 관리", editPin: "", viewPin: "" },
     });
   } else {

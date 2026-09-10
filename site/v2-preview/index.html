@@ -4416,7 +4416,7 @@ const PROCESSES = [
     from: ["crush_wait"], to: "usable", outputs: ["bm", "cu", "al"], lot: true,
     hint: "파쇄대기 → 출하대기. 셀 단위로 입고된 Lot과 해체에서 넘어온 셀을 함께 파쇄해요.",
     warn: "파쇄를 마치면 BM · Cu-chip · Al-chip이 생산 Lot으로 만들어져 출하대기로 들어가요." },
-  { key: "calcine", label: "열분해", route: "powder", mode: "produce",
+  { key: "calcine", label: "열분해", route: "powder", mode: "produce", keepItem: true,
     from: ["calcine_needed"], to: "usable", outputs: ["bm"], lot: true,
     hint: "열분해대기 → 출하대기. BM(분말)으로 입고된 Lot만 이 공정을 거쳐요.",
     warn: "열분해를 마치면 BM이 생산 Lot으로 만들어져 출하대기로 들어가요. 응축액은 탱크가 차서 탱크로리로 뺄 때 따로 계량해요." },
@@ -6025,15 +6025,23 @@ function InventorySystem() {
         .map((k) => ({ k, qty: Number(draft.outputs[k.key]), typed: (draft.outputLots || {})[k.key] }))
         .filter((r) => Number.isFinite(r.qty) && r.qty > 0);
       if (rows.length === 0) { showToast("산출량을 하나 이상 입력해주세요.", "error"); return; }
+      // 투입 Lot이 모두 같은 품목이면 그 품목을 그대로 들고 갈 수 있어요.
+      const sameCat = inputLots.every((l) => l.categoryId === base.categoryId) ? base.categoryId : null;
+      const sameName = inputLots.every((l) => l.name === base.name) ? base.name : null;
+      const sameCode = inputLots.every((l) => l.code === base.code) ? base.code : null;
+      // keepItem 공정(열분해)은 품목코드 · 품목명 · 카테고리를 투입 Lot에서 그대로 물려받아요.
+      // 블랙매스를 열분해해도 나오는 건 블랙매스이지, 혼합 분말이 아니니까요.
+      const keepCat = proc.keepItem && sameCat ? categoryById[sameCat] : null;
       for (const r of rows) {
-        const lotNo = takeLotNo(r.typed, r.k.code);
+        const outCat = keepCat || categoryById[r.k.categoryId];
+        const outCode = keepCat ? (sameCode || keepCat.code) : r.k.code;
+        const lotNo = takeLotNo(r.typed, outCode);
         if (!lotNo) { showToast(`이미 쓰고 있는 생산 Lot 번호예요 — ${r.typed}`, "error"); return; }
-        const cat = categoryById[r.k.categoryId];
-        // 품목명은 투입 Lot의 이름을 그대로 이어받아요 (블랙매스로 들어온 건 계속 블랙매스).
-        // 품목코드는 무엇이 나왔는지(BM · Cu-chip · Al-chip) 구분해야 하니 산출물 코드를 써요.
-        const inheritName = rows.length === 1 && base.name ? base.name : null;
+        // keepItem이 아니어도, 산출물이 한 종류뿐이면 투입 Lot의 이름은 이어받아요.
+        const outName = keepCat ? (sameName || keepCat.label)
+          : (rows.length === 1 && sameName ? sameName : (outCat ? outCat.label : r.k.label));
         newLots.push(makeLot({
-          code: r.k.code, name: inheritName || (cat ? cat.label : r.k.label), categoryId: r.k.categoryId,
+          code: outCode, name: outName, categoryId: outCat ? outCat.id : r.k.categoryId,
           lotNo, qtyKg: r.qty, stage: proc.to, kind: r.k.key,
         }));
       }

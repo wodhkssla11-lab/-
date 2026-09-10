@@ -664,6 +664,12 @@
   .ivs-proctab.on { border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, var(--surface-2)); }
   .ivs-proctab.on b { color: var(--c); }
   .ivs-input-cell { width: 100%; min-width: 110px; }
+  .ivs-lotchip.warn { border-color: var(--warn, #F59E0B); background: color-mix(in srgb, #F59E0B 14%, transparent); }
+  .ivs-warnbar { display: flex; align-items: flex-start; gap: 8px; margin-top: 10px;
+    padding: 9px 12px; border-radius: 10px; font-size: 12.5px; line-height: 1.5;
+    border: 1px solid color-mix(in srgb, #F59E0B 45%, var(--border));
+    background: color-mix(in srgb, #F59E0B 12%, var(--surface-2)); color: var(--text); }
+  .ivs-warnbar svg { flex: none; margin-top: 2px; color: #F59E0B; }
   @media (max-width: 860px) { .ivs-proctabs { grid-template-columns: repeat(2, 1fr); } }
   .ivs-rank-net.ivs-diff-mix { color: var(--good); }
   .ivs-rank-net.ivs-diff-loss { color: var(--bad); }
@@ -3742,7 +3748,6 @@ const Layers = mkIcon("layers");
 const STAGES = [
   { key: "raw_in", label: "모듈/팩입고", color: "#E9692F" },       // 주황
   { key: "discharge", label: "전기방전완료", color: "#4C8DFF" },   // 파랑
-  { key: "disassemble", label: "해체완료", color: "#A97BF0" },     // 보라
   { key: "crush_wait", label: "파쇄대기", color: "#17C1D9" },      // 청록
   { key: "calcine_needed", label: "열분해대기", color: "#F0555C" }, // 빨강
   { key: "usable", label: "출하대기", color: "#EDC22E" },          // 노랑
@@ -3759,7 +3764,7 @@ const isDoneLot = (l) => !!l.closed || FINAL_STAGE_KEYS.includes(l.stage);
 const stageByKey = Object.fromEntries(STAGES.map((s) => [s.key, s]));
 // 단계 목록에서 빠진 옛 단계(예: 삭제된 셀분리완료/파쇄완료)로 저장된 로트가 있어도 화면이 깨지지 않게,
 // 항상 이 함수로 단계 정보를 꺼내요. 없는 단계는 회색으로 "(옛 단계)"라고 표시하고 데이터는 그대로 둬요.
-const RETIRED_STAGE_LABELS = { module_cut: "셀분리완료", crush_done: "파쇄완료", consumed: "생산투입완료" };
+const RETIRED_STAGE_LABELS = { module_cut: "셀분리완료", crush_done: "파쇄완료", consumed: "생산투입완료", disassemble: "해체완료" };
 const getStage = (key) =>
   stageByKey[key] || {
     key: key || "__none",
@@ -3883,8 +3888,8 @@ const SEED_LOTS = [
   ["s10", "BM0001",   "블랙매스(천안)",     "blackmass",        0, "B260906-0192", -4,  "calcine_needed", 3900, false, false],
   ["s11", "BM0001",   "블랙매스(천안)",     "blackmass",        0, "B260820-0051", -21, "calcine_needed", 3000, false, true],
   // ── 이미 공정에 투입돼 닫힌 Lot (추적용) ────────────────────────
-  ["s12", "PK0001",   "전기차팩",           "ev_pack",          1, "P260904-0033", -6,  "disassemble",    4100, false, false, "closed"],
-  ["s13", "MD0001",   "전기차모듈",         "ev_module",        0, "M260904-0014", -6,  "disassemble",    6650, false, false, "closed"],
+  ["s12", "PK0001",   "전기차팩",           "ev_pack",          1, "P260904-0033", -6,  "crush_wait",     4100, false, false, "closed"],
+  ["s13", "MD0001",   "전기차모듈",         "ev_module",        0, "M260904-0014", -6,  "crush_wait",     6650, false, false, "closed"],
   ["s14", "BM0001",   "블랙매스(포항)",     "blackmass",        3, "B260905-0046", -5,  "usable",         3400, false, false, "closed"],
   ["s15", "HVC0001",  "전기차 셀",          "hv_cell",          4, "C260906-0012", -4,  "usable",         1580, false, false, "closed"],
   // ── 출하완료 ───────────────────────────────────────────────────
@@ -3898,13 +3903,14 @@ const SEED_RUNS = [
     outputs: [["s18", "HVC0001", "전기차 셀", "hv_cell", null, "CELL-260905-1", "crush_wait", 7100]] },
   { id: "r2", off: -3, shift: "night", workers: 8, process: "crush",
     inputs: ["s15"],
-    outputs: [["s19", "DRBM0001", "혼합 분말", "mixed_powder", "bm", "DRBM0001-260907-1", "usable", 1190],
+    outputs: [["s19", "DRBM0001", "전기차 셀", "mixed_powder", "bm", "DRBM0001-260907-1", "usable", 1190],
               ["s20", "DRCC0001", "혼합 Cu-chip", "mixed_cu_chip", "cu", "DRCC0001-260907-1", "usable", 190],
               ["s21", "DRAC0001", "혼합 Al-chip", "mixed_al_chip", "al", "DRAC0001-260907-1", "usable", 140]] },
   { id: "r3", off: -4, shift: "day", workers: 4, process: "calcine",
     inputs: ["s14"],
-    outputs: [["s22", "DRBM0001", "혼합 분말", "mixed_powder", "bm", "DRBM0001-260906-1", "usable", 2980],
-              ["s23", "CD0001", "응축액", "condensate", "cd", "CD0001-260906-1", "usable", 210]] },
+    outputs: [["s22", "BM0001", "블랙매스(포항)", "blackmass", "bm", "DRBM0001-260906-1", "usable", 2980]] },
+  { id: "r5", off: -2, shift: "day", workers: 2, process: "cdout", inputs: [],
+    outputs: [["s23", "CD0001", "응축액", "condensate", "cd", "CD0001-260908-1", "shipped", 210]] },
   { id: "r4", off: -2, shift: "day", workers: 6, process: "discharge",
     inputs: ["s4"], outputs: [] },
 ];
@@ -3928,12 +3934,14 @@ function seedData() {
     run.outputs.forEach((o) => {
       const l = {
         id: `lot-seed-${o[0]}`, code: o[1], name: o[2], categoryId: o[3],
-        vendor: parents[0].vendor, shipLoc: parents[0].shipLoc,
+        vendor: parents[0] ? parents[0].vendor : VENDORS[3].name,
+        shipLoc: parents[0] ? parents[0].shipLoc : VENDORS[3].loc,
         lotNo: o[5], receivedDate: date, stage: o[6], qtyKg: o[7],
-        waterKg: null, excludeKg: null, tolling: !!parents[0].tolling, carriedOver: false,
+        waterKg: null, excludeKg: null, tolling: !!(parents[0] && parents[0].tolling), carriedOver: false,
         lastMove: date, origin: "production", runId: `run-seed-${run.id}`, process: run.process,
         parentLotIds: parents.map((p) => p.id), parentLotNos: parents.map((p) => p.lotNo),
       };
+      if (o[6] === "shipped") l.shippedDate = date;
       byId.set(o[0], l);
       lots.push(l);
     });
@@ -3955,11 +3963,11 @@ function moveSeedData() {
         fromStage: proc.from[0], toStage: proc.to, inputQty: l.qtyKg, outputQty: l.qtyKg,
         lossQty: 0, mixQty: 0, runId: `run-seed-${run.id}`, process: run.process });
     });
-    if (proc.mode === "split") {
+    if (proc.mode === "cdout") {
       run.outputs.forEach((o, i) => {
         const l = get(o[0]);
-        out.push({ id: `move-seed-${run.id}-c${i}`, date, code: l.code, name: l.name, lotNo: l.lotNo, lotId: l.id,
-          fromStage: proc.to, toStage: proc.spawn, inputQty: l.qtyKg, outputQty: l.qtyKg,
+        out.push({ id: `move-seed-${run.id}-cd${i}`, date, code: l.code, name: l.name, lotNo: l.lotNo, lotId: l.id,
+          fromStage: "usable", toStage: "shipped", inputQty: l.qtyKg, outputQty: l.qtyKg,
           lossQty: 0, mixQty: 0, runId: `run-seed-${run.id}`, process: run.process });
       });
     }
@@ -3988,7 +3996,7 @@ function runSeedData() {
       id: `run-seed-${run.id}`, date, shift: run.shift,
       crew: shiftCrews(date, DEFAULT_MES.shiftAnchor)[run.shift] || "A",
       workers: run.workers, process: run.process, processLabel: proc.label, route: proc.route,
-      vendor: inputs[0].name ? get(run.inputs[0]).vendor : "", note: "",
+      vendor: run.inputs.length ? get(run.inputs[0]).vendor : "", note: "",
       inputs, inputKg: inputs.reduce((a, x) => a + x.qtyKg, 0),
       outputs: run.outputs.map((o) => {
         const l = get(o[0]);
@@ -4301,7 +4309,7 @@ const OUTPUT_KINDS = [
 // 무엇이 들어오느냐에 따라 거치는 공정이 달라요. 생산실적을 넣을 때 이 표대로 이전 공정 Lot만 고를 수 있어요.
 const ROUTES = {
   module: { key: "module", label: "모듈/팩 입고", entry: "raw_in", color: "#E9692F",
-    steps: ["전기방전", "해체", "파쇄"], flow: "모듈/팩입고 → 전기방전완료 → 해체완료 → 파쇄대기 → 출하대기" },
+    steps: ["전기방전", "해체", "파쇄"], flow: "모듈/팩입고 → 전기방전완료 → 파쇄대기 → 출하대기" },
   cell: { key: "cell", label: "셀 단위 입고", entry: "crush_wait", color: "#17C1D9",
     steps: ["파쇄"], flow: "파쇄대기 → 출하대기" },
   powder: { key: "powder", label: "BM(분말) 입고", entry: "calcine_needed", color: "#F0555C",
@@ -4317,20 +4325,33 @@ const PROCESSES = [
     hint: "고른 모듈/팩 입고 Lot이 전기방전완료로 넘어가요. 새 Lot은 만들어지지 않아요.",
     warn: "전기방전은 모듈/팩 입고에만 있는 공정이에요. 셀 단위·BM(분말) 입고는 이 공정을 거치지 않아요." },
   { key: "disassemble", label: "해체", route: "module", mode: "split",
-    from: ["discharge"], to: "disassemble", spawn: "crush_wait", outputs: [], lot: true,
-    hint: "전기방전과 이어지는 연속공정이에요. 해체가 끝나면 셀은 곧바로 파쇄대기로 재공이동해요.",
+    from: ["discharge"], to: "crush_wait", outputs: [], lot: true,
+    hint: "전기방전과 이어지는 연속공정이에요. 해체가 끝나면 셀이 곧바로 파쇄대기 재공 Lot이 돼요.",
     warn: "해체는 전기방전을 마친 Lot만 투입할 수 있어요. 해체하고 나온 셀 무게를 넣으면 파쇄대기 재공 Lot이 생겨요." },
   { key: "crush", label: "파쇄", route: "cell", mode: "produce",
     from: ["crush_wait"], to: "usable", outputs: ["bm", "cu", "al"], lot: true,
     hint: "파쇄대기 → 출하대기. 셀 단위로 입고된 Lot과 해체에서 넘어온 셀을 함께 파쇄해요.",
     warn: "파쇄를 마치면 BM · Cu-chip · Al-chip이 생산 Lot으로 만들어져 출하대기로 들어가요." },
   { key: "calcine", label: "열분해", route: "powder", mode: "produce",
-    from: ["calcine_needed"], to: "usable", outputs: ["bm", "cd"], lot: true,
+    from: ["calcine_needed"], to: "usable", outputs: ["bm"], lot: true,
     hint: "열분해대기 → 출하대기. BM(분말)으로 입고된 Lot만 이 공정을 거쳐요.",
-    warn: "열분해를 마치면 BM과 응축액이 생산 Lot으로 만들어져 출하대기로 들어가요." },
+    warn: "열분해를 마치면 BM이 생산 Lot으로 만들어져 출하대기로 들어가요. 응축액은 탱크가 차서 탱크로리로 뺄 때 따로 계량해요." },
+  // 응축액은 Lot마다 무게를 잴 수가 없어요 (저장탱크에 계속 모이니까요).
+  // 탱크로리로 빼낼 때 실측 중량을 넣고, 그 날짜까지의 누적 투입량 대비 회수율을 봐요.
+  { key: "cdout", label: "응축액 출고", route: "powder", mode: "cdout", standalone: true,
+    from: [], to: "shipped", outputs: ["cd"], lot: true,
+    hint: "저장탱크에 모인 응축액을 탱크로리로 빼낼 때, 실측 중량만 넣어요.",
+    warn: "응축액 출고는 이전 공정 Lot을 고르지 않아요. 실측 중량만 넣으면 그 날짜로 출하완료 Lot이 만들어져요." },
 ];
+const FLOW_PROCESSES = PROCESSES.filter((p) => !p.standalone);
 const processByKey = Object.fromEntries(PROCESSES.map((p) => [p.key, p]));
 const outputKindByKey = Object.fromEntries(OUTPUT_KINDS.map((k) => [k.key, k]));
+// 카테고리를 고르면 품목명이 현장에서 부르는 이름으로 자동으로 채워져요.
+// (여기 없는 카테고리는 카테고리 이름을 그대로 써요.)
+const CATEGORY_ITEM_NAME = { blackmass: "CP" };
+const autoItemName = (catId) => CATEGORY_ITEM_NAME[catId] || (categoryById[catId] ? categoryById[catId].label : "");
+// 사람이 직접 고쳐 쓴 이름은 건드리지 않으려고, "자동으로 채워졌던 이름인지"를 봐요.
+const isAutoItemName = (name) => !String(name || "").trim() || CATEGORIES.some((c) => name === autoItemName(c.id));
 const procOutputs = (proc) => (proc && proc.outputs ? proc.outputs.map((k) => outputKindByKey[k]).filter(Boolean) : []);
 const stageLabels = (keys) => (keys || []).map((k) => getStage(k).label).join(" · ");
 
@@ -5295,7 +5316,7 @@ const newLotForm = (master) => {
   const vendors = (master && master.vendors) || [];
   const first = vendors[0];
   return {
-    code: CATEGORIES[0].code, name: "", categoryId: CATEGORIES[0].id,
+    code: CATEGORIES[0].code, name: autoItemName(CATEGORIES[0].id), categoryId: CATEGORIES[0].id,
     vendor: first ? first.name : "", shipLoc: first ? (first.loc || "") : "",
     lotNo: "", receivedDate: new Date().toISOString().slice(0, 10),
     stage: "raw_in", qtyKg: "", waterKg: "", excludeKg: "", tolling: false, carriedOver: false,
@@ -5324,7 +5345,7 @@ function InventorySystem() {
 
   const [formModal, setFormModal] = useState(null); // { mode: 'add'|'edit', values }
   const [moveModal, setMoveModal] = useState(null); // lot
-  const [bulkMoveOpen, setBulkMoveOpen] = useState(false); // 여러 로트를 한 번에 공정이동
+  const [bulkShipOpen, setBulkShipOpen] = useState(false); // 고른 로트를 한 번에 출하완료
   const [importOpen, setImportOpen] = useState(false); // 파일로 입고 Lot 한 번에 추가
   const [scanOpen, setScanOpen] = useState(false); // QR 리더기로 찍어서 즉시 입고
   const [deleteTarget, setDeleteTarget] = useState(null); // lot | 'bulk'
@@ -5520,39 +5541,6 @@ function InventorySystem() {
     setMoveModal(null);
   };
 
-  // 여러 로트를 한 번에 다음 공정으로 — 로트마다 배출 수량을 따로 넣을 수 있어요.
-  // 단건 이동과 똑같이 lots와 moves를 한 번의 writeAll로 합쳐서 써요.
-  const handleBulkMove = async (targetStage, qtyByLotId) => {
-    if (!canEdit) return;
-    const today = new Date().toISOString().slice(0, 10);
-    const targets = lots.filter((l) => selected.has(l.id) && l.stage !== targetStage);
-    if (targets.length === 0) { setBulkMoveOpen(false); return; }
-    const byId = new Map(targets.map((l) => [l.id, l]));
-    const nextLots = lots.map((l) => {
-      if (!byId.has(l.id)) return l;
-      const out = Number(qtyByLotId[l.id]);
-      return { ...l, stage: targetStage, qtyKg: Number.isFinite(out) && out > 0 ? out : l.qtyKg, lastMove: today };
-    });
-    const newMoves = targets.map((l, i) => {
-      const inputQty = Number(l.qtyKg) || 0;
-      const parsed = Number(qtyByLotId[l.id]);
-      const outputQty = Number.isFinite(parsed) && parsed > 0 ? parsed : inputQty;
-      const diff = outputQty - inputQty;
-      return {
-        id: `move-${Date.now()}-${i}`, date: today, code: l.code, name: l.name, lotNo: l.lotNo, lotId: l.id,
-        fromStage: l.stage, toStage: targetStage, inputQty, outputQty,
-        lossQty: diff < 0 ? -diff : 0, mixQty: diff > 0 ? diff : 0,
-      };
-    });
-    const nextMoves = [...newMoves, ...moves];
-    setLots(nextLots);
-    setMoves(nextMoves);
-    await writeAll({ lots: nextLots, moves: nextMoves, settings, master, mes, runs, downs });
-    showToast(`${targets.length}건을 "${getStage(targetStage).label}"로 이동했어요.`, "success");
-    setBulkMoveOpen(false);
-    setSelected(new Set());
-  };
-
   // ---------- 비가동 기록 ----------
   const handleSaveDown = async (draft) => {
     if (!canEdit) return;
@@ -5571,7 +5559,7 @@ function InventorySystem() {
   };
 
   // ---------- 출하 처리 ----------
-  // 고른 출하대기 Lot을 한 번에 "출하완료"로 넘겨요. 출하일자를 로트에 남겨두기 때문에
+  // 고른 로트를 한 번에 "출하완료"로 넘겨요. 출하일자를 로트에 남겨두기 때문에
   // 나중에 "몇 월에 얼마나 나갔는지"를 이동이력이 아니라 로트만 보고도 셀 수 있어요.
   const handleShip = async (lotIds, shipDate) => {
     if (!canEdit || !lotIds || lotIds.length === 0) return;
@@ -5604,12 +5592,8 @@ function InventorySystem() {
     if (!proc) { showToast("공정을 골라주세요.", "error"); return; }
     const date = draft.date;
     const inputLots = lots.filter((l) => draft.inputIds.includes(l.id) && !l.closed);
-    if (inputLots.length === 0) { showToast("이전 공정 Lot을 골라주세요.", "error"); return; }
-    const off = inputLots.filter((l) => !proc.from.includes(l.stage));
-    if (off.length > 0) {
-      showToast(`${proc.label} 공정에는 ${stageLabels(proc.from)} 단계의 Lot만 투입할 수 있어요.`, "error");
-      return;
-    }
+    if (proc.mode !== "cdout" && inputLots.length === 0) { showToast("이전 공정 Lot을 골라주세요.", "error"); return; }
+    // 이전 공정이 다른 Lot도 넣을 수 있어요 — 대신 입력 화면에서 한 번 더 확인을 받아요.
     const inputKg = inputLots.reduce((a, l) => a + (Number(l.qtyKg) || 0), 0);
 
     const runId = `run-${Date.now()}`;
@@ -5628,10 +5612,12 @@ function InventorySystem() {
       usedLotNos.add(t);
       return t;
     };
-    const base = inputLots[0];
+    const base = inputLots[0] || {};
+    // 업체를 따로 고르지 않았으면 투입 Lot의 거래처·출고지를 그대로 물려받아요.
     const vendor = draft.vendor || base.vendor || "";
+    const changedVendor = !!draft.vendor && draft.vendor !== (base.vendor || "");
     const vendorLoc = (master.vendors || []).find((v) => v.name === vendor);
-    const shipLoc = vendorLoc ? vendorLoc.loc : base.shipLoc || "";
+    const shipLoc = changedVendor && vendorLoc ? vendorLoc.loc : (base.shipLoc || (vendorLoc ? vendorLoc.loc : ""));
 
     const created = [];
     const newMoves = [];
@@ -5671,9 +5657,21 @@ function InventorySystem() {
       const lotNo = takeLotNo(draft.cellLotNo, cat.code);
       if (!lotNo) { showToast(`이미 쓰고 있는 Lot 번호예요 — ${draft.cellLotNo}`, "error"); return; }
       inputLots.forEach((l) => addMove(l, l.stage, proc.to, Number(l.qtyKg) || 0));
-      const cell = makeLot({ code: cat.code, name: cat.label, categoryId: cat.id, lotNo, qtyKg: cellKg, stage: proc.spawn });
-      newLots.push(cell);
-      addMove(cell, proc.to, proc.spawn, cellKg); // 해체완료 → 파쇄대기 (셀 재공이동)
+      newLots.push(makeLot({ code: cat.code, name: draft.cellName || cat.label, categoryId: cat.id,
+        lotNo, qtyKg: cellKg, stage: proc.to }));
+    } else if (proc.mode === "cdout") {
+      // 응축액 출고 — 이전 Lot 없이, 탱크로리로 빼낸 실측 중량만 기록해요.
+      const kg = Number(draft.cdKg);
+      if (!Number.isFinite(kg) || kg <= 0) { showToast("탱크로리로 빼낸 응축액 중량을 넣어주세요.", "error"); return; }
+      const k = outputKindByKey.cd;
+      const lotNo = takeLotNo(draft.cdLotNo, k.code);
+      if (!lotNo) { showToast(`이미 쓰고 있는 Lot 번호예요 — ${draft.cdLotNo}`, "error"); return; }
+      const cat = categoryById[k.categoryId];
+      const cd = makeLot({ code: k.code, name: cat ? cat.label : k.label, categoryId: k.categoryId,
+        lotNo, qtyKg: kg, stage: "shipped", kind: "cd" });
+      cd.shippedDate = date;
+      newLots.push(cd);
+      addMove(cd, "usable", "shipped", kg);
     } else {
       const kinds = procOutputs(proc);
       const rows = kinds
@@ -5684,8 +5682,11 @@ function InventorySystem() {
         const lotNo = takeLotNo(r.typed, r.k.code);
         if (!lotNo) { showToast(`이미 쓰고 있는 생산 Lot 번호예요 — ${r.typed}`, "error"); return; }
         const cat = categoryById[r.k.categoryId];
+        // 품목명은 투입 Lot의 이름을 그대로 이어받아요 (블랙매스로 들어온 건 계속 블랙매스).
+        // 품목코드는 무엇이 나왔는지(BM · Cu-chip · Al-chip) 구분해야 하니 산출물 코드를 써요.
+        const inheritName = rows.length === 1 && base.name ? base.name : null;
         newLots.push(makeLot({
-          code: r.k.code, name: cat ? cat.label : r.k.label, categoryId: r.k.categoryId,
+          code: r.k.code, name: inheritName || (cat ? cat.label : r.k.label), categoryId: r.k.categoryId,
           lotNo, qtyKg: r.qty, stage: proc.to, kind: r.k.key,
         }));
       }
@@ -5718,7 +5719,9 @@ function InventorySystem() {
     setLots(nextLots); setMoves(nextMoves); setRuns(nextRuns);
     await writeAll({ lots: nextLots, moves: nextMoves, settings, master, mes, runs: nextRuns, downs });
     showToast(
-      proc.mode === "move"
+      proc.mode === "cdout"
+        ? `응축액 출고 ${fmtKg(created[0].qtyKg)}를 ${date}자로 기록했어요`
+        : proc.mode === "move"
         ? `${proc.label} 실적을 등록했어요 — Lot ${inputLots.length}건이 ${getStage(proc.to).label}로 넘어갔어요`
         : `${proc.label} 실적을 등록했어요 — 투입 ${inputLots.length}건 → 새 Lot ${created.length}건`,
       "success");
@@ -5906,14 +5909,24 @@ function InventorySystem() {
 
   // ---------- 엑셀(.xlsx)로 내보내기 ----------
   const exportCsv = () => {
-    const headers = ["품목코드", "품목명", "카테고리", "거래처", "출고지", "입고 Lot", "주차", "현재공정", "수량(Kg)", "물중량(Kg)", "제외무게(Kg)", "입고일", "공정이동", "톨링품", "이월"];
-    const rows = filtered.map((l) => [
-      l.code, l.name, categoryById[l.categoryId]?.label || "", l.vendor, l.shipLoc, l.lotNo, weekLabel(l.receivedDate),
-      getStage(l.stage).label, l.qtyKg, l.waterKg ?? "", l.excludeKg ?? "", l.receivedDate, l.lastMove ?? "",
-      l.tolling ? "Y" : "", l.carriedOver ? "Y" : "",
-    ]);
+    const headers = ["품목코드", "품목명", "거래처", "출고지", "Lot 번호", "구분", "직전 투입 Lot", "최초 입고 Lot", "최초 입고일", "생산공정", "주차", "현재공정", "수량(Kg)", "물중량(Kg)", "제외무게(Kg)", "입고일", "공정이동", "톨링품", "이월"];
+    const rows = filtered.map((l) => {
+      // 우리가 만든 Lot이면 어떤 Lot에서 나왔는지 같이 적어요 (직전 투입 Lot → 최초 입고 Lot).
+      const made = l.origin === "production";
+      const tr = made ? lotTrace(l, lotsById, lotsByNo) : { direct: [], roots: [] };
+      const pr = l.process ? (processByKey[l.process] || {}).label || "" : "";
+      return [
+        l.code, l.name, l.vendor, l.shipLoc, l.lotNo, made ? "생산" : "입고",
+        tr.direct.map((x) => x.lotNo).join(", "),
+        tr.roots.map((x) => x.lotNo).join(", "),
+        tr.roots.map((x) => x.receivedDate).join(", "),
+        pr, weekLabel(l.receivedDate),
+        getStage(l.stage).label, l.qtyKg, l.waterKg ?? "", l.excludeKg ?? "", l.receivedDate, l.lastMove ?? "",
+        l.tolling ? "Y" : "", l.carriedOver ? "Y" : "",
+      ];
+    });
     const today = new Date().toISOString().slice(0, 10);
-    const widths = [11, 20, 14, 20, 11, 16, 18, 13, 14, 13, 14, 12, 13, 9, 7];
+    const widths = [11, 20, 20, 11, 20, 7, 24, 24, 13, 11, 18, 13, 14, 13, 14, 12, 13, 9, 7];
     downloadXlsx(`재고현황_${today}.xlsx`, `재고현황 ${today}`, [headers, ...rows], widths);
     showToast("엑셀 파일로 내보냈어요.", "success");
   };
@@ -6182,8 +6195,8 @@ function InventorySystem() {
         ${canEdit && selected.size > 0 ? html`
           <div className="ivs-bulkbar">
             <span>${selected.size}건 선택됨</span>
-            <button className="ivs-btn ivs-btn-primary" onClick=${() => setBulkMoveOpen(true)}>
-              <${ArrowRightCircle} size=${13} /> 선택 공정이동
+            <button className="ivs-btn ivs-btn-primary" onClick=${() => setBulkShipOpen(true)}>
+              <${Check} size=${13} /> 출하완료
             </button>
             <button className="ivs-btn ivs-btn-danger" onClick=${() => setDeleteTarget("bulk")}>
               <${Trash2} size=${13} /> 선택 삭제
@@ -6201,7 +6214,6 @@ function InventorySystem() {
                 </th>
                 <${Th} label="품목코드" sortKey="code" sort=${sort} onSort=${toggleSort} />
                 <th>품목명</th>
-                <th>카테고리</th>
                 <th>거래처</th>
                 <th>출고지</th>
                 <th>Lot 번호</th>
@@ -6217,9 +6229,8 @@ function InventorySystem() {
             </thead>
             <tbody>
               ${filtered.length === 0 ? html`
-                <tr><td colSpan=${15} className="ivs-empty">조건에 맞는 로트가 없어요. 필터를 조정해보세요.</td></tr>
+                <tr><td colSpan=${14} className="ivs-empty">조건에 맞는 로트가 없어요. 필터를 조정해보세요.</td></tr>
               ` : filtered.map((l) => {
-                const cat = categoryById[l.categoryId];
                 const stage = getStage(l.stage);
                 const made = l.origin === "production";
                 const tr = made ? lotTrace(l, lotsById, lotsByNo) : null;
@@ -6230,7 +6241,6 @@ function InventorySystem() {
                     <td><input type="checkbox" checked=${selected.has(l.id)} onChange=${() => toggleSelectOne(l.id)} /></td>
                     <td className="ivs-mono">${l.code}</td>
                     <td>${l.name}</td>
-                    <td>${cat ? html`<span className="ivs-badge" style=${{ "--c": cat.color }}>${cat.label}</span>` : null}</td>
                     <td>${l.vendor}</td>
                     <td>${l.shipLoc}</td>
                     <td className="ivs-mono">
@@ -6273,21 +6283,22 @@ function InventorySystem() {
                   </tr>
                   ${open && tr ? html`
                     <tr className="ivs-trace-row">
-                      <td colSpan=${15}>
+                      <td colSpan=${14}>
                         <div className="ivs-trace">
                           <div>
-                            <div className="ivs-chart-label">생산 Lot</div>
+                            <div className="ivs-chart-label">최초 입고 Lot</div>
                             <div className="ivs-chiprow">
-                              <span className="ivs-lotchip">
-                                <span className="ivs-badge-dot" style=${{ background: stage.color }} />
-                                <b>${l.lotNo}</b> ${l.name} · ${fmtKg(l.qtyKg)}
-                              </span>
-                            </div>
-                            <div className="ivs-trace-note">
-                              ${l.runId ? `${runById.has(l.runId) ? `${runById.get(l.runId).date} ${SHIFT_LABEL[runById.get(l.runId).shift] || ""} ${runById.get(l.runId).processLabel || ""} 실적` : "생산실적"}` : "생산실적"}
+                              ${tr.roots.length === 0
+                                ? html`<span className="ivs-dim">바로 앞 Lot이 곧 입고 Lot이에요.</span>`
+                                : tr.roots.map((rl) => html`
+                                  <span className="ivs-lotchip" key=${rl.id}>
+                                    <span className="ivs-badge-dot" style=${{ background: "#E9692F" }} />
+                                    <b>${rl.lotNo}</b> ${rl.name} · ${fmtKg(rl.qtyKg)}
+                                    <span className="ivs-dim"> · ${rl.vendor || "-"} · ${rl.receivedDate} 입고</span>
+                                  </span>`)}
                             </div>
                           </div>
-                          <div className="ivs-trace-arrow">←</div>
+                          <div className="ivs-trace-arrow">→</div>
                           <div>
                             <div className="ivs-chart-label">바로 앞 공정 투입 Lot</div>
                             <div className="ivs-chiprow">
@@ -6300,18 +6311,17 @@ function InventorySystem() {
                                   </span>`)}
                             </div>
                           </div>
-                          <div className="ivs-trace-arrow">←</div>
+                          <div className="ivs-trace-arrow">→</div>
                           <div>
-                            <div className="ivs-chart-label">최초 입고 Lot</div>
+                            <div className="ivs-chart-label">생산 Lot</div>
                             <div className="ivs-chiprow">
-                              ${tr.roots.length === 0
-                                ? html`<span className="ivs-dim">바로 앞 Lot이 곧 입고 Lot이에요.</span>`
-                                : tr.roots.map((rl) => html`
-                                  <span className="ivs-lotchip" key=${rl.id}>
-                                    <span className="ivs-badge-dot" style=${{ background: "#E9692F" }} />
-                                    <b>${rl.lotNo}</b> ${rl.name} · ${fmtKg(rl.qtyKg)}
-                                    <span className="ivs-dim"> · ${rl.vendor || "-"} · ${rl.receivedDate} 입고</span>
-                                  </span>`)}
+                              <span className="ivs-lotchip">
+                                <span className="ivs-badge-dot" style=${{ background: stage.color }} />
+                                <b>${l.lotNo}</b> ${l.name} · ${fmtKg(l.qtyKg)}
+                              </span>
+                            </div>
+                            <div className="ivs-trace-note">
+                              ${l.runId ? `${runById.has(l.runId) ? `${runById.get(l.runId).date} ${SHIFT_LABEL[runById.get(l.runId).shift] || ""} ${runById.get(l.runId).processLabel || ""} 실적` : "생산실적"}` : "생산실적"}
                             </div>
                           </div>
                         </div>
@@ -6371,8 +6381,10 @@ function InventorySystem() {
       ${importOpen ? html`
         <${ImportLotsModal} lots=${lots} master=${master} onCancel=${() => setImportOpen(false)} onConfirm=${handleImportLots} />
       ` : null}
-      ${bulkMoveOpen ? html`
-        <${BulkMoveModal} lots=${selectedLots} onCancel=${() => setBulkMoveOpen(false)} onConfirm=${handleBulkMove} />
+      ${bulkShipOpen ? html`
+        <${BulkShipModal} lots=${selectedLots}
+          onCancel=${() => setBulkShipOpen(false)}
+          onConfirm=${async (date) => { await handleShip(selectedLots.map((l) => l.id), date); setBulkShipOpen(false); setSelected(new Set()); }} />
       ` : null}
       ${labelLots ? html`
         <${LabelModal} lots=${labelLots} manager=${settings.manager || DEFAULT_SETTINGS.manager} onClose=${() => setLabelLots(null)} />
@@ -6509,7 +6521,9 @@ function LotFormModal({ mode, initial, master, onCancel, onSave, onOpenMaster })
   // 카테고리를 고르면 품목코드가 그에 맞춰 자동으로 정해져요.
   const onCategoryChange = (e) => {
     const cat = categoryById[e.target.value];
-    setV((prev) => ({ ...prev, categoryId: cat.id, code: cat.code }));
+    setV((prev) => ({ ...prev, categoryId: cat.id, code: cat.code,
+      // 직접 적어둔 품목명이 있으면 그대로 두고, 비었거나 자동으로 채워졌던 이름이면 새로 채워요.
+      name: isAutoItemName(prev.name) ? autoItemName(cat.id) : prev.name }));
   };
   return html`
     <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onCancel)}>
@@ -6763,7 +6777,7 @@ function buildImportRows(table, existingLots, master) {
       errs, warns,
       lot: {
         code: cat ? cat.code : codeRaw,
-        name: pick(r, "name") || (cat ? cat.label : ""),
+        name: pick(r, "name") || (cat ? autoItemName(cat.id) : ""),
         categoryId: cat ? cat.id : "",
         vendor,
         shipLoc: pick(r, "shipLoc"),
@@ -6802,7 +6816,7 @@ function parseScanOne(raw, dflt) {
       lotNo: m[1].trim(),
       code: cat ? cat.code : m[2],
       categoryId: cat ? cat.id : dflt.categoryId,
-      name: cat ? cat.label : dflt.name,
+      name: cat ? autoItemName(cat.id) : dflt.name,
       qtyKg: num(m[3]),
       receivedDate: /^\d{4}-\d{2}-\d{2}$/.test(m[4]) ? m[4] : dflt.receivedDate,
     };
@@ -6813,7 +6827,7 @@ function parseScanOne(raw, dflt) {
     lotNo: (parts[0] || "").trim(),
     code: cat ? cat.code : dflt.code,
     categoryId: cat ? cat.id : dflt.categoryId,
-    name: cat ? cat.label : dflt.name,
+    name: cat ? autoItemName(cat.id) : dflt.name,
     qtyKg: num(parts[2]),
     receivedDate: dflt.receivedDate,
   };
@@ -6854,7 +6868,7 @@ function ScanInModal({ lots, master, onCancel, onConfirm }) {
 
   const cat = categoryById[common.categoryId] || CATEGORIES[0];
   const commonKg = Number(common.qtyKg) > 0 ? Number(common.qtyKg) : null;
-  const dflt = { code: cat.code, categoryId: cat.id, name: cat.label, receivedDate: common.receivedDate };
+  const dflt = { code: cat.code, categoryId: cat.id, name: autoItemName(cat.id), receivedDate: common.receivedDate };
   // 줄마다 중량을 따로 넣지 않았으면 공통 정보의 "Lot당 중량"을 그대로 씁니다 —
   // 그래서 공통 중량을 나중에 고쳐도 이미 담아둔 Lot들에 한꺼번에 반영돼요.
   const effKg = (r) => (r.qtyKg == null ? commonKg : Number(r.qtyKg));
@@ -7188,110 +7202,55 @@ function ImportLotsModal({ lots, master, onCancel, onConfirm }) {
   `;
 }
 
-function BulkMoveModal({ lots, onCancel, onConfirm }) {
-  const [target, setTarget] = useState(null);
-  const [qty, setQty] = useState(() => Object.fromEntries(lots.map((l) => [l.id, String(l.qtyKg)])));
-
-  // 이미 그 단계에 있는 로트는 건너뛰어요 (같은 단계로는 이동하지 않으니까요).
-  const movable = target ? lots.filter((l) => l.stage !== target) : lots;
-  const skipped = target ? lots.length - movable.length : 0;
-  const inSum = movable.reduce((a, l) => a + (Number(l.qtyKg) || 0), 0);
-  const outSum = movable.reduce((a, l) => {
-    const n = Number(qty[l.id]);
-    return a + (Number.isFinite(n) && n > 0 ? n : Number(l.qtyKg) || 0);
-  }, 0);
-  const diff = outSum - inSum;
-  const badRow = movable.some((l) => { const n = Number(qty[l.id]); return !Number.isFinite(n) || n <= 0; });
-
+// 고른 Lot을 한 번에 출하완료로 — 표에서 체크한 뒤 "출하완료"를 누르면 여기로 와요.
+function BulkShipModal({ lots, onCancel, onConfirm }) {
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const already = lots.filter((l) => l.stage === "shipped");
+  const targets = lots.filter((l) => l.stage !== "shipped");
+  const kg = targets.reduce((a, l) => a + (Number(l.qtyKg) || 0), 0);
   return html`
     <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onCancel)}>
-      <div className="ivs-modal ivs-modal-xl" onClick=${(e) => e.stopPropagation()}>
+      <div className="ivs-modal ivs-modal-lg" onClick=${(e) => e.stopPropagation()}>
         <div className="ivs-modal-head">
-          <h3><${ArrowRightCircle} size=${16} style=${{ verticalAlign: -3, marginRight: 6 }} /> 선택 공정이동 · ${lots.length}건</h3>
+          <h3><${Check} size=${18} /> 고른 ${targets.length}건을 출하완료로</h3>
           <button className="ivs-icon-btn" onClick=${onCancel}><${X} size=${16} /></button>
         </div>
         <div className="ivs-modal-body">
-          <div className="ivs-move-flow">
-            <span className="ivs-dim">보낼 공정</span>
-            <span className="ivs-move-arrow">→</span>
-            ${target
-              ? html`<span className="ivs-badge" style=${{ "--c": getStage(target).color }}><span className="ivs-badge-dot" />${getStage(target).label}</span>`
-              : html`<span className="ivs-move-placeholder">이동할 공정을 아래에서 고르세요</span>`}
+          <div className="ivs-form-grid">
+            <${Field} label="출하일자">
+              <input type="date" className="ivs-input" value=${date} onChange=${(e) => setDate(e.target.value)} />
+            <//>
           </div>
-          <div className="ivs-stage-picker">
-            ${STAGES.map((st) => html`
-              <button
-                key=${st.key} type="button"
-                className=${`ivs-stage-pick ${target === st.key ? "active" : ""}`}
-                style=${{ "--c": st.color }}
-                onClick=${() => setTarget(st.key)}
-              >
-                ${target === st.key ? html`<${Check} size=${12} />` : null}${st.label}
-              </button>
-            `)}
-          </div>
-
-          ${skipped > 0 ? html`
-            <p className="ivs-dash-note" style=${{ marginTop: 12, marginBottom: 0 }}>
-              고른 ${lots.length}건 중 ${skipped}건은 이미 "${getStage(target).label}" 공정이라 건너뛰어요.
-            </p>
+          ${already.length > 0 ? html`
+            <p className="ivs-modal-text ivs-dim">이미 출하완료인 ${already.length}건은 그대로 둬요.</p>
           ` : null}
-
-          <div className="ivs-chart-label" style=${{ marginTop: 16 }}>
-            이동 후 배출 수량 (Kg) — 기본값은 지금 수량 그대로예요. 공정손실이 있으면 줄여서 넣으세요.
-          </div>
-          <div className="ivs-table-wrap" style=${{ maxHeight: 300 }}>
-            <table className="ivs-table">
+          <div className="ivs-table-wrap" style=${{ maxHeight: 300, marginTop: 10 }}>
+            <table className="ivs-table" style=${{ minWidth: 0 }}>
               <thead>
-                <tr>
-                  <th>입고 Lot</th><th>품목</th><th>현재공정</th>
-                  <th className="ivs-right">투입(Kg)</th><th className="ivs-right">배출(Kg)</th><th className="ivs-right">차이</th>
-                </tr>
+                <tr><th>Lot 번호</th><th>품목</th><th>거래처</th><th>현재공정</th><th className="ivs-right">수량(Kg)</th></tr>
               </thead>
               <tbody>
-                ${movable.map((l) => {
-                  const n = Number(qty[l.id]);
-                  const ok = Number.isFinite(n) && n > 0;
-                  const d = ok ? n - (Number(l.qtyKg) || 0) : 0;
-                  return html`
-                    <tr key=${l.id}>
-                      <td className="ivs-mono">${l.lotNo}</td>
-                      <td>${l.code} · ${l.name}</td>
-                      <td><span className="ivs-badge" style=${{ "--c": getStage(l.stage).color }}>${getStage(l.stage).label}</span></td>
-                      <td className="ivs-mono ivs-right">${fmtKg(l.qtyKg)}</td>
-                      <td className="ivs-right">
-                        <input
-                          type="number" className=${`ivs-input ivs-qty-cell ${ok ? "" : "bad"}`}
-                          value=${qty[l.id] ?? ""}
-                          onChange=${(e) => setQty((q) => ({ ...q, [l.id]: e.target.value }))}
-                        />
-                      </td>
-                      <td className=${`ivs-mono ivs-right ${d < 0 ? "ivs-diff-loss" : d > 0 ? "ivs-diff-mix" : "ivs-dim"}`}>
-                        ${d === 0 ? "-" : `${d > 0 ? "+" : ""}${d.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}`}
-                      </td>
-                    </tr>
-                  `;
-                })}
+                ${targets.length === 0 ? html`
+                  <tr><td colSpan=${5} className="ivs-empty">출하할 Lot이 없어요.</td></tr>
+                ` : targets.map((l) => html`
+                  <tr key=${l.id}>
+                    <td className="ivs-mono">${l.lotNo}</td>
+                    <td>${l.code} · ${l.name}</td>
+                    <td>${l.vendor || "-"}</td>
+                    <td><span className="ivs-badge" style=${{ "--c": getStage(l.stage).color }}>${getStage(l.stage).label}</span></td>
+                    <td className="ivs-mono ivs-right">${fmtKg(l.qtyKg)}</td>
+                  </tr>`)}
               </tbody>
             </table>
           </div>
-          <div className="ivs-bulk-sum">
-            <span>투입 합계 <b>${fmtKg(inSum)}</b></span>
-            <span>배출 합계 <b>${fmtKg(outSum)}</b></span>
-            <span className=${diff < 0 ? "ivs-diff-loss" : diff > 0 ? "ivs-diff-mix" : "ivs-dim"}>
-              ${diff === 0 ? "차이 없음" : diff < 0 ? `공정손실 ${fmtKg(-diff)}` : `혼합증가 +${fmtKg(diff)}`}
-            </span>
-          </div>
         </div>
         <div className="ivs-modal-foot">
+          <span className="ivs-section-hint" style=${{ marginRight: "auto" }}>
+            ${targets.length}건 · ${fmtKg(kg)}
+          </span>
           <button className="ivs-btn" onClick=${onCancel}>취소</button>
-          <button
-            className="ivs-btn ivs-btn-primary"
-            disabled=${!target || movable.length === 0 || badRow}
-            onClick=${() => onConfirm(target, qty)}
-          >
-            ${target ? `${movable.length}건을 "${getStage(target).label}"로 이동` : "이동"}
-          </button>
+          <button className="ivs-btn ivs-btn-primary" onClick=${() => onConfirm(date)}
+            disabled=${targets.length === 0}>출하완료 처리</button>
         </div>
       </div>
     </div>
@@ -8162,9 +8121,11 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
         deltaDir: okUtil ? "up" : "down" },
       { label: "BM 회수율", value: rateBm == null ? "-" : rateBm.toFixed(1), unit: "%",
         color: rateBm != null && rateBm >= tr.bm ? PT.green : PT.amber,
-        delta: `목표 ${tr.bm}% 대비 ${pp(dPt(rateBm, tr.bm))}`,
+        delta: `${fmtTon(tot.out.bm)}톤 · 목표 대비 ${pp(dPt(rateBm, tr.bm))}`,
         deltaColor: rateBm != null && rateBm >= tr.bm ? PT.green : PT.amber,
         deltaDir: rateBm != null && rateBm >= tr.bm ? "up" : "down" },
+      { label: "응축액 회수", value: fmtTon(tot.out.cd), unit: "톤", color: PT.text,
+        delta: `투입 대비 ${fmtPct(tot.rate.cd)} · 탱크 실측`, deltaColor: PT.dim, deltaDir: "flat" },
       { label: "비가동 시간", value: (totMin / 60).toFixed(1), unit: "h", color: totMin > 0 ? PT.amber : PT.green,
         delta: `${dtRows.length}건 · 계획시간의 ${tot.planMin > 0 ? ((totMin / tot.planMin) * 100).toFixed(1) : "0.0"}%`,
         deltaColor: PT.dim, deltaDir: "flat" },
@@ -8210,7 +8171,7 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
     kicker: "문제", accent: worstPerf && worstPerf.v < worstPerf.t ? PT.red : PT.green,
     title: noPlan ? "조업 계획 미수립 구간으로 목표 대비 평가 미적용"
       : worstPerf && worstPerf.v < worstPerf.t
-        ? `${worstPerf.key} ${worstPerf.v.toFixed(1)}%로 목표 ${worstPerf.t}% 대비 ${(worstPerf.t - worstPerf.v).toFixed(1)}%p 미달,\n${byMajor[0] ? execTerm(byMajor[0].key) : "가동 저해"}이 직접 원인`
+        ? `${worstPerf.key} ${worstPerf.v.toFixed(1)}%로 목표 ${worstPerf.t}% 대비 ${(worstPerf.t - worstPerf.v).toFixed(1)}%p 미달,\n${byMajor[0] ? execTerm(byMajor[0].key) : "가동 저해"}${josa(byMajor[0] ? execTerm(byMajor[0].key) : "가동 저해", ["이", "가"])} 직접 원인`
         : "전 지표 목표 달성, 현 조업 조건 유지 필요",
     subtitle: "Target vs. Actual (단위: %)",
     visual: { type: "bars", mark: 100, markLabel: "목표 100%", axisMax: 120,
@@ -8243,16 +8204,18 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
       text: `최다 정지 설비 ${byEq[0] ? eqName(byEq[0].key) : "-"} ${byEq[0] ? fmtMin(byEq[0].min) : ""} · 최빈 상세원인 ${byDetail[0] ? `${byDetail[0].key} ${byDetail[0].count}건` : "-"}` } : null,
   });
 
-  // ── 5. 회수 구조 (월간만) ───────────────────────────────
-  if (isMonth) {
+  // ── 5. 회수 구조 — 기간 투입량 대비 BM · 응축액 (주간·월간 공통) ──
+  // 응축액은 Lot마다 계량할 수 없어서, 저장탱크를 탱크로리로 비운 날짜의 실측 중량으로 잡혀요.
+  // 그래서 주 단위로는 들쭉날쭉할 수 있고, 그 사실을 배너에 적어둡니다.
+  {
     const under = OUTPUT_KINDS.filter((k) => tot.rate[k.key] != null && tot.rate[k.key] < tr[k.key]);
+    const bmKg = tot.out.bm, cdKg = tot.out.cd;
+    const okBm = tot.rate.bm != null && tot.rate.bm >= tr.bm;
     S.push({
       kicker: "분석", accent: under.length ? PT.amber : PT.green,
       title: tot.inputKg === 0 ? "투입 실적 없음, 회수율 산출 불가"
-        : under.length === 0
-          ? `전 품목 회수율 목표 달성,\n투입 ${fmtTon(tot.inputKg)}톤 대비 ${fmtTon(tot.outKg)}톤 회수 (수율 ${fmtPct(tot.yieldPct)})`
-          : `${under.map((k) => k.label).join(" · ")} 회수율 목표 미달,\n총 수율 ${fmtPct(tot.yieldPct)} 수준`,
-      subtitle: "Recovery Rate vs. Target (단위: %)",
+        : `투입 ${fmtTon(tot.inputKg)}톤 대비 BM ${fmtTon(bmKg)}톤 회수 (${fmtPct(tot.rate.bm)}),\n응축액 ${fmtTon(cdKg)}톤 (${fmtPct(tot.rate.cd)})`,
+      subtitle: `Recovery vs. Target · ${label} (단위: %)`,
       visual: { type: "bars", mark: tr.bm, markLabel: `BM 목표 ${tr.bm}%`,
         rows: OUTPUT_KINDS.map((k) => {
           const v = tot.rate[k.key];
@@ -8262,6 +8225,11 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
             text: `${fmtPct(v)} · ${fmtTon(tot.out[k.key])}톤`,
             color: worst ? PT.red : met ? PT.green : PT.faint, strong: worst };
         }) },
+      banner: tot.inputKg === 0 ? null : {
+        kind: okBm ? "insight" : "action",
+        label: okBm ? "Insight" : "Action Required",
+        text: `BM ${fmtTon(bmKg)}톤 (목표 ${tr.bm}% 대비 ${pp(dPt(tot.rate.bm, tr.bm))}) · 응축액 ${fmtTon(cdKg)}톤 — 응축액은 저장탱크 배출 시 실측이라 기간별 편차 발생`,
+      },
     });
   }
 
@@ -8805,41 +8773,34 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
   const emptyOut = () => Object.fromEntries(OUTPUT_KINDS.map((k) => [k.key, ""]));
   const [form, setForm] = useState(() => ({
     date: today, shift: "day", process: "crush", workers: "", note: "",
-    inputIds: [], vendor: "", categoryId: "hv_cell",
+    inputIds: [], vendor: "", categoryId: "hv_cell", cellName: "",
     cellKg: "", cellLotNo: "",
     outputs: emptyOut(), outputLots: emptyOut(),
   }));
   const [pickOpen, setPickOpen] = useState(false);
-  const [askProc, setAskProc] = useState(null);  // 공정을 바꾸기 전 확인 메시지창
-  const [trace, setTrace] = useState(null);      // Lot 추적으로 펼쳐본 실적
+  const [askMismatch, setAskMismatch] = useState(false); // 이전 공정이 다를 때 다시 확인
+  const [override, setOverride] = useState(false);       // 확인을 받은 뒤 그대로 진행
+  const [trace, setTrace] = useState(null);              // Lot 추적으로 펼쳐본 실적
   const [delTarget, setDelTarget] = useState(null);
   const [procFilter, setProcFilter] = useState("all");
+  const [cd, setCd] = useState({ date: today, kg: "", lotNo: "", note: "" }); // 응축액 출고
 
-  const proc = processByKey[form.process] || PROCESSES[0];
+  const proc = processByKey[form.process] || FLOW_PROCESSES[0];
   const route = ROUTES[proc.route];
   const kinds = procOutputs(proc);
   const vendors = (master && master.vendors) || [];
 
   // 그 날 그 교대의 담당 조는 패턴에서 자동으로 정해져요.
   const crew = shiftCrews(form.date, mes.shiftAnchor)[form.shift];
-  // 고를 수 있는 Lot = 이 공정의 "이전 공정" 단계에 서 있는 것만
-  const pickable = useMemo(
-    () => lots
-      .filter((l) => !l.closed && proc.from.includes(l.stage))
-      .sort((a, b) => (a.receivedDate < b.receivedDate ? 1 : -1)),
-    [lots, proc]);
   const chosen = useMemo(() => lots.filter((l) => form.inputIds.includes(l.id)), [lots, form.inputIds]);
+  // 고른 Lot 중 이 공정의 이전 공정이 아닌 것 — 있으면 한 번 더 확인을 받아요.
+  const mismatch = useMemo(() => chosen.filter((l) => !proc.from.includes(l.stage)), [chosen, proc]);
   const inputKg = chosen.reduce((a, l) => a + (Number(l.qtyKg) || 0), 0);
   const outSum = proc.mode === "split"
     ? (Number(form.cellKg) || 0)
     : kinds.reduce((a, k) => a + (Number(form.outputs[k.key]) || 0), 0);
 
-  // 공정을 바꾸면 고른 Lot과 산출량은 비워요 (경로가 달라지니까요)
-  const applyProc = (key) => setForm((f) => ({
-    ...f, process: key, inputIds: [], cellKg: "", cellLotNo: "",
-    outputs: emptyOut(), outputLots: emptyOut(),
-  }));
-  const askChangeProc = (key) => { if (key !== form.process) setAskProc(key); };
+  const setProcess = (key) => { setOverride(false); setForm((f) => ({ ...f, process: key })); };
 
   const monthRuns = useMemo(() => runs.filter((r) => r.date.slice(0, 7) === ym), [runs, ym]);
   const viewRuns = useMemo(
@@ -8851,10 +8812,25 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
     return Array.from(set).sort().reverse();
   }, [runs, today]);
 
+  // ---------- 응축액 누적 회수율 ----------
+  // 응축액은 Lot마다 계량할 수 없어서, 탱크로리로 빼낸 날짜까지의 "누적 투입량" 대비로 봐요.
+  const cdRows = useMemo(() => {
+    const outs = runs.filter((r) => r.process === "cdout").sort((a, b) => (a.date < b.date ? -1 : 1));
+    const feed = runs.filter((r) => r.process === "calcine").sort((a, b) => (a.date < b.date ? -1 : 1));
+    let cum = 0;
+    return outs.map((r) => {
+      const kg = (r.outputs || []).reduce((a, o) => a + (Number(o.qtyKg) || 0), 0);
+      cum += kg;
+      const fed = feed.filter((f) => f.date <= r.date).reduce((a, f) => a + (f.inputKg || 0), 0);
+      return { id: r.id, date: r.date, kg, cum, fed, rate: fed > 0 ? (cum / fed) * 100 : null, note: r.note || "" };
+    }).reverse();
+  }, [runs]);
+  const cdTot = cdRows.length ? cdRows[0] : null;
+
   // 일자별로 계획과 견줘서 달성율·회수율을 뽑아요.
   const daily = useMemo(() => {
     const map = new Map();
-    viewRuns.forEach((r) => {
+    viewRuns.filter((r) => r.process !== "cdout").forEach((r) => {
       if (!map.has(r.date)) map.set(r.date, { date: r.date, inputKg: 0, workers: 0, shifts: 0, out: { bm: 0, cu: 0, al: 0, cd: 0 } });
       const d = map.get(r.date);
       d.inputKg += r.inputKg || 0;
@@ -8875,15 +8851,18 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
       a.inputKg += d.inputKg; a.planKg += d.planKg; a.workers += d.workers;
       OUTPUT_KINDS.forEach((k) => { a.out[k.key] += d.out[k.key] || 0; });
     });
+    // 응축액은 그 달에 빼낸 실측 중량으로 세요.
+    a.out.cd = runs.filter((r) => r.process === "cdout" && r.date.slice(0, 7) === ym)
+      .reduce((x, r) => x + (r.outputs || []).reduce((y, o) => y + (Number(o.qtyKg) || 0), 0), 0);
     a.achieve = a.planKg > 0 ? (a.inputKg / a.planKg) * 100 : null;
     a.perCap = a.workers > 0 ? a.inputKg / a.workers : null;
     return a;
-  }, [daily]);
+  }, [daily, runs, ym]);
 
   // 조별 인당 생산성 (증감은 그 달 평균 대비)
   const byCrew = useMemo(() => {
     const m = new Map(CREWS.map((c) => [c, { crew: c, inputKg: 0, workers: 0, shifts: 0 }]));
-    viewRuns.forEach((r) => {
+    viewRuns.filter((r) => r.process !== "cdout").forEach((r) => {
       const o = m.get(r.crew); if (!o) return;
       o.inputKg += r.inputKg || 0; o.workers += Number(r.workers) || 0; o.shifts += 1;
     });
@@ -8893,14 +8872,26 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
   }, [viewRuns, tot]);
 
   const rate = (v) => (tot.inputKg > 0 ? (v / tot.inputKg) * 100 : null);
-  const toggleInput = (id) => setForm((f) => ({
-    ...f, inputIds: f.inputIds.includes(id) ? f.inputIds.filter((x) => x !== id) : [...f.inputIds, id] }));
+  const toggleInput = (id) => { setOverride(false); setForm((f) => ({
+    ...f, inputIds: f.inputIds.includes(id) ? f.inputIds.filter((x) => x !== id) : [...f.inputIds, id] })); };
+  const setInputs = (ids) => { setOverride(false); setForm((f) => ({ ...f, inputIds: ids })); };
 
   const canSubmit = chosen.length > 0 && (proc.mode === "move" || outSum > 0);
-  const submit = async () => {
+  const doSubmit = async () => {
     await onSave({ ...form, crew });
-    setForm((f) => ({ ...f, note: "", inputIds: [], cellKg: "", cellLotNo: "",
+    setOverride(false);
+    setForm((f) => ({ ...f, note: "", inputIds: [], cellKg: "", cellLotNo: "", cellName: "",
       outputs: emptyOut(), outputLots: emptyOut() }));
+  };
+  const submit = async () => {
+    if (mismatch.length > 0 && !override) { setAskMismatch(true); return; }
+    await doSubmit();
+  };
+  const submitCd = async () => {
+    await onSave({ date: cd.date, shift: "day", crew: shiftCrews(cd.date, mes.shiftAnchor).day,
+      process: "cdout", workers: "", note: cd.note, inputIds: [], vendor: "",
+      cdKg: cd.kg, cdLotNo: cd.lotNo, outputs: emptyOut(), outputLots: emptyOut() });
+    setCd({ date: cd.date, kg: "", lotNo: "", note: "" });
   };
 
   return html`
@@ -8930,7 +8921,7 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
         <div className="ivs-card">
           <div className="ivs-card-head-row">
             <h2 className="ivs-section-title">생산실적 입력</h2>
-            <span className="ivs-section-hint">교대조는 근무 패턴에서 자동으로 정해져요</span>
+            <span className="ivs-section-hint">이전 Lot을 먼저 고르고, 후속공정을 지정하세요 · 교대조는 근무 패턴에서 자동으로 정해져요</span>
           </div>
           <div className="ivs-form-grid">
             <${Field} label="작업일">
@@ -8944,12 +8935,6 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
                 <option value="night">야간</option>
               </select>
             <//>
-            <${Field} label="후속공정">
-              <select className="ivs-select ivs-select-full" value=${form.process}
-                onChange=${(e) => askChangeProc(e.target.value)}>
-                ${PROCESSES.map((p) => html`<option key=${p.key} value=${p.key}>${p.label}</option>`)}
-              </select>
-            <//>
             <${Field} label="담당 교대조 (자동)">
               <input className="ivs-input ivs-input-auto" readOnly tabIndex=${-1}
                 value=${crew ? `${crew}조${(mes.crewMembers[crew] || []).length ? ` · ${(mes.crewMembers[crew] || []).length}명 등록` : ""}` : "-"} />
@@ -8960,32 +8945,23 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
             <//>
           </div>
 
-          <div className="ivs-routebar" style=${{ "--c": route.color }}>
-            <span className="ivs-routebar-tag">${route.label}</span>
-            <span className="ivs-routebar-flow">${route.flow}</span>
-            <span className="ivs-routebar-hint">${proc.hint}</span>
-          </div>
-
           <div className="ivs-run-inputs">
             <div className="ivs-card-head-row" style=${{ marginBottom: 8 }}>
               <div className="ivs-chart-label" style=${{ marginBottom: 0 }}>
-                투입 Lot ${chosen.length}건 · ${fmtKg(inputKg)}
-                <span className="ivs-dim"> · 이전 공정 ${stageLabels(proc.from)}</span>
+                ① 이전 Lot 고르기 — ${chosen.length}건 · ${fmtKg(inputKg)}
               </div>
               <button className="ivs-btn ivs-btn-sm" onClick=${() => setPickOpen(true)}>
                 <${Search} size=${12} /> 이전 lot 조회
               </button>
             </div>
             ${chosen.length === 0 ? html`
-              <div className="ivs-prod-empty">
-                아직 고른 Lot이 없어요. "이전 lot 조회"를 눌러 ${stageLabels(proc.from)} 단계의 Lot을 고르세요.
-              </div>
+              <div className="ivs-prod-empty">아직 고른 Lot이 없어요. "이전 lot 조회"를 눌러 대기 중인 Lot을 고르세요.</div>
             ` : html`
               <div className="ivs-chiprow">
                 ${chosen.map((l) => html`
-                  <span className="ivs-lotchip" key=${l.id}>
+                  <span className=${`ivs-lotchip ${proc.from.includes(l.stage) ? "" : "warn"}`} key=${l.id}>
                     <span className="ivs-badge-dot" style=${{ background: getStage(l.stage).color }} />
-                    <b>${l.lotNo}</b> ${l.code} · ${fmtKg(l.qtyKg)}
+                    <b>${l.lotNo}</b> ${getStage(l.stage).label} · ${fmtKg(l.qtyKg)}
                     <button className="ivs-lotchip-x" onClick=${() => toggleInput(l.id)}><${X} size=${11} /></button>
                   </span>
                 `)}
@@ -8993,9 +8969,36 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
             `}
           </div>
 
+          <div className="ivs-chart-label" style=${{ marginTop: 16 }}>② 후속공정 지정</div>
+          <div className="ivs-proctabs">
+            ${FLOW_PROCESSES.map((pr) => html`
+              <button key=${pr.key} type="button"
+                className=${`ivs-proctab ${pr.key === proc.key ? "on" : ""}`}
+                style=${{ "--c": ROUTES[pr.route].color }}
+                onClick=${() => setProcess(pr.key)}>
+                <b>${pr.label}</b>
+                <span>${stageLabels(pr.from)} → ${getStage(pr.to).label}</span>
+              </button>
+            `)}
+          </div>
+          <div className="ivs-routebar" style=${{ "--c": route.color, marginTop: 0 }}>
+            <span className="ivs-routebar-tag">${route.label}</span>
+            <span className="ivs-routebar-flow">${route.flow}</span>
+            <span className="ivs-routebar-hint">${proc.hint}</span>
+          </div>
+          ${mismatch.length > 0 ? html`
+            <div className="ivs-warnbar">
+              <${AlertTriangle} size=${14} />
+              <span>
+                고른 Lot ${mismatch.length}건은 <b>${stageLabels(Array.from(new Set(mismatch.map((l) => l.stage))))}</b> 단계예요.${" "}
+                ${proc.label} 공정의 이전 공정은 <b>${stageLabels(proc.from)}</b>라서, 등록할 때 한 번 더 확인해요.
+              </span>
+            </div>
+          ` : null}
+
           ${proc.mode === "move" ? html`
             <div className="ivs-chart-label" style=${{ marginTop: 16 }}>
-              품목 · 업체 · 생산 Lot — ${proc.label}은 Lot을 그대로 다음 단계로 넘겨요
+              ③ 품목 · 업체 · 생산 Lot — ${proc.label}은 Lot을 그대로 다음 단계로 넘겨요
             </div>
             <div className="ivs-form-grid">
               <${Field} label="품목">
@@ -9013,7 +9016,7 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
             </div>
           ` : proc.mode === "split" ? html`
             <div className="ivs-chart-label" style=${{ marginTop: 16 }}>
-              해체 산출 — 셀이 새 재공 Lot이 되어 곧바로 ${getStage(proc.spawn).label}로 넘어가요
+              ③ 해체 산출 — 셀이 새 재공 Lot이 되어 곧바로 ${getStage(proc.to).label}로 넘어가요
             </div>
             <div className="ivs-form-grid">
               <${Field} label="품목 (셀)">
@@ -9021,6 +9024,10 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
                   onChange=${(e) => setForm({ ...form, categoryId: e.target.value })}>
                   ${CATEGORIES.map((c) => html`<option key=${c.id} value=${c.id}>${c.code} · ${c.label}</option>`)}
                 </select>
+              <//>
+              <${Field} label="품목명 (비우면 품목 이름)">
+                <input className="ivs-input" value=${form.cellName}
+                  onChange=${(e) => setForm({ ...form, cellName: e.target.value })} />
               <//>
               <${Field} label="업체">
                 <select className="ivs-select ivs-select-full" value=${form.vendor}
@@ -9040,13 +9047,13 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
             </div>
           ` : html`
             <div className="ivs-chart-label" style=${{ marginTop: 16 }}>
-              산출 — 넣은 품목마다 생산 Lot이 만들어져 ${getStage(proc.to).label}로 들어가요
+              ③ 산출 — 넣은 품목마다 생산 Lot이 만들어져 ${getStage(proc.to).label}로 들어가요
             </div>
             <div className="ivs-form-grid">
               <${Field} label="업체">
                 <select className="ivs-select ivs-select-full" value=${form.vendor}
                   onChange=${(e) => setForm({ ...form, vendor: e.target.value })}>
-                  <option value="">${chosen.length ? `투입 Lot 그대로 (${chosen[0].vendor || "-"})` : "투입 Lot 그대로"}</option>
+                  <option value="">${chosen.length ? `투입 Lot 그대로 (${chosen[0].vendor || "-"} · ${chosen[0].shipLoc || "-"})` : "투입 Lot 그대로"}</option>
                   ${vendors.map((v) => html`<option key=${v.name} value=${v.name}>${v.name}</option>`)}
                 </select>
               <//>
@@ -9081,6 +9088,11 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
                 </tbody>
               </table>
             </div>
+            ${proc.key === "calcine" ? html`
+              <div className="ivs-section-hint" style=${{ marginTop: 8 }}>
+                응축액은 Lot마다 계량할 수 없어서 여기 넣지 않아요. 저장탱크가 차서 탱크로리로 뺄 때 아래 "응축액 출고"에 실측 중량을 넣으세요.
+              </div>
+            ` : null}
           `}
 
           <div className="ivs-bulk-sum" style=${{ marginTop: 12 }}>
@@ -9098,6 +9110,62 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
             </button>
           </div>
         </div>
+
+        <div className="ivs-card">
+          <div className="ivs-card-head-row">
+            <h2 className="ivs-section-title">응축액 출고</h2>
+            <span className="ivs-section-hint">Lot마다 계량이 안 되니, 탱크로리로 빼낼 때 실측 중량만 넣어요</span>
+          </div>
+          <div className="ivs-form-grid">
+            <${Field} label="출고일">
+              <input type="date" className="ivs-input" value=${cd.date}
+                onChange=${(e) => setCd({ ...cd, date: e.target.value })} />
+            <//>
+            <${Field} label="실측 중량 (Kg)">
+              <input type="number" className="ivs-input" value=${cd.kg}
+                onChange=${(e) => setCd({ ...cd, kg: e.target.value })} />
+            <//>
+            <${Field} label="Lot 번호 (비우면 자동)">
+              <input className="ivs-input" placeholder="예: CD0001-260910-1" value=${cd.lotNo}
+                onChange=${(e) => setCd({ ...cd, lotNo: e.target.value })} />
+            <//>
+            <${Field} label="비고">
+              <input className="ivs-input" value=${cd.note}
+                onChange=${(e) => setCd({ ...cd, note: e.target.value })} />
+            <//>
+          </div>
+          <div className="ivs-bulk-sum" style=${{ marginTop: 12 }}>
+            <span>누적 출고 <b>${cdTot ? fmtKg(cdTot.cum) : "0 Kg"}</b></span>
+            <span>누적 열분해 투입 <b>${cdTot ? fmtKg(cdTot.fed) : "0 Kg"}</b></span>
+            <span className="ivs-dim">
+              ${cdTot && cdTot.rate != null ? `누적 회수율 ${cdTot.rate.toFixed(2)}%` : "출고 실적을 넣으면 누적 회수율이 계산돼요"}
+            </span>
+            <div className="ivs-spacer" />
+            <button className="ivs-btn ivs-btn-primary" onClick=${submitCd}
+              disabled=${!(Number(cd.kg) > 0)}>응축액 출고 등록</button>
+          </div>
+          ${cdRows.length === 0 ? null : html`
+            <div className="ivs-table-wrap" style=${{ marginTop: 12, maxHeight: 260 }}>
+              <table className="ivs-table">
+                <thead>
+                  <tr><th>출고일</th><th className="ivs-right">실측 중량</th><th className="ivs-right">누적 출고</th>
+                    <th className="ivs-right">누적 열분해 투입</th><th className="ivs-right">누적 회수율</th><th>비고</th></tr>
+                </thead>
+                <tbody>
+                  ${cdRows.map((r) => html`
+                    <tr key=${r.id}>
+                      <td className="ivs-mono">${r.date}</td>
+                      <td className="ivs-mono ivs-right">${fmtKg(r.kg)}</td>
+                      <td className="ivs-mono ivs-right">${fmtKg(r.cum)}</td>
+                      <td className="ivs-mono ivs-right">${fmtKg(r.fed)}</td>
+                      <td className="ivs-mono ivs-right"><b>${r.rate == null ? "-" : `${r.rate.toFixed(2)}%`}</b></td>
+                      <td className="ivs-dim">${r.note || "-"}</td>
+                    </tr>`)}
+                </tbody>
+              </table>
+            </div>
+          `}
+        </div>
       ` : null}
 
       <div className="ivs-prod-periodbar">
@@ -9109,9 +9177,9 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
         <span className="ivs-dim" style=${{ marginLeft: 12 }}>공정</span>
         <button type="button" className=${`ivs-btn ivs-btn-sm ${procFilter === "all" ? "ivs-btn-primary" : ""}`}
           onClick=${() => setProcFilter("all")}>전체</button>
-        ${PROCESSES.map((p) => html`
-          <button key=${p.key} type="button" className=${`ivs-btn ivs-btn-sm ${procFilter === p.key ? "ivs-btn-primary" : ""}`}
-            onClick=${() => setProcFilter(p.key)}>${p.label}</button>
+        ${PROCESSES.map((pr) => html`
+          <button key=${pr.key} type="button" className=${`ivs-btn ivs-btn-sm ${procFilter === pr.key ? "ivs-btn-primary" : ""}`}
+            onClick=${() => setProcFilter(pr.key)}>${pr.label}</button>
         `)}
       </div>
 
@@ -9119,7 +9187,7 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
         <div className="ivs-card">
           <div className="ivs-card-head-row">
             <h2 className="ivs-section-title">회수 구성</h2>
-            <span className="ivs-section-hint">${ym} · 투입 ${fmtTon(tot.inputKg)} 톤 대비</span>
+            <span className="ivs-section-hint">${ym} · 투입 ${fmtTon(tot.inputKg)} 톤 대비 · 응축액은 그 달 출고 실측</span>
           </div>
           <${DonutChart}
             rows=${OUTPUT_KINDS.map((k) => ({ key: k.key, label: k.label, color: k.color, value: tot.out[k.key] }))}
@@ -9192,7 +9260,7 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
               </thead>
               <tbody>
                 ${viewRuns.map((r) => {
-                  const rp = processByKey[r.process || "crush"] || PROCESSES[0];
+                  const rp = processByKey[r.process || "crush"] || FLOW_PROCESSES[0];
                   const outs = r.outputs || [];
                   const outKg = outs.reduce((a, o) => a + (Number(o.qtyKg) || 0), 0);
                   const get = (k) => outs.filter((o) => o.kind === k).reduce((a, o) => a + o.qtyKg, 0);
@@ -9204,11 +9272,12 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
                         <td><span className="ivs-badge" style=${{ "--c": CREW_COLOR[r.crew] || "#8494AC" }}>${r.crew}조</span></td>
                         <td><span className="ivs-badge" style=${{ "--c": ROUTES[rp.route].color }}>${rp.label}</span></td>
                         <td className="ivs-mono ivs-right">${r.workers || "-"}</td>
-                        <td className="ivs-mono ivs-right">${fmtKg(r.inputKg)}</td>
+                        <td className="ivs-mono ivs-right">${r.inputKg ? fmtKg(r.inputKg) : "-"}</td>
                         <td>
-                          <button className="ivs-linkbtn" onClick=${() => setTrace(trace === r.id ? null : r.id)}>
-                            ${(r.inputs || []).length}건 ${trace === r.id ? "▴" : "▾"}
-                          </button>
+                          ${(r.inputs || []).length === 0 ? html`<span className="ivs-dim">-</span>` : html`
+                            <button className="ivs-linkbtn" onClick=${() => setTrace(trace === r.id ? null : r.id)}>
+                              ${(r.inputs || []).length}건 ${trace === r.id ? "▴" : "▾"}
+                            </button>`}
                         </td>
                         <td className="ivs-mono">
                           ${outs.length === 0 ? html`<span className="ivs-dim">-</span>`
@@ -9233,7 +9302,7 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
                                   ${(r.inputs || []).map((i) => html`
                                     <span className="ivs-lotchip" key=${i.lotId}>
                                       ${i.stage ? html`<span className="ivs-badge-dot" style=${{ background: getStage(i.stage).color }} />` : null}
-                                      <b>${i.lotNo}</b> ${i.code} · ${fmtKg(i.qtyKg)}
+                                      <b>${i.lotNo}</b> ${i.name || i.code} · ${fmtKg(i.qtyKg)}
                                     </span>
                                   `)}
                                 </div>
@@ -9251,7 +9320,7 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
                                     return html`
                                       <span className="ivs-lotchip" key=${o.lotId}>
                                         <span className="ivs-badge-dot" style=${{ background: k ? k.color : getStage(o.stage).color }} />
-                                        <b>${o.lotNo}</b> ${k ? k.label : o.name || o.code} · ${fmtKg(o.qtyKg)}
+                                        <b>${o.lotNo}</b> ${o.name || (k ? k.label : o.code)} · ${fmtKg(o.qtyKg)}
                                       </span>`;
                                   })}
                                 </div>
@@ -9271,17 +9340,17 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
 
       ${pickOpen ? html`
         <${LotPickerModal} lots=${lots} proc=${proc} selected=${form.inputIds}
-          onToggle=${toggleInput} onProcess=${askChangeProc} onClose=${() => setPickOpen(false)} />
+          onToggle=${toggleInput} onSetSelected=${setInputs} onClose=${() => setPickOpen(false)} />
       ` : null}
-      ${askProc ? html`
-        <${ProcessConfirmModal} procKey=${askProc}
-          onCancel=${() => setAskProc(null)}
-          onConfirm=${() => { applyProc(askProc); setAskProc(null); }} />
+      ${askMismatch ? html`
+        <${MismatchConfirmModal} proc=${proc} lots=${mismatch}
+          onCancel=${() => setAskMismatch(false)}
+          onConfirm=${() => { setOverride(true); setAskMismatch(false); doSubmit(); }} />
       ` : null}
       ${delTarget ? html`
         <${ConfirmModal}
           icon=${html`<${AlertTriangle} size=${18} />`}
-          title=${`${delTarget.date} ${SHIFT_LABEL[delTarget.shift]} ${(processByKey[delTarget.process || "crush"] || PROCESSES[0]).label} 실적을 취소할까요?`}
+          title=${`${delTarget.date} ${SHIFT_LABEL[delTarget.shift]} ${(processByKey[delTarget.process || "crush"] || FLOW_PROCESSES[0]).label} 실적을 취소할까요?`}
           body="이 실적으로 만들어진 Lot이 지워지고, 투입했던 Lot이 원래 공정으로 되돌아가요."
           confirmLabel="실적 취소"
           danger=${true}
@@ -9293,52 +9362,58 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
   `;
 }
 
-// 공정을 바꾸기 전 확인 — 원료 입고 타입마다 거치는 공정이 달라서, 잘못 고르면 엉뚱한 Lot을 투입하게 돼요.
-function ProcessConfirmModal({ procKey, onCancel, onConfirm }) {
-  const proc = processByKey[procKey];
-  const route = ROUTES[proc.route];
+// 이전 공정이 다른 Lot을 넣으려 할 때 — 원료 입고 타입마다 원래 가야 할 길이 달라서 한 번 더 확인해요.
+function MismatchConfirmModal({ proc, lots, onCancel, onConfirm }) {
+  const byStage = new Map();
+  lots.forEach((l) => { if (!byStage.has(l.stage)) byStage.set(l.stage, []); byStage.get(l.stage).push(l); });
   return html`
     <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onCancel)}>
       <div className="ivs-modal" onClick=${(e) => e.stopPropagation()}>
         <div className="ivs-modal-head">
-          <h3><${ArrowRightCircle} size=${18} /> ${proc.label} 공정으로 바꿀까요?</h3>
+          <h3><${AlertTriangle} size=${18} /> 원래 가야 할 공정이 아니에요</h3>
           <button className="ivs-icon-btn" onClick=${onCancel}><${X} size=${16} /></button>
         </div>
         <div className="ivs-modal-body">
-          <div className="ivs-routecard" style=${{ "--c": route.color }}>
-            <div className="ivs-routecard-tag">${route.label}</div>
-            <div className="ivs-routecard-flow">${route.flow}</div>
-          </div>
-          <div className="ivs-routesteps">
-            ${PROCESSES.filter((p) => p.route === proc.route).map((p, i) => html`
-              <${Fragment} key=${p.key}>
-                ${i > 0 ? html`<span className="ivs-routesteps-sep">›</span>` : null}
-                <span className=${`ivs-routestep ${p.key === proc.key ? "on" : ""}`}>${p.label}</span>
-              <//>
-            `)}
-          </div>
-          <p className="ivs-modal-text">${proc.warn}</p>
-          <p className="ivs-modal-text ivs-dim">
-            이전 공정: <b>${stageLabels(proc.from)}</b> · 이 공정을 마치면: <b>${getStage(proc.spawn || proc.to).label}</b>
+          ${Array.from(byStage.entries()).map(([stage, ls]) => {
+            const owner = FLOW_PROCESSES.find((p) => p.from.includes(stage));
+            return html`
+              <div className="ivs-routecard" key=${stage} style=${{ "--c": getStage(stage).color }}>
+                <div className="ivs-routecard-tag">${getStage(stage).label} · ${ls.length}건</div>
+                <div className="ivs-routecard-flow">
+                  ${owner ? `원래 후속공정은 ${owner.label} → ${getStage(owner.to).label}예요` : "정해진 후속공정이 없는 단계예요"}
+                </div>
+              </div>`;
+          })}
+          <p className="ivs-modal-text">
+            지금 고른 후속공정은 <b>${proc.label}</b> (${stageLabels(proc.from)} → ${getStage(proc.to).label})이에요.
+            그래도 이대로 진행할까요?
           </p>
-          <p className="ivs-modal-text ivs-dim">공정을 바꾸면 지금 골라둔 투입 Lot과 산출량은 비워져요.</p>
+          <div className="ivs-chiprow">
+            ${lots.map((l) => html`
+              <span className="ivs-lotchip warn" key=${l.id}>
+                <span className="ivs-badge-dot" style=${{ background: getStage(l.stage).color }} />
+                <b>${l.lotNo}</b> ${getStage(l.stage).label} · ${fmtKg(l.qtyKg)}
+              </span>`)}
+          </div>
         </div>
         <div className="ivs-modal-foot">
           <button className="ivs-btn" onClick=${onCancel}>취소</button>
-          <button className="ivs-btn ivs-btn-primary" onClick=${onConfirm}>${proc.label}로 진행</button>
+          <button className="ivs-btn ivs-btn-primary" onClick=${onConfirm}>그대로 ${proc.label} 진행</button>
         </div>
       </div>
     </div>
   `;
 }
 
-// 이전 lot 조회 — 고른 공정의 "이전 공정" 단계에 서 있는 Lot만 보여줘요.
-function LotPickerModal({ lots, proc, selected, onToggle, onProcess, onClose }) {
+// 이전 lot 조회 — 공정 탭을 누르면 그 공정의 대기 Lot으로 바뀌어요 (창은 닫히지 않아요).
+function LotPickerModal({ lots, proc, selected, onToggle, onSetSelected, onClose }) {
+  const [tab, setTab] = useState(proc.key);
   const [q, setQ] = useState("");
+  const view = processByKey[tab] || proc;
   const pool = useMemo(
-    () => lots.filter((l) => !l.closed && proc.from.includes(l.stage))
+    () => lots.filter((l) => !l.closed && view.from.includes(l.stage))
       .sort((a, b) => (a.receivedDate < b.receivedDate ? 1 : -1)),
-    [lots, proc]);
+    [lots, view]);
   const rows = useMemo(() => {
     const w = q.trim().toLowerCase();
     if (!w) return pool;
@@ -9346,6 +9421,12 @@ function LotPickerModal({ lots, proc, selected, onToggle, onProcess, onClose }) 
   }, [pool, q]);
   const pickedKg = lots.filter((l) => selected.includes(l.id)).reduce((a, l) => a + (Number(l.qtyKg) || 0), 0);
   const countAt = (p) => lots.filter((l) => !l.closed && p.from.includes(l.stage)).length;
+  const allShown = rows.length > 0 && rows.every((l) => selected.includes(l.id));
+  const toggleAll = () => {
+    const ids = rows.map((l) => l.id);
+    onSetSelected(allShown ? selected.filter((id) => !ids.includes(id))
+      : Array.from(new Set([...selected, ...ids])));
+  };
   return html`
     <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onClose)}>
       <div className="ivs-modal ivs-modal-xl" onClick=${(e) => e.stopPropagation()}>
@@ -9355,20 +9436,23 @@ function LotPickerModal({ lots, proc, selected, onToggle, onProcess, onClose }) 
         </div>
         <div className="ivs-modal-body">
           <div className="ivs-proctabs">
-            ${PROCESSES.map((p) => html`
+            ${FLOW_PROCESSES.map((p) => html`
               <button key=${p.key} type="button"
-                className=${`ivs-proctab ${p.key === proc.key ? "on" : ""}`}
+                className=${`ivs-proctab ${p.key === tab ? "on" : ""}`}
                 style=${{ "--c": ROUTES[p.route].color }}
-                onClick=${() => { if (p.key !== proc.key) { onProcess(p.key); onClose(); } }}>
+                onClick=${() => setTab(p.key)}>
                 <b>${p.label}</b>
                 <span>${stageLabels(p.from)} · ${countAt(p)}건</span>
               </button>
             `)}
           </div>
-          <div className="ivs-routebar" style=${{ "--c": ROUTES[proc.route].color, marginBottom: 12 }}>
-            <span className="ivs-routebar-tag">${ROUTES[proc.route].label}</span>
-            <span className="ivs-routebar-flow">${ROUTES[proc.route].flow}</span>
-            <span className="ivs-routebar-hint">${stageLabels(proc.from)} 단계의 Lot만 골라요</span>
+          <div className="ivs-routebar" style=${{ "--c": ROUTES[view.route].color, marginBottom: 12, marginTop: 0 }}>
+            <span className="ivs-routebar-tag">${ROUTES[view.route].label}</span>
+            <span className="ivs-routebar-flow">${stageLabels(view.from)} → ${getStage(view.to).label}</span>
+            <span className="ivs-routebar-hint">
+              ${view.key === proc.key ? "지금 고른 후속공정의 대기 Lot이에요"
+                : `${view.label} 대기 Lot을 보고 있어요 — 골라도 후속공정은 ${proc.label} 그대로예요`}
+            </span>
           </div>
           <div className="ivs-search" style=${{ marginBottom: 12 }}>
             <${Search} size=${15} className="ivs-search-icon" />
@@ -9379,14 +9463,18 @@ function LotPickerModal({ lots, proc, selected, onToggle, onProcess, onClose }) 
             <table className="ivs-table" style=${{ minWidth: 0 }}>
               <thead>
                 <tr>
-                  <th className="ivs-th-check"></th><th>Lot 번호</th><th>품목</th><th>거래처</th>
+                  <th className="ivs-th-check">
+                    <input type="checkbox" checked=${allShown} onChange=${toggleAll}
+                      title=${`표시된 ${rows.length}건 전체 선택`} />
+                  </th>
+                  <th>Lot 번호</th><th>품목</th><th>거래처</th>
                   <th>현재공정</th><th>구분</th><th>입고일</th><th className="ivs-right">수량(Kg)</th>
                 </tr>
               </thead>
               <tbody>
                 ${rows.length === 0 ? html`
                   <tr><td colSpan=${8} className="ivs-empty">
-                    ${stageLabels(proc.from)} 단계에 있는 Lot이 없어요.
+                    ${stageLabels(view.from)} 단계에 있는 Lot이 없어요.
                   </td></tr>
                 ` : rows.map((l) => html`
                   <tr key=${l.id}>

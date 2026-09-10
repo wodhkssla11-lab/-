@@ -909,6 +909,8 @@
   .ivs-slide-bar-t u { position: absolute; top: -4px; bottom: -4px; width: 1.5px; background: #94A3B8; opacity: .6; }
   .ivs-slide-bar-v { font-size: 12px; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
 
+  .ivs-bulk-note { font-size: 12px; color: var(--text-dim); }
+
   .ivs-slide-kpi-bar { position: relative; height: 7px; border-radius: 4px; background: #232F45;
     margin: 10px 0 8px; }
   .ivs-slide-kpi-bar i { display: block; height: 100%; border-radius: 4px; min-width: 4px; }
@@ -3987,6 +3989,7 @@ function seedData() {
       waterKg: null, excludeKg: null, tolling: r[9], carriedOver: r[10], lastMove: null,
     };
     if (r[11] === "closed") { l.closed = true; l.closedDate = dayOffset(r[6] + 2); l.lastMove = l.closedDate; }
+    if (l.stage === "shipped") { l.shippedDate = dayOffset(-30); l.lastMove = l.shippedDate; }
     byId.set(r[0], l);
     return l;
   });
@@ -5900,8 +5903,15 @@ function InventorySystem() {
   const handleShip = async (lotIds, shipDate) => {
     if (!canEdit || !lotIds || lotIds.length === 0) return;
     const ids = new Set(lotIds);
-    const targets = lots.filter((l) => ids.has(l.id));
-    if (targets.length === 0) return;
+    const picked = lots.filter((l) => ids.has(l.id));
+    const targets = picked.filter((l) => l.stage === "usable");
+    if (targets.length === 0) {
+      showToast("출하대기 단계의 Lot만 출하완료할 수 있어요.", "error");
+      return;
+    }
+    if (targets.length < picked.length) {
+      showToast(`출하대기가 아닌 ${picked.length - targets.length}건은 빼고 처리했어요.`, "info");
+    }
     const nextLots = lots.map((l) => (ids.has(l.id) ? { ...l, stage: "shipped", shippedDate: shipDate, lastMove: shipDate } : l));
     const newMoves = targets.map((l, i) => ({
       id: `move-${Date.now()}-sh${i}`, date: shipDate, code: l.code, name: l.name, lotNo: l.lotNo, lotId: l.id,
@@ -6132,6 +6142,18 @@ function InventorySystem() {
   const lotsById = useMemo(() => new Map(lots.map((l) => [l.id, l])), [lots]);
   const lotsByNo = useMemo(() => new Map(lots.map((l) => [l.lotNo, l])), [lots]);
   const runById = useMemo(() => new Map(runs.map((r) => [r.id, r])), [runs]);
+  // 출하일: 로트에 적혀 있으면 그걸 쓰고, 없으면 "출하완료로 넘어간" 이동 기록에서 찾아요.
+  const shipDateByLot = useMemo(() => {
+    const m = new Map();
+    moves.forEach((mv) => {
+      if (mv.toStage !== "shipped" || !mv.lotId || !mv.date) return;
+      const prev = m.get(mv.lotId);
+      if (!prev || prev < mv.date) m.set(mv.lotId, mv.date);
+    });
+    return m;
+  }, [moves]);
+  const shipDateOf = (l) => (l.stage === "shipped"
+    ? l.shippedDate || shipDateByLot.get(l.id) || l.lastMove || null : null);
 
   const filtered = useMemo(() => {
     const words = filters.search.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -6245,24 +6267,25 @@ function InventorySystem() {
 
   // ---------- 엑셀(.xlsx)로 내보내기 ----------
   const exportCsv = () => {
-    const headers = ["품목코드", "품목명", "거래처", "출고지", "Lot 번호", "구분", "직전 투입 Lot", "최초 입고 Lot", "최초 입고일", "생산공정", "주차", "현재공정", "수량(Kg)", "물중량(Kg)", "제외무게(Kg)", "입고일", "공정이동", "톨링품", "이월"];
+    const headers = ["품목코드", "품목명", "카테고리", "거래처", "출고지", "Lot 번호", "구분", "직전 투입 Lot", "최초 입고 Lot", "최초 입고일", "생산공정", "주차", "현재공정", "수량(Kg)", "물중량(Kg)", "제외무게(Kg)", "입고일", "출하일", "최근 이동일", "톨링품", "이월"];
     const rows = filtered.map((l) => {
       // 우리가 만든 Lot이면 어떤 Lot에서 나왔는지 같이 적어요 (직전 투입 Lot → 최초 입고 Lot).
       const made = l.origin === "production";
       const tr = made ? lotTrace(l, lotsById, lotsByNo) : { direct: [], roots: [] };
       const pr = l.process ? (processByKey[l.process] || {}).label || "" : "";
       return [
-        l.code, l.name, l.vendor, l.shipLoc, l.lotNo, made ? "생산" : "입고",
+        l.code, l.name, categoryById[l.categoryId]?.label || "", l.vendor, l.shipLoc, l.lotNo, made ? "생산" : "입고",
         tr.direct.map((x) => x.lotNo).join(", "),
         tr.roots.map((x) => x.lotNo).join(", "),
         tr.roots.map((x) => x.receivedDate).join(", "),
         pr, weekLabel(l.receivedDate),
-        getStage(l.stage).label, l.qtyKg, l.waterKg ?? "", l.excludeKg ?? "", l.receivedDate, l.lastMove ?? "",
+        getStage(l.stage).label, l.qtyKg, l.waterKg ?? "", l.excludeKg ?? "", l.receivedDate,
+        shipDateOf(l) || "", l.lastMove ?? "",
         l.tolling ? "Y" : "", l.carriedOver ? "Y" : "",
       ];
     });
     const today = new Date().toISOString().slice(0, 10);
-    const widths = [11, 20, 20, 11, 20, 7, 24, 24, 13, 11, 18, 13, 14, 13, 14, 12, 13, 9, 7];
+    const widths = [11, 20, 14, 20, 11, 20, 7, 24, 24, 13, 11, 18, 13, 14, 13, 14, 12, 12, 13, 9, 7];
     downloadXlsx(`재고현황_${today}.xlsx`, `재고현황 ${today}`, [headers, ...rows], widths);
     showToast("엑셀 파일로 내보냈어요.", "success");
   };
@@ -6270,6 +6293,11 @@ function InventorySystem() {
 
   // QR 라벨은 "체크한 LOT"을 기준으로 뽑아요. 표 필터를 바꿔도 체크는 유지되니, 여러 단계에서 골라 한 번에 뽑을 수 있어요.
   const selectedLots = useMemo(() => lots.filter((l) => selected.has(l.id)), [lots, selected]);
+
+  // 출하완료는 "출하대기" 단계에서만 눌러야 해요. 열분해대기·파쇄대기 Lot을 그냥 넘기면
+  // 생산실적을 넣지 않은 채로 공정을 건너뛰어 버립니다.
+  const offStage = useMemo(() => selectedLots.filter((l) => l.stage !== "usable"), [selectedLots]);
+  const shipReady = selectedLots.length > 0 && offStage.length === 0;
 
   const allVisibleSelected = filtered.length > 0 && filtered.every((l) => selected.has(l.id));
   const toggleSelectAll = () => {
@@ -6531,9 +6559,16 @@ function InventorySystem() {
         ${canEdit && selected.size > 0 ? html`
           <div className="ivs-bulkbar">
             <span>${selected.size}건 선택됨</span>
-            <button className="ivs-btn ivs-btn-primary" onClick=${() => setBulkShipOpen(true)}>
+            <button className="ivs-btn ivs-btn-primary" onClick=${() => setBulkShipOpen(true)}
+              disabled=${!shipReady}
+              title=${shipReady ? "고른 Lot을 출하완료로 넘겨요"
+                : "출하대기 단계의 Lot만 출하완료할 수 있어요"}>
               <${Check} size=${13} /> 출하완료
             </button>
+            ${shipReady ? null : html`
+              <span className="ivs-bulk-note">
+                출하대기 Lot만 출하완료할 수 있어요${offStage.length ? ` — 고른 것 중 ${offStage.length}건이 ${stageLabels(Array.from(new Set(offStage.map((l) => l.stage))))} 단계예요` : ""}
+              </span>`}
             <button className="ivs-btn ivs-btn-danger" onClick=${() => setDeleteTarget("bulk")}>
               <${Trash2} size=${13} /> 선택 삭제
             </button>
@@ -6550,6 +6585,7 @@ function InventorySystem() {
                 </th>
                 <${Th} label="품목코드" sortKey="code" sort=${sort} onSort=${toggleSort} />
                 <th>품목명</th>
+                <th>카테고리</th>
                 <th>거래처</th>
                 <th>출고지</th>
                 <th>Lot 번호</th>
@@ -6559,14 +6595,16 @@ function InventorySystem() {
                 <th className="ivs-hide-sm ivs-right">물중량</th>
                 <th className="ivs-hide-sm ivs-right">제외무게</th>
                 <${Th} label="입고일" sortKey="receivedDate" sort=${sort} onSort=${toggleSort} />
-                <th className="ivs-hide-sm">공정이동</th>
+                <${Th} label="출하일" sortKey="shippedDate" sort=${sort} onSort=${toggleSort} />
+                <th className="ivs-hide-sm">최근 이동일</th>
                 <th className="ivs-th-actions"></th>
               </tr>
             </thead>
             <tbody>
               ${filtered.length === 0 ? html`
-                <tr><td colSpan=${14} className="ivs-empty">조건에 맞는 로트가 없어요. 필터를 조정해보세요.</td></tr>
+                <tr><td colSpan=${16} className="ivs-empty">조건에 맞는 로트가 없어요. 필터를 조정해보세요.</td></tr>
               ` : filtered.map((l) => {
+                const cat = categoryById[l.categoryId];
                 const stage = getStage(l.stage);
                 const made = l.origin === "production";
                 const tr = made ? lotTrace(l, lotsById, lotsByNo) : null;
@@ -6577,6 +6615,7 @@ function InventorySystem() {
                     <td><input type="checkbox" checked=${selected.has(l.id)} onChange=${() => toggleSelectOne(l.id)} /></td>
                     <td className="ivs-mono">${l.code}</td>
                     <td>${l.name}</td>
+                    <td>${cat ? html`<span className="ivs-badge" style=${{ "--c": cat.color }}>${cat.label}</span>` : html`<span className="ivs-dim">-</span>`}</td>
                     <td>${l.vendor}</td>
                     <td>${l.shipLoc}</td>
                     <td className="ivs-mono">
@@ -6595,6 +6634,7 @@ function InventorySystem() {
                     <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.waterKg)}</td>
                     <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.excludeKg)}</td>
                     <td className="ivs-mono">${l.receivedDate}</td>
+                    <td className="ivs-mono">${shipDateOf(l) || html`<span className="ivs-dim">-</span>`}</td>
                     <td className="ivs-dim ivs-hide-sm">${l.lastMove ?? "-"}</td>
                     <td className="ivs-row-menu-cell">
                       ${canEdit ? html`
@@ -6619,7 +6659,7 @@ function InventorySystem() {
                   </tr>
                   ${open && tr ? html`
                     <tr className="ivs-trace-row">
-                      <td colSpan=${14}>
+                      <td colSpan=${16}>
                         <div className="ivs-trace">
                           <div>
                             <div className="ivs-chart-label">최초 입고 Lot</div>
@@ -7541,8 +7581,8 @@ function ImportLotsModal({ lots, master, onCancel, onConfirm }) {
 // 고른 Lot을 한 번에 출하완료로 — 표에서 체크한 뒤 "출하완료"를 누르면 여기로 와요.
 function BulkShipModal({ lots, onCancel, onConfirm }) {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const already = lots.filter((l) => l.stage === "shipped");
-  const targets = lots.filter((l) => l.stage !== "shipped");
+  const targets = lots.filter((l) => l.stage === "usable");
+  const already = lots.filter((l) => l.stage !== "usable");
   const kg = targets.reduce((a, l) => a + (Number(l.qtyKg) || 0), 0);
   return html`
     <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onCancel)}>
@@ -7558,7 +7598,9 @@ function BulkShipModal({ lots, onCancel, onConfirm }) {
             <//>
           </div>
           ${already.length > 0 ? html`
-            <p className="ivs-modal-text ivs-dim">이미 출하완료인 ${already.length}건은 그대로 둬요.</p>
+            <p className="ivs-modal-text ivs-dim">
+              출하대기가 아닌 ${already.length}건(${stageLabels(Array.from(new Set(already.map((l) => l.stage))))})은 그대로 둬요.
+            </p>
           ` : null}
           <div className="ivs-table-wrap" style=${{ maxHeight: 300, marginTop: 10 }}>
             <table className="ivs-table" style=${{ minWidth: 0 }}>
@@ -7567,7 +7609,7 @@ function BulkShipModal({ lots, onCancel, onConfirm }) {
               </thead>
               <tbody>
                 ${targets.length === 0 ? html`
-                  <tr><td colSpan=${5} className="ivs-empty">출하할 Lot이 없어요.</td></tr>
+                  <tr><td colSpan=${5} className="ivs-empty">출하대기 단계의 Lot이 없어요.</td></tr>
                 ` : targets.map((l) => html`
                   <tr key=${l.id}>
                     <td className="ivs-mono">${l.lotNo}</td>

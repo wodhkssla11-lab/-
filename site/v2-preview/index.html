@@ -915,6 +915,11 @@
   .ivs-slide-bar-t u { position: absolute; top: -4px; bottom: -4px; width: 1.5px; background: #94A3B8; opacity: .6; }
   .ivs-slide-bar-v { font-size: 12px; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
 
+  .ivs-outrow-cont td:first-child { padding-left: 22px; }
+  .ivs-outrow-tick { color: var(--text-faint); margin-right: 6px; }
+  .ivs-outrow-btns { white-space: nowrap; text-align: right; }
+  .ivs-outrow-btns .ivs-icon-btn + .ivs-icon-btn { margin-left: 2px; }
+
   .ivs-bulk-note { font-size: 12px; color: var(--text-dim); }
 
   .ivs-slide-kpi-bar { position: relative; height: 7px; border-radius: 4px; background: #232F45;
@@ -6031,9 +6036,11 @@ function InventorySystem() {
       addMove(cd, "usable", "shipped", kg);
     } else {
       const kinds = procOutputs(proc);
-      const rows = kinds
-        .map((k) => ({ k, qty: Number(draft.outputs[k.key]), typed: (draft.outputLots || {})[k.key] }))
-        .filter((r) => Number.isFinite(r.qty) && r.qty > 0);
+      // 산출은 행 목록이에요. 톤백 하나가 곧 생산 Lot 하나라, 같은 품목이라도
+      // 몇 개를 뽑았느냐에 따라 행이 여러 개 나옵니다.
+      const rows = (draft.outRows || [])
+        .map((o) => ({ k: outputKindByKey[o.kind], qty: Number(o.qty), typed: o.lotNo, vendor: o.vendor }))
+        .filter((r) => r.k && Number.isFinite(r.qty) && r.qty > 0);
       if (rows.length === 0) { showToast("산출량을 하나 이상 입력해주세요.", "error"); return; }
       // 투입 Lot이 모두 같은 품목이면 그 품목을 그대로 들고 갈 수 있어요.
       const sameCat = inputLots.every((l) => l.categoryId === base.categoryId) ? base.categoryId : null;
@@ -6051,7 +6058,7 @@ function InventorySystem() {
         const outName = keepCat ? (sameName || autoItemName(keepCat.id))
           : (outCat ? autoItemName(outCat.id) : r.k.label);
         // 거래처: 비우면 투입 Lot 그대로, "혼합"이면 출고지도 혼합으로 둬요.
-        const rv = (draft.outputVendors || {})[r.k.key] || "";
+        const rv = r.vendor || "";
         const mixed = rv === MIXED_VENDOR;
         const rvLoc = (master.vendors || []).find((v) => v.name === rv);
         newLots.push(makeLot({
@@ -9423,15 +9430,18 @@ function ShipTab({ lots, moves, canEdit, onShip, onLabel }) {
 function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onYm }) {
   const today = new Date().toISOString().slice(0, 10);
   const setYm = onYm; // 화면 제목("9월 생산실적")과 같은 달을 봐야 해서 위에서 내려받아요
-  const emptyOut = () => Object.fromEntries(OUTPUT_KINDS.map((k) => [k.key, ""]));
-  // Cu-chip · Al-chip은 섞어서 배출하니 거래처를 "혼합"으로 미리 잡아둬요.
-  const defaultOutVendors = () =>
-    Object.fromEntries(OUTPUT_KINDS.map((k) => [k.key, MIXED_KINDS.includes(k.key) ? MIXED_VENDOR : ""]));
+  // 산출 한 줄 = 생산 Lot 한 건. 톤백을 여러 개 뽑으면 같은 품목이라도 줄이 여러 개예요.
+  // Cu-chip · Al-chip은 섞어서 배출하니 거래처를 "혼합"으로 미리 잡아둡니다.
+  const mkOutRow = (kind) => ({
+    rid: `o${Date.now()}${Math.random().toString(36).slice(2, 6)}`,
+    kind, qty: "", lotNo: "", vendor: MIXED_KINDS.includes(kind) ? MIXED_VENDOR : "",
+  });
+  const outRowsFor = (pk) => procOutputs(processByKey[pk] || FLOW_PROCESSES[0]).map((k) => mkOutRow(k.key));
   const [form, setForm] = useState(() => ({
     date: today, shift: "day", process: "crush", workers: "", note: "",
     inputIds: [], vendor: "", categoryId: "hv_cell", cellName: "",
     cellKg: "", cellLotNo: "",
-    outputs: emptyOut(), outputLots: emptyOut(), outputVendors: defaultOutVendors(),
+    outRows: outRowsFor("crush"),
   }));
   const [pickOpen, setPickOpen] = useState(false);
   const [askMismatch, setAskMismatch] = useState(false); // 이전 공정이 다를 때 다시 확인
@@ -9454,10 +9464,27 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
   const inputKg = chosen.reduce((a, l) => a + (Number(l.qtyKg) || 0), 0);
   const outSum = proc.mode === "split"
     ? (Number(form.cellKg) || 0)
-    : kinds.reduce((a, k) => a + (Number(form.outputs[k.key]) || 0), 0);
+    : (form.outRows || []).reduce((a, o) => a + (Number(o.qty) || 0), 0);
 
-  const setProcess = (key) => { setOverride(false); setForm((f) => ({ ...f, process: key })); };
-  const setOutVendor = (k, v) => setForm((f) => ({ ...f, outputVendors: { ...f.outputVendors, [k]: v } }));
+  // 공정을 바꾸면 산출 품목이 달라지니 행도 새로 잡아요.
+  const setProcess = (key) => { setOverride(false); setForm((f) => ({ ...f, process: key, outRows: outRowsFor(key) })); };
+  const setOutRow = (rid, patch) => setForm((f) => ({
+    ...f, outRows: f.outRows.map((o) => (o.rid === rid ? { ...o, ...patch } : o)) }));
+  // 같은 품목 줄 바로 아래에 한 줄 더 — 톤백을 여러 개 뽑았을 때 한 번에 등록하려고요.
+  const addOutRow = (rid) => setForm((f) => {
+    const i = f.outRows.findIndex((o) => o.rid === rid);
+    if (i < 0) return f;
+    const next = f.outRows.slice();
+    next.splice(i + 1, 0, mkOutRow(f.outRows[i].kind));
+    return { ...f, outRows: next };
+  });
+  const delOutRow = (rid) => setForm((f) => {
+    const row = f.outRows.find((o) => o.rid === rid);
+    if (!row) return f;
+    // 품목마다 최소 한 줄은 남겨둬요 (지우면 그 품목을 아예 못 넣게 되니까요).
+    if (f.outRows.filter((o) => o.kind === row.kind).length <= 1) return f;
+    return { ...f, outRows: f.outRows.filter((o) => o.rid !== rid) };
+  });
 
   const monthRuns = useMemo(() => runs.filter((r) => r.date.slice(0, 7) === ym), [runs, ym]);
   const viewRuns = useMemo(
@@ -9546,7 +9573,7 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
     await onSave({ ...form, crew });
     setOverride(false);
     setForm((f) => ({ ...f, note: "", inputIds: [], cellKg: "", cellLotNo: "", cellName: "",
-      outputs: emptyOut(), outputLots: emptyOut(), outputVendors: defaultOutVendors() }));
+      outRows: outRowsFor(f.process) }));
   };
   const submit = async () => {
     if (mismatch.length > 0 && !override) { setAskMismatch(true); return; }
@@ -9555,7 +9582,7 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
   const submitCd = async () => {
     await onSave({ date: cd.date, shift: "day", crew: shiftCrews(cd.date, mes.shiftAnchor).day,
       process: "cdout", workers: "", note: cd.note, inputIds: [], vendor: "",
-      cdKg: cd.kg, cdLotNo: cd.lotNo, outputs: emptyOut(), outputLots: emptyOut() });
+      cdKg: cd.kg, cdLotNo: cd.lotNo, outRows: [] });
     setCd({ date: cd.date, kg: "", lotNo: "", note: "" });
   };
 
@@ -9716,47 +9743,74 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
               ③ 산출 — 넣은 품목마다 생산 Lot이 만들어져 ${getStage(proc.to).label}로 들어가요
             </div>
             <div className="ivs-section-hint" style=${{ marginBottom: 8 }}>
+              한 줄이 생산 Lot 한 건이에요. 톤백을 여러 개 뽑았으면 오른쪽 <b>+</b>로 줄을 늘려 한 번에 등록하세요.${" "}
               거래처를 비우면 투입 Lot 것을 그대로 씁니다${chosen.length ? ` (${chosen[0].vendor || "-"} · ${chosen[0].shipLoc || "-"})` : ""}.
               Cu-chip · Al-chip처럼 섞어서 배출하는 품목은 "${MIXED_VENDOR}"으로 두세요.
             </div>
             <div className="ivs-table-wrap">
               <table className="ivs-table">
                 <thead>
-                  <tr><th>산출 품목</th><th className="ivs-right">회수량 (Kg)</th><th>생산 Lot 번호</th><th>거래처</th><th className="ivs-right">회수율</th></tr>
+                  <tr><th>산출 품목</th><th className="ivs-right">회수량 (Kg)</th><th>생산 Lot 번호</th><th>거래처</th>
+                    <th className="ivs-right">회수율</th><th className="ivs-th-actions"></th></tr>
                 </thead>
                 <tbody>
-                  ${kinds.map((k) => {
-                    const v = Number(form.outputs[k.key]);
+                  ${(form.outRows || []).map((o, i) => {
+                    const k = outputKindByKey[o.kind];
+                    if (!k) return null;
+                    const v = Number(o.qty);
                     const r = inputKg > 0 && Number.isFinite(v) && v > 0 ? (v / inputKg) * 100 : null;
+                    const first = (form.outRows || []).findIndex((x) => x.kind === o.kind) === i;
+                    const many = (form.outRows || []).filter((x) => x.kind === o.kind).length > 1;
+                    const seq = (form.outRows || []).filter((x, j) => x.kind === o.kind && j <= i).length;
                     return html`
-                      <tr key=${k.key}>
+                      <tr key=${o.rid} className=${first ? "" : "ivs-outrow-cont"}>
                         <td>
-                          <span className="ivs-badge-dot" style=${{ background: k.color }} />
-                          ${" "}${k.label}
-                          <span className="ivs-dim"> → ${outNameOf(k)}</span>
-                          <span className="ivs-dim ivs-mono"> ${outCodeOf(k)}</span>
+                          ${first ? html`
+                            <span className="ivs-badge-dot" style=${{ background: k.color }} />
+                            ${" "}${k.label}
+                            <span className="ivs-dim"> → ${outNameOf(k)}</span>
+                            <span className="ivs-dim ivs-mono"> ${outCodeOf(k)}</span>
+                          ` : html`
+                            <span className="ivs-outrow-tick">↳</span>
+                            <span className="ivs-dim">${k.label} ${seq}번째</span>
+                          `}
                         </td>
                         <td className="ivs-right">
-                          <input type="number" className="ivs-input ivs-input-cell" value=${form.outputs[k.key]}
-                            onChange=${(e) => setForm({ ...form, outputs: { ...form.outputs, [k.key]: e.target.value } })} />
+                          <input type="number" className="ivs-input ivs-input-cell" value=${o.qty}
+                            onChange=${(e) => setOutRow(o.rid, { qty: e.target.value })} />
                         </td>
                         <td>
                           <input className="ivs-input ivs-input-cell" placeholder=${`비우면 자동 · ${outCodeOf(k)}-YYMMDD-n`}
-                            value=${form.outputLots[k.key]}
-                            onChange=${(e) => setForm({ ...form, outputLots: { ...form.outputLots, [k.key]: e.target.value } })} />
+                            value=${o.lotNo}
+                            onChange=${(e) => setOutRow(o.rid, { lotNo: e.target.value })} />
                         </td>
                         <td>
-                          <select className="ivs-select ivs-input-cell" value=${form.outputVendors[k.key]}
-                            onChange=${(e) => setOutVendor(k.key, e.target.value)}>
+                          <select className="ivs-select ivs-input-cell" value=${o.vendor}
+                            onChange=${(e) => setOutRow(o.rid, { vendor: e.target.value })}>
                             <option value="">투입 Lot 그대로</option>
                             <option value=${MIXED_VENDOR}>${MIXED_VENDOR}</option>
-                            ${vendors.map((v) => html`<option key=${v.name} value=${v.name}>${v.name}</option>`)}
+                            ${vendors.map((x) => html`<option key=${x.name} value=${x.name}>${x.name}</option>`)}
                           </select>
                         </td>
                         <td className="ivs-mono ivs-right">${r == null ? "-" : `${r.toFixed(1)}%`}</td>
+                        <td className="ivs-outrow-btns">
+                          <button type="button" className="ivs-icon-btn" title=${`${k.label} 줄 추가`}
+                            onClick=${() => addOutRow(o.rid)}><${Plus} size=${14} /></button>
+                          ${many ? html`
+                            <button type="button" className="ivs-icon-btn ivs-menu-danger" title="이 줄 지우기"
+                              onClick=${() => delOutRow(o.rid)}><${X} size=${14} /></button>` : null}
+                        </td>
                       </tr>`;
                   })}
                 </tbody>
+                ${(form.outRows || []).length > kinds.length ? html`
+                  <tfoot><tr className="ivs-tablefoot">
+                    <td>합계 · 생산 Lot ${(form.outRows || []).filter((o) => Number(o.qty) > 0).length}건</td>
+                    <td className="ivs-mono ivs-right">${fmtKg(outSum)}</td>
+                    <td colSpan=${2}></td>
+                    <td className="ivs-mono ivs-right">${inputKg > 0 ? `${((outSum / inputKg) * 100).toFixed(1)}%` : "-"}</td>
+                    <td></td>
+                  </tr></tfoot>` : null}
               </table>
             </div>
             ${proc.key === "calcine" ? html`

@@ -197,6 +197,8 @@
   .ivs-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius);
     background: var(--surface); box-shadow: var(--shadow-sm); }
   .ivs-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; min-width: 1080px; }
+  /* 칸이 서너 개뿐인 표는 최소 너비가 필요 없어요 — 반쪽 칸에서도 가로 스크롤 없이 다 보입니다. */
+  .ivs-table.narrow { min-width: 0; }
   .ivs-table th { text-align: left; color: var(--text-dim); font-weight: 650; font-size: 13px;
     letter-spacing: 0; text-transform: none; padding: 11px 12px; background: var(--surface-2);
     border-bottom: 1px solid var(--border); white-space: nowrap; position: sticky; top: 0; z-index: 2; }
@@ -450,8 +452,12 @@
   .ivs-chart-label { font-size: 12px; color: var(--text-dim); font-weight: 550; margin-bottom: 12px; }
   /* 카드 두 장을 절반씩 나란히 */
   .ivs-half-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+  /* 그리드 칸의 기본 min-width는 auto라서, 안에 든 표의 최소 너비만큼 칸이 벌어져요.
+     그러면 두 번째 칸이 화면 밖으로 밀려납니다. 0으로 눌러 칸이 먼저 줄어들게 해요. */
+  .ivs-half-grid > * { min-width: 0; }
   .ivs-half-grid > .ivs-card { margin-bottom: 0; height: 100%; }
   .ivs-chart-split { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: 26px; align-items: start; }
+  .ivs-chart-split > * { min-width: 0; }
 
   .ivs-donut-wrap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
   .ivs-donut { flex-shrink: 0; }
@@ -1064,6 +1070,8 @@
 
   /* ---------- 기준정보 : 조 편성 보기 ---------- */
   .ivs-crew-view { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  /* 반쪽 칸에서는 세 장을 나란히 놓으면 이름이 접혀요 — 세로로 쌓아 옆 카드 높이에 맞춥니다. */
+  .ivs-half-grid .ivs-crew-view { grid-template-columns: 1fr; gap: 10px; }
   .ivs-crew-card { border: 1px solid var(--border); border-top: 3px solid var(--c);
     border-radius: 10px; padding: 13px 15px; background: var(--surface-2); }
   .ivs-crew-card-h { display: flex; align-items: baseline; gap: 8px; font-size: 13px;
@@ -10924,7 +10932,7 @@ function BasisTab({ mes, canEdit, onSave }) {
         <${Section} title="월별 기준" hint="그 달만 다르게 잡고 싶을 때"
           actions=${html`<${EditBtn} which="monthly" icon="calendar" label="월별 기준 편집" />`}>
           <div className="ivs-table-wrap">
-            <table className="ivs-table">
+            <table className="ivs-table narrow">
               <thead><tr><th>월</th><th className="ivs-right">처리능력</th><th className="ivs-right">교대 가동</th>
                 <th className="ivs-right">가동률</th><th>비고</th></tr></thead>
               <tbody>
@@ -10949,7 +10957,7 @@ function BasisTab({ mes, canEdit, onSave }) {
         <${Section} title="비생산 기간" hint="정기 OH · 예방정비 등 라인을 세우는 일정"
           actions=${html`<${EditBtn} which="nonprod" icon="alert-triangle" label="비생산 기간 편집" />`}>
           <div className="ivs-table-wrap">
-            <table className="ivs-table">
+            <table className="ivs-table narrow">
               <thead><tr><th>유형</th><th>명칭</th><th>기간</th><th className="ivs-right">일수</th><th>대상</th></tr></thead>
               <tbody>
                 ${(mes.nonProd || []).length === 0
@@ -10975,7 +10983,7 @@ function BasisTab({ mes, canEdit, onSave }) {
         <${Section} title="공휴일" hint="근무형태에 따라 쉬거나 휴일근로로 돌아가요"
           actions=${html`<${EditBtn} which="holidays" icon="calendar" label="공휴일 편집" />`}>
           <div className="ivs-table-wrap">
-            <table className="ivs-table">
+            <table className="ivs-table narrow">
               <thead><tr><th>일자</th><th>요일</th><th>명칭</th></tr></thead>
               <tbody>
                 ${(mes.holidays || []).length === 0

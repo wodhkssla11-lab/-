@@ -542,11 +542,17 @@
   .ivs-side { flex: 0 0 232px; width: 232px; display: flex; flex-direction: column; gap: 4px;
     padding: 18px 13px; background: var(--surface); border-right: 1px solid var(--border);
     position: sticky; top: 0; height: 100vh; overflow-y: auto; }
-  .ivs-side-brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 16px; }
-  .ivs-side-logo { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center;
-    background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 12.5px; letter-spacing: -.3px; flex-shrink: 0; }
-  .ivs-side-brand b { display: block; font-size: 13.5px; letter-spacing: -.2px; }
-  .ivs-side-brand span { font-size: 11px; color: var(--text-faint); }
+  .ivs-side-brand { display: flex; align-items: center; gap: 11px; padding: 2px 6px 0; }
+  .ivs-side-logo { flex-shrink: 0; display: grid; place-items: center; }
+  .ivs-logo-svg { display: block; }
+  .ivs-side-brand-txt { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .ivs-side-brand b { display: block; font-size: 14px; letter-spacing: -.2px; line-height: 1.25; }
+  .ivs-side-brand span { font-size: 10.5px; color: var(--text-dim); line-height: 1.3; }
+  .ivs-side-tag { font-size: 8px; letter-spacing: .085em; font-weight: 700; color: var(--text-faint);
+    padding: 9px 6px 13px; margin-bottom: 4px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .ivs-lock-logo { display: grid; place-items: center; margin-bottom: 12px; }
+  .ivs-lock-tag { font-size: 8.5px; letter-spacing: .1em; font-weight: 700;
+    color: var(--text-faint); margin: -6px 0 14px; }
   .ivs-side-nav { display: flex; flex-direction: column; gap: 2px; }
   .ivs-side-group { font-size: 10.5px; letter-spacing: .1em; color: var(--text-faint);
     margin: 13px 10px 5px; text-transform: uppercase; font-weight: 700; }
@@ -4382,7 +4388,7 @@ const utilColor = (pct, target) =>
 
 // 열분해 산출물 4종 — 생산실적에서 투입량 대비 회수량·회수율을 이 순서로 봐요.
 const OUTPUT_KINDS = [
-  { key: "bm", label: "BM", categoryId: "mixed_powder", code: "DRBM0001", color: "#84CC16" },
+  { key: "bm", label: "BM", categoryId: "blackmass", code: "BM0001", color: "#84CC16" },
   { key: "cu", label: "Cu-chip", categoryId: "mixed_cu_chip", code: "DRCC0001", color: "#A16207" },
   { key: "al", label: "Al-chip", categoryId: "mixed_al_chip", code: "DRAC0001", color: "#14B8A6" },
   { key: "cd", label: "응축액", categoryId: "condensate", code: "CD0001", color: "#0EA5E9" },
@@ -4432,6 +4438,10 @@ const outputKindByKey = Object.fromEntries(OUTPUT_KINDS.map((k) => [k.key, k]));
 // 카테고리를 고르면 품목명이 현장에서 부르는 이름으로 자동으로 채워져요.
 // (여기 없는 카테고리는 카테고리 이름을 그대로 써요.)
 const CATEGORY_ITEM_NAME = { blackmass: "CP" };
+// Cu-chip과 Al-chip은 투입 Lot을 따라가지 않아요. 다른 것들과 섞어 모아뒀다가
+// 일정 무게가 차면 배출하니, 거래처를 "혼합"으로 두고 따로 고를 수 있게 합니다.
+const MIXED_VENDOR = "혼합";
+const MIXED_KINDS = ["cu", "al"];
 const autoItemName = (catId) => CATEGORY_ITEM_NAME[catId] || (categoryById[catId] ? categoryById[catId].label : "");
 // 사람이 직접 고쳐 쓴 이름은 건드리지 않으려고, "자동으로 채워졌던 이름인지"를 봐요.
 const isAutoItemName = (name) => !String(name || "").trim() || CATEGORIES.some((c) => name === autoItemName(c.id));
@@ -5975,10 +5985,10 @@ function InventorySystem() {
         lossQty: Math.max(0, (Number(l.qtyKg) || 0) - outQty), mixQty: 0, runId, process: proc.key,
       });
     };
-    const makeLot = ({ code, name, categoryId, lotNo, qtyKg, stage, kind }) => {
+    const makeLot = ({ code, name, categoryId, lotNo, qtyKg, stage, kind, vendor: v2, shipLoc: s2 }) => {
       const lot = {
         id: `lot-${Date.now()}-${created.length}-${Math.random().toString(36).slice(2, 6)}`,
-        code, name, categoryId, vendor, shipLoc,
+        code, name, categoryId, vendor: v2 != null ? v2 : vendor, shipLoc: s2 != null ? s2 : shipLoc,
         lotNo, receivedDate: date, stage, qtyKg,
         waterKg: null, excludeKg: null, tolling: !!base.tolling, carriedOver: false,
         lastMove: date,
@@ -6036,12 +6046,18 @@ function InventorySystem() {
         const outCode = keepCat ? (sameCode || keepCat.code) : r.k.code;
         const lotNo = takeLotNo(r.typed, outCode);
         if (!lotNo) { showToast(`이미 쓰고 있는 생산 Lot 번호예요 — ${r.typed}`, "error"); return; }
-        // keepItem이 아니어도, 산출물이 한 종류뿐이면 투입 Lot의 이름은 이어받아요.
-        const outName = keepCat ? (sameName || keepCat.label)
-          : (rows.length === 1 && sameName ? sameName : (outCat ? outCat.label : r.k.label));
+        // 품목명: keepItem이면 투입 Lot 이름, 아니면 그 품목의 기본 이름 (블랙매스 → CP).
+        const outName = keepCat ? (sameName || autoItemName(keepCat.id))
+          : (outCat ? autoItemName(outCat.id) : r.k.label);
+        // 거래처: 비우면 투입 Lot 그대로, "혼합"이면 출고지도 혼합으로 둬요.
+        const rv = (draft.outputVendors || {})[r.k.key] || "";
+        const mixed = rv === MIXED_VENDOR;
+        const rvLoc = (master.vendors || []).find((v) => v.name === rv);
         newLots.push(makeLot({
           code: outCode, name: outName, categoryId: outCat ? outCat.id : r.k.categoryId,
           lotNo, qtyKg: r.qty, stage: proc.to, kind: r.k.key,
+          vendor: mixed ? MIXED_VENDOR : (rv || vendor),
+          shipLoc: mixed ? MIXED_VENDOR : (rv ? (rvLoc ? rvLoc.loc : shipLoc) : shipLoc),
         }));
       }
       inputLots.forEach((l) => addMove(l, l.stage, proc.to, Number(l.qtyKg) || 0));
@@ -6328,12 +6344,13 @@ function InventorySystem() {
       ${LAYOUT === "sidebar" ? html`
         <aside className="ivs-side">
           <div className="ivs-side-brand">
-            <span className="ivs-side-logo">DRT</span>
-            <div>
+            <span className="ivs-side-logo"><${DrtLogo} size=${40} /></span>
+            <div className="ivs-side-brand-txt">
               <b>${settings.title}</b>
               <span>리사이클링 생산·재고관리</span>
             </div>
           </div>
+          <div className="ivs-side-tag">DREAM RESOURCES TECHNOLOGY</div>
           <nav className="ivs-side-nav">
             ${MENU_GROUPS.map((g) => html`
               <${Fragment} key=${g.title}>
@@ -6822,6 +6839,24 @@ function InventorySystem() {
 }
 
 // 보기 잠금 화면 — 이 PIN을 맞히기 전엔 재고 데이터가 전혀 렌더링되지 않아요 (링크만 있는 사람이 내용을 못 봄).
+function DrtLogo({ size }) {
+  const n = size || 38;
+  return html`
+    <svg viewBox="0 0 48 48" width=${n} height=${n} className="ivs-logo-svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="drt-hex" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#3A63EE" />
+          <stop offset="55%" stopColor="#2A4CD8" />
+          <stop offset="100%" stopColor="#1B348F" />
+        </linearGradient>
+      </defs>
+      <polygon points="24,3.5 42.5,14 42.5,34 24,44.5 5.5,34 5.5,14"
+        fill="url(#drt-hex)" stroke="url(#drt-hex)" strokeWidth="5" strokeLinejoin="round" />
+      <polygon points="24,15.5 34,32.5 14,32.5"
+        fill="none" stroke="#fff" strokeWidth="3.1" strokeLinejoin="round" />
+    </svg>`;
+}
+
 function ViewGate({ correctPin, title, onUnlock, theme }) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState(false);
@@ -6832,8 +6867,9 @@ function ViewGate({ correctPin, title, onUnlock, theme }) {
   return html`
     <div className="ivs-root ivs-viewgate" data-theme=${theme}>
       <div className="ivs-modal ivs-modal-sm ivs-lock-screen">
-        <div className="ivs-lock-icon"><${Lock} size=${22} /></div>
+        <div className="ivs-lock-logo"><${DrtLogo} size=${56} /></div>
         <h3 className="ivs-lock-title">${title || "재고관리"}</h3>
+        <p className="ivs-lock-tag">DREAM RESOURCES TECHNOLOGY</p>
         <p className="ivs-dim" style=${{ marginBottom: 16 }}>확인하려면 비밀번호를 입력하세요.</p>
         <input
           type="password" className="ivs-input ivs-lock-input"
@@ -9387,11 +9423,14 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
   const today = new Date().toISOString().slice(0, 10);
   const setYm = onYm; // 화면 제목("9월 생산실적")과 같은 달을 봐야 해서 위에서 내려받아요
   const emptyOut = () => Object.fromEntries(OUTPUT_KINDS.map((k) => [k.key, ""]));
+  // Cu-chip · Al-chip은 섞어서 배출하니 거래처를 "혼합"으로 미리 잡아둬요.
+  const defaultOutVendors = () =>
+    Object.fromEntries(OUTPUT_KINDS.map((k) => [k.key, MIXED_KINDS.includes(k.key) ? MIXED_VENDOR : ""]));
   const [form, setForm] = useState(() => ({
     date: today, shift: "day", process: "crush", workers: "", note: "",
     inputIds: [], vendor: "", categoryId: "hv_cell", cellName: "",
     cellKg: "", cellLotNo: "",
-    outputs: emptyOut(), outputLots: emptyOut(),
+    outputs: emptyOut(), outputLots: emptyOut(), outputVendors: defaultOutVendors(),
   }));
   const [pickOpen, setPickOpen] = useState(false);
   const [askMismatch, setAskMismatch] = useState(false); // 이전 공정이 다를 때 다시 확인
@@ -9417,6 +9456,7 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
     : kinds.reduce((a, k) => a + (Number(form.outputs[k.key]) || 0), 0);
 
   const setProcess = (key) => { setOverride(false); setForm((f) => ({ ...f, process: key })); };
+  const setOutVendor = (k, v) => setForm((f) => ({ ...f, outputVendors: { ...f.outputVendors, [k]: v } }));
 
   const monthRuns = useMemo(() => runs.filter((r) => r.date.slice(0, 7) === ym), [runs, ym]);
   const viewRuns = useMemo(
@@ -9492,12 +9532,20 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
     ...f, inputIds: f.inputIds.includes(id) ? f.inputIds.filter((x) => x !== id) : [...f.inputIds, id] })); };
   const setInputs = (ids) => { setOverride(false); setForm((f) => ({ ...f, inputIds: ids })); };
 
+  // 실제로 만들어질 품목 — 열분해처럼 품목을 그대로 들고 가는 공정이면 투입 Lot 것을 씁니다.
+  const keepBase = proc.keepItem && chosen.length > 0
+    && chosen.every((l) => l.categoryId === chosen[0].categoryId) ? chosen[0] : null;
+  const outCatOf = (k) => (keepBase ? categoryById[keepBase.categoryId] : categoryById[k.categoryId]);
+  const outCodeOf = (k) => (keepBase ? (keepBase.code || (outCatOf(k) || {}).code) : k.code);
+  const outNameOf = (k) => (keepBase ? (keepBase.name || autoItemName(keepBase.categoryId))
+    : autoItemName(k.categoryId));
+
   const canSubmit = chosen.length > 0 && (proc.mode === "move" || outSum > 0);
   const doSubmit = async () => {
     await onSave({ ...form, crew });
     setOverride(false);
     setForm((f) => ({ ...f, note: "", inputIds: [], cellKg: "", cellLotNo: "", cellName: "",
-      outputs: emptyOut(), outputLots: emptyOut() }));
+      outputs: emptyOut(), outputLots: emptyOut(), outputVendors: defaultOutVendors() }));
   };
   const submit = async () => {
     if (mismatch.length > 0 && !override) { setAskMismatch(true); return; }
@@ -9649,6 +9697,7 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
                 <select className="ivs-select ivs-select-full" value=${form.vendor}
                   onChange=${(e) => setForm({ ...form, vendor: e.target.value })}>
                   <option value="">${chosen.length ? `투입 Lot 그대로 (${chosen[0].vendor || "-"})` : "투입 Lot 그대로"}</option>
+                  <option value=${MIXED_VENDOR}>${MIXED_VENDOR}</option>
                   ${vendors.map((v) => html`<option key=${v.name} value=${v.name}>${v.name}</option>`)}
                 </select>
               <//>
@@ -9665,19 +9714,14 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
             <div className="ivs-chart-label" style=${{ marginTop: 16 }}>
               ③ 산출 — 넣은 품목마다 생산 Lot이 만들어져 ${getStage(proc.to).label}로 들어가요
             </div>
-            <div className="ivs-form-grid">
-              <${Field} label="업체">
-                <select className="ivs-select ivs-select-full" value=${form.vendor}
-                  onChange=${(e) => setForm({ ...form, vendor: e.target.value })}>
-                  <option value="">${chosen.length ? `투입 Lot 그대로 (${chosen[0].vendor || "-"} · ${chosen[0].shipLoc || "-"})` : "투입 Lot 그대로"}</option>
-                  ${vendors.map((v) => html`<option key=${v.name} value=${v.name}>${v.name}</option>`)}
-                </select>
-              <//>
+            <div className="ivs-section-hint" style=${{ marginBottom: 8 }}>
+              거래처를 비우면 투입 Lot 것을 그대로 씁니다${chosen.length ? ` (${chosen[0].vendor || "-"} · ${chosen[0].shipLoc || "-"})` : ""}.
+              Cu-chip · Al-chip처럼 섞어서 배출하는 품목은 "${MIXED_VENDOR}"으로 두세요.
             </div>
-            <div className="ivs-table-wrap" style=${{ marginTop: 10 }}>
+            <div className="ivs-table-wrap">
               <table className="ivs-table">
                 <thead>
-                  <tr><th>산출 품목</th><th className="ivs-right">회수량 (Kg)</th><th>생산 Lot 번호</th><th className="ivs-right">회수율</th></tr>
+                  <tr><th>산출 품목</th><th className="ivs-right">회수량 (Kg)</th><th>생산 Lot 번호</th><th>거래처</th><th className="ivs-right">회수율</th></tr>
                 </thead>
                 <tbody>
                   ${kinds.map((k) => {
@@ -9687,16 +9731,26 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
                       <tr key=${k.key}>
                         <td>
                           <span className="ivs-badge-dot" style=${{ background: k.color }} />
-                          ${" "}${k.label} <span className="ivs-dim ivs-mono">${k.code}</span>
+                          ${" "}${k.label}
+                          <span className="ivs-dim"> → ${outNameOf(k)}</span>
+                          <span className="ivs-dim ivs-mono"> ${outCodeOf(k)}</span>
                         </td>
                         <td className="ivs-right">
                           <input type="number" className="ivs-input ivs-input-cell" value=${form.outputs[k.key]}
                             onChange=${(e) => setForm({ ...form, outputs: { ...form.outputs, [k.key]: e.target.value } })} />
                         </td>
                         <td>
-                          <input className="ivs-input ivs-input-cell" placeholder=${`비우면 자동 · ${k.code}-YYMMDD-n`}
+                          <input className="ivs-input ivs-input-cell" placeholder=${`비우면 자동 · ${outCodeOf(k)}-YYMMDD-n`}
                             value=${form.outputLots[k.key]}
                             onChange=${(e) => setForm({ ...form, outputLots: { ...form.outputLots, [k.key]: e.target.value } })} />
+                        </td>
+                        <td>
+                          <select className="ivs-select ivs-input-cell" value=${form.outputVendors[k.key]}
+                            onChange=${(e) => setOutVendor(k.key, e.target.value)}>
+                            <option value="">투입 Lot 그대로</option>
+                            <option value=${MIXED_VENDOR}>${MIXED_VENDOR}</option>
+                            ${vendors.map((v) => html`<option key=${v.name} value=${v.name}>${v.name}</option>`)}
+                          </select>
                         </td>
                         <td className="ivs-mono ivs-right">${r == null ? "-" : `${r.toFixed(1)}%`}</td>
                       </tr>`;

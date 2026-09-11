@@ -11711,6 +11711,9 @@ function BackupCard({ counts, onToast }) {
     </div>`;
 }
 
+// 적어둔 글에서 이름만 뽑아요 — 쉼표든 줄바꿈이든 구분자로 봅니다.
+const splitNames = (text) => String(text || "").split(/[,\n]/).map((t) => t.trim()).filter(Boolean);
+
 function PlanEditModal({ which, mes, months, onClose, onSave }) {
   const [rows, setRows] = useState(() => {
     if (which === "phases") return (mes.phases || []).map((p) => ({ ...p }));
@@ -11733,7 +11736,10 @@ function PlanEditModal({ which, mes, months, onClose, onSave }) {
     personHours: mes.personHours, yieldRate: (Number(mes.yieldRate) || 0.88) * 100,
     headcount: mes.headcount, shiftAnchor: mes.shiftAnchor, targetUtil: mes.targetUtil,
   }));
-  const [crew, setCrew] = useState(() => ({ ...mes.crewMembers }));
+  // 조 편성은 적는 그대로를 담아두고, 이름으로 쪼개는 건 저장할 때 한 번만 해요.
+  // 글자를 칠 때마다 쪼갰다 다시 붙이면, 방금 친 쉼표나 줄바꿈이 곧바로 지워집니다.
+  const [crewText, setCrewText] = useState(() =>
+    Object.fromEntries(CREWS.map((c) => [c, ((mes.crewMembers || {})[c] || []).join(", ")])));
 
   const title = { phases: "양산 단계", holidays: "공휴일", nonprod: "비생산 기간",
     worktypes: "근무형태 기준", monthly: "월별 기준", basis: "기준값", crew: "조 편성" }[which];
@@ -11757,7 +11763,8 @@ function PlanEditModal({ which, mes, months, onClose, onSave }) {
         headcount: Number(basis.headcount) || 0, shiftAnchor: basis.shiftAnchor,
         targetUtil: Number(basis.targetUtil) || 90 }, "기준값을 저장했어요.");
     } else if (which === "crew") {
-      onSave({ ...mes, crewMembers: crew }, "조 편성을 저장했어요.");
+      onSave({ ...mes, crewMembers: Object.fromEntries(CREWS.map((c) => [c, splitNames(crewText[c])])) },
+        "조 편성을 저장했어요.");
     } else if (which === "worktypes") {
       onSave({ ...mes, workTypes: rows.map((w) => ({ ...w,
         shiftsPerDay: Number(w.shiftsPerDay) || 1, weekDays: Number(w.weekDays) || 7,
@@ -11815,9 +11822,9 @@ function PlanEditModal({ which, mes, months, onClose, onSave }) {
             <p className="ivs-section-hint" style=${{ marginBottom: 14 }}>조별 인원 이름을 쉼표나 줄바꿈으로 구분해서 넣어주세요.</p>
             <div className="ivs-crew-grid">
               ${CREWS.map((c) => html`
-                <${Field} key=${c} label=${`${c}조 (${(crew[c] || []).length}명)`}>
-                  <textarea className="ivs-crew-input" rows=${5} value=${(crew[c] || []).join(", ")}
-                    onChange=${(e) => setCrew({ ...crew, [c]: e.target.value.split(/[,\n]/).map((t) => t.trim()).filter(Boolean) })} />
+                <${Field} key=${c} label=${`${c}조 (${splitNames(crewText[c]).length}명)`}>
+                  <textarea className="ivs-crew-input" rows=${5} value=${crewText[c] || ""}
+                    onChange=${(e) => setCrewText({ ...crewText, [c]: e.target.value })} />
                 <//>`)}
             </div>
           ` : html`

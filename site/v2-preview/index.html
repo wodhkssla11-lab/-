@@ -216,6 +216,12 @@
   .ivs-arrow-up { transform: rotate(180deg); }
   .ivs-empty { text-align: center; color: var(--text-dim); padding: 44px 0 !important; white-space: normal; }
   .ivs-tablefoot { font-size: 12px; color: var(--text-faint); margin-top: 10px; }
+  .ivs-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .ivs-pager-ctl { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .ivs-pager-ctl label { display: inline-flex; align-items: center; gap: 4px; }
+  .ivs-pager-ctl select { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 3px 6px; }
+  .ivs-pager-no { min-width: 62px; text-align: center; font-variant-numeric: tabular-nums; color: var(--text); }
   @media (max-width: 900px) { .ivs-hide-sm { display: none; } }
 
   .ivs-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 500;
@@ -4512,11 +4518,15 @@ function lotTrace(lot, byId, byNo) {
 // (2안) 1안(GitHub Pages + data.json)과 달리, 이건 브라우저가 Firebase와 직접 통신해요.
 // 그래서 누가 입력하면 "Claude에게 파일 전달 → 재배포" 절차 없이, 열려있는 모든 화면에 곧바로(1초 이내) 반영돼요.
 // SDK/CDN 없이 Firebase의 표준 REST API + Server-Sent Events만 써요 (둘 다 순수 브라우저 표준 기능).
-//   - 읽기: GET {DB_BASE}/inventory.json
-//   - 쓰기: PUT {DB_BASE}/inventory.json (매번 전체 데이터를 통째로 씀 — 단순하고 안전)
-//   - 실시간 구독: EventSource로 스트림을 열어두면 누가 바꿀 때마다 "put" 이벤트가 즉시 옴
+//   - 실시간 구독: EventSource로 스트림을 열어두면, 처음 열 때 전체가 한 번 오고 그 뒤로는 바뀐 부분만 와요.
+//     그래서 화면을 열 때 따로 GET을 하지 않아요 (예전에는 GET + 스트림으로 같은 데이터를 두 번 받았어요).
+//   - 쓰기: PATCH {DB_BASE}/inventory.json — 직전 상태와 비교해서 "달라진 항목"만 보내요.
+//     로트 한 건을 고쳐도 전체를 다시 보내지 않으니, 데이터가 1년치로 불어나도 저장 한 번은 늘 2KB 남짓이에요.
+//   - 읽기(수동 새로고침): GET {DB_BASE}/inventory.json — 새로고침 버튼을 눌렀을 때만 전체를 다시 받아요.
 const DB_BASE = "https://drt-stock-status-default-rtdb.firebaseio.com";
 const DATA_PATH = "/inventory.json";
+// 저장 구조를 새로 바꿀 때, 바꾸기 직전 데이터를 한 부 남겨두는 칸이에요 (딱 한 번만 씀).
+const BACKUP_PATH = "/inventory_backup_v1.json";
 const FALLBACK_DATA = {
   lots: [], moves: [],
   settings: { ...DEFAULT_SETTINGS }, master: { ...DEFAULT_MASTER }, mes: { ...DEFAULT_MES }, runs: [], downs: [],
@@ -4567,57 +4577,226 @@ function normalizeLots(raw) {
   if (!Array.isArray(raw)) return [];
   return raw.map((l) => (l && l.stage === "consumed" ? { ...l, closed: true } : l)).filter(Boolean);
 }
-function normalizeLive(data) {
-  if (!data || typeof data !== "object") return { ...FALLBACK_DATA };
+// ---------- 서버에 담기는 모양 ----------
+// 예전에는 lots·moves·runs·downs를 "배열"로 통째로 저장했어요. 배열은 한 건만 고칠 수가 없어요.
+// 앞에 한 건을 끼워 넣으면 뒤 번호가 전부 밀려서, 결국 전체를 다시 써야 했습니다.
+// 이제는 Lot 번호(id)를 열쇠로 쓰는 "칸막이 서랍" 모양으로 담아요.
+//   lots/{id} · moves/{id} · runs/{id} · downs/{id}
+// 그래야 한 건을 고칠 때 그 서랍 하나만 건드릴 수 있습니다.
+const COLL = ["lots", "moves", "runs", "downs"];
+const SCHEMA = 2;
+// Firebase 키에 쓸 수 없는 글자 — 우리 id에는 없지만 옛 데이터를 대비해 걸러요.
+const KEY_BAD = /[.$#[\]/\s]/g;
+const recKey = (r, i) => String((r && r.id) || "").replace(KEY_BAD, "-") || `k${i}`;
+
+const emptyDoc = () => ({ schema: SCHEMA, lots: {}, moves: {}, runs: {}, downs: {},
+  settings: {}, master: {}, mes: {} });
+
+// 배열로 오든 서랍으로 오든 서랍 모양으로 맞춰요 (옛 데이터도 그대로 읽힙니다).
+function asMap(v) {
+  const out = {};
+  if (Array.isArray(v)) v.forEach((r, i) => { if (r && typeof r === "object") out[recKey(r, i)] = r; });
+  else if (v && typeof v === "object") Object.keys(v).forEach((k) => { if (v[k] && typeof v[k] === "object") out[k] = v[k]; });
+  return out;
+}
+function rawToDoc(raw) {
+  const d = raw && typeof raw === "object" ? raw : {};
   return {
-    lots: normalizeLots(data.lots),
-    moves: Array.isArray(data.moves) ? data.moves : [],
-    settings: { ...DEFAULT_SETTINGS, ...(data.settings || {}) },
-    master: normalizeMaster(data.master),
-    mes: normalizeMes(data.mes),
-    runs: Array.isArray(data.runs) ? data.runs : [],
-    downs: Array.isArray(data.downs) ? data.downs : [],
+    schema: Number(d.schema) || 1, // 표시가 없으면 옛 구조
+    lots: asMap(d.lots), moves: asMap(d.moves), runs: asMap(d.runs), downs: asMap(d.downs),
+    settings: d.settings && typeof d.settings === "object" ? d.settings : {},
+    master: d.master && typeof d.master === "object" ? d.master : {},
+    mes: d.mes && typeof d.mes === "object" ? d.mes : {},
   };
 }
+// 서랍 → 화면이 쓰는 배열. 최신이 위로 오도록 날짜 내림차순으로 세워요.
+function docToLive(doc) {
+  const list = (m) => Object.keys(m || {}).map((k) => m[k]).filter((r) => r && typeof r === "object");
+  const newestFirst = (key) => (a, b) => {
+    const av = String(a[key] || ""), bv = String(b[key] || "");
+    if (av !== bv) return av < bv ? 1 : -1;
+    return String(a.id || "") < String(b.id || "") ? 1 : -1;
+  };
+  return {
+    lots: normalizeLots(list(doc.lots).sort(newestFirst("receivedDate"))),
+    moves: list(doc.moves).sort(newestFirst("date")),
+    runs: list(doc.runs).sort(newestFirst("date")),
+    downs: list(doc.downs).sort(newestFirst("date")),
+    settings: { ...DEFAULT_SETTINGS, ...(doc.settings || {}) },
+    master: normalizeMaster(doc.master),
+    mes: normalizeMes(doc.mes),
+  };
+}
+function liveToDoc(live) {
+  const map = (arr) => {
+    const out = {};
+    (arr || []).forEach((r, i) => { if (r && typeof r === "object") out[recKey(r, i)] = r; });
+    return out;
+  };
+  return { schema: SCHEMA,
+    lots: map(live.lots), moves: map(live.moves), runs: map(live.runs), downs: map(live.downs),
+    settings: live.settings || {}, master: live.master || {}, mes: live.mes || {} };
+}
+
+// 두 값이 사실상 같은지 — Firebase는 빈 값(null)을 저장하지 않고 키 순서도 보장하지 않아서,
+// 그대로 비교하면 바뀌지 않은 것까지 바뀐 것으로 잡힙니다.
+function canon(v) {
+  if (v === null || v === undefined) return undefined;
+  if (Array.isArray(v)) return v.map(canon);
+  if (typeof v === "object") {
+    const out = {};
+    Object.keys(v).sort().forEach((k) => { const c = canon(v[k]); if (c !== undefined) out[k] = c; });
+    return out;
+  }
+  return v;
+}
+const sameVal = (a, b) => JSON.stringify(canon(a)) === JSON.stringify(canon(b));
+
+// 바뀐 것만 골라 "경로: 값" 목록으로 만들어요. 지운 것은 null을 보내면 그 서랍만 비워집니다.
+function diffPaths(prev, next) {
+  const out = {};
+  COLL.forEach((c) => {
+    const p = (prev && prev[c]) || {}, n = (next && next[c]) || {};
+    Object.keys(n).forEach((k) => { if (!sameVal(p[k], n[k])) out[`${c}/${k}`] = n[k]; });
+    Object.keys(p).forEach((k) => { if (!(k in n)) out[`${c}/${k}`] = null; });
+  });
+  ["settings", "master", "mes"].forEach((k) => {
+    if (!sameVal(prev && prev[k], next[k])) out[k] = next[k];
+  });
+  return out;
+}
+
+// 서버가 알려준 변경을 우리 사본에 반영해요. 경로 한 칸씩 따라 들어갑니다.
+function setPath(doc, path, value) {
+  const parts = String(path == null ? "/" : path).split("/").filter(Boolean);
+  if (parts.length === 0) return rawToDoc(value);
+  const next = { ...doc };
+  const [a, b] = parts;
+  if (parts.length === 1) {
+    if (COLL.includes(a)) next[a] = asMap(value);
+    else if (a === "schema") next.schema = Number(value) || SCHEMA;
+    else next[a] = value && typeof value === "object" ? value : {};
+    return next;
+  }
+  if (!COLL.includes(a)) {
+    const cur = { ...(doc[a] || {}) };
+    if (value === null || value === undefined) delete cur[b]; else cur[b] = value;
+    next[a] = cur;
+    return next;
+  }
+  const coll = { ...(doc[a] || {}) };
+  if (parts.length === 2) {
+    if (value === null || value === undefined) delete coll[b]; else coll[b] = value;
+  } else {
+    const rec = { ...(coll[b] || {}) };
+    const rest = parts.slice(2);
+    let cur = rec;
+    for (let i = 0; i < rest.length - 1; i++) { cur[rest[i]] = { ...(cur[rest[i]] || {}) }; cur = cur[rest[i]]; }
+    const last = rest[rest.length - 1];
+    if (value === null || value === undefined) delete cur[last]; else cur[last] = value;
+    coll[b] = rec;
+  }
+  next[a] = coll;
+  return next;
+}
+function applyEvent(doc, type, path, data) {
+  if (type !== "patch") return setPath(doc, path, data);
+  let d = doc;
+  Object.keys(data || {}).forEach((k) => { d = setPath(d, `${path}/${k}`, data[k]); });
+  return d;
+}
+
+// ---------- 실시간 연결 ----------
+// 예전에는 화면을 열 때 GET으로 한 번 받고, 구독을 열 때 또 한 번 전체를 받았어요 (두 벌).
+// 이제는 구독 하나만 엽니다. 첫 응답이 곧 최초 데이터예요.
+let LIVE_DOC = emptyDoc();
+let LIVE_STATUS = "connecting";
+let LIVE_ES = null;
+let liveOnData = null, liveOnStatus = null;
+let LAST_WRITE = null; // 마지막으로 보낸 양 (바이트) — 상태 표시에 씁니다
+
+const notifyLive = () => { if (liveOnData) liveOnData(docToLive(LIVE_DOC)); };
+const setLiveStat = (s) => { LIVE_STATUS = s; if (liveOnStatus) liveOnStatus(s); };
+
+function startLive() {
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = () => { if (!settled) { settled = true; resolve(); } };
+    let es;
+    try { es = new EventSource(DB_BASE + DATA_PATH); }
+    catch (e) { setLiveStat("error"); done(); return; }
+    LIVE_ES = es;
+    const handle = (type) => (e) => {
+      try {
+        const p = JSON.parse(e.data); // { path, data }
+        LIVE_DOC = applyEvent(LIVE_DOC, type, p.path, p.data);
+        notifyLive();
+      } catch (err) {}
+      done();
+    };
+    es.addEventListener("put", handle("put"));
+    es.addEventListener("patch", handle("patch"));
+    es.onopen = () => setLiveStat("connected");
+    es.onerror = () => { setLiveStat("reconnecting"); setTimeout(done, 3000); };
+    setTimeout(done, 8000); // 첫 응답이 안 오면 빈 화면이라도 띄워요
+  });
+}
+function onLive(onData, onStatus) {
+  liveOnData = onData; liveOnStatus = onStatus;
+  onStatus && onStatus(LIVE_STATUS);
+  onData && onData(docToLive(LIVE_DOC)); // 구독을 붙이기 전에 온 변경도 놓치지 않게
+  return () => { liveOnData = null; liveOnStatus = null; };
+}
+
+// 수동 새로고침 — 평소엔 구독이 알아서 밀어주지만, 끊겼다 싶을 때 안전판으로 한 번 통째로 받아요.
 async function fetchLive() {
   try {
     const res = await fetch(DB_BASE + DATA_PATH, { cache: "no-store" });
     if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
-    return normalizeLive(await res.json());
+    LIVE_DOC = rawToDoc(await res.json());
+    return docToLive(LIVE_DOC);
   } catch (e) {
     return null;
   }
 }
-async function writeLive(fullObj) {
-  const res = await fetch(DB_BASE + DATA_PATH, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(fullObj),
-  });
-  if (!res.ok) throw new Error(`write failed: ${res.status}`);
-  return true;
-}
-// 실시간 구독: onData는 전체 데이터가 바뀔 때마다 호출돼요. onStatus는 연결 상태 표시용.
-function subscribeLive(onData, onStatus) {
-  let es;
-  try {
-    es = new EventSource(DB_BASE + DATA_PATH);
-  } catch (e) {
-    onStatus?.("error");
-    return () => {};
-  }
-  es.addEventListener("put", (e) => {
+
+// 저장 — 바뀐 서랍만 보냅니다.
+//  · 서버가 아직 옛 배열 구조면 딱 한 번 통째로 새 구조로 옮기고(PUT), 그 뒤로는 계속 부분만(PATCH).
+//  · 보낼 게 없으면 아무것도 보내지 않아요.
+async function writeLive(live) {
+  const next = liveToDoc(live);
+  const url = DB_BASE + DATA_PATH;
+  const headers = { "Content-Type": "application/json" };
+  if (Number(LIVE_DOC.schema) !== SCHEMA) {
+    // 저장 구조를 바꾸는 건 딱 한 번이라, 바꾸기 직전 모습을 백업 칸에 통째로 한 부 남겨둬요.
+    // 혹시 문제가 생기면 이 칸의 내용을 inventory로 되돌리면 예전 상태로 복구돼요.
     try {
-      const payload = JSON.parse(e.data); // { path: "/...", data: ... }
-      if (payload.path === "/") onData(normalizeLive(payload.data));
-      // 하위 경로만 바뀐 patch/put은 우리가 항상 루트를 통째로 쓰기 때문에 사실상 안 옴 — 무시해도 안전.
-    } catch (err) {}
-  });
-  es.onopen = () => onStatus?.("connected");
-  es.onerror = () => onStatus?.("reconnecting"); // EventSource가 알아서 재연결을 시도해요
-  return () => es.close();
+      const old = await fetch(`${DB_BASE}${DATA_PATH}`).then((r) => (r.ok ? r.json() : null));
+      if (old) {
+        await fetch(`${DB_BASE}${BACKUP_PATH}`, {
+          method: "PUT", headers,
+          body: JSON.stringify({ savedAt: new Date().toISOString(), note: "구조 변경 직전 백업", data: old }),
+        });
+      }
+    } catch (e) { /* 백업이 실패해도 저장 자체는 막지 않아요 */ }
+    const body = JSON.stringify(next);
+    const res = await fetch(url, { method: "PUT", headers, body });
+    if (!res.ok) throw new Error(`write failed: ${res.status}`);
+    LIVE_DOC = next;
+    LAST_WRITE = { bytes: body.length, full: true };
+    return LAST_WRITE;
+  }
+  const patch = diffPaths(LIVE_DOC, next);
+  if (Object.keys(patch).length === 0) { LAST_WRITE = { bytes: 0, full: false }; return LAST_WRITE; }
+  const body = JSON.stringify(patch);
+  const res = await fetch(url, { method: "PATCH", headers, body });
+  if (!res.ok) throw new Error(`write failed: ${res.status}`);
+  LIVE_DOC = next;
+  LAST_WRITE = { bytes: body.length, full: false, paths: Object.keys(patch).length };
+  return LAST_WRITE;
 }
-// bootstrap()이 첫 fetch를 마친 뒤 실제 값으로 덮어써요 (렌더 전에 반드시 채워짐).
+
+// bootstrap()이 첫 응답을 받은 뒤 실제 값으로 덮어써요 (렌더 전에 반드시 채워짐).
 let LIVE_DATA = FALLBACK_DATA;
 
 // ---------- 유틸 ----------
@@ -5691,7 +5870,7 @@ const newLotForm = (master) => {
 function InventorySystem() {
   const [activeTab, setActiveTab] = useState(MENU_ITEMS[0].key); // 메뉴 첫 항목 = 생산계획
   // 부트스트랩(bootstrap())이 렌더 전에 Firebase에서 한 번 읽어온 값으로 시작해요. 그 뒤로는
-  // 실시간 구독(subscribeLive)이 변경분을 계속 밀어줘요 — 별도의 "로컬 저장" 개념이 아예 없어요.
+  // 실시간 구독(onLive)이 변경분을 계속 밀어줘요 — 별도의 "로컬 저장" 개념이 아예 없어요.
   const [lots, setLots] = useState(() => LIVE_DATA.lots);
   const [moves, setMoves] = useState(() => LIVE_DATA.moves); // 공정이동(후속공정) 이력 — 생산 탭에서 분석용으로 사용
   const [saving, setSaving] = useState(false);
@@ -5702,6 +5881,9 @@ function InventorySystem() {
     tollingOnly: false, stage: "all", category: "all",
   });
   const [sort, setSort] = useState({ key: "receivedDate", dir: "desc" });
+  // 표에 한 번에 그리는 줄 수 — 로트가 몇 천 건 쌓이면 전부 그리느라 화면이 멈춰서, 끊어서 보여줘요.
+  const [pageSize, setPageSize] = useState(100);
+  const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(() => new Set());
   const [openMenuId, setOpenMenuId] = useState(null);
   const [traceLotId, setTraceLotId] = useState(null); // 재고 표에서 펼쳐본 생산 Lot 추적
@@ -5748,7 +5930,7 @@ function InventorySystem() {
   // ---------- 실시간 구독: 누군가 Firebase에 쓰면 1초 안에 모두에게 반영돼요 ----------
   useEffect(() => {
     if (PREVIEW_MODE) { setLiveStatus("connected"); return; }
-    const unsubscribe = subscribeLive((data) => {
+    return onLive((data) => {
       setLots(data.lots);
       setMoves(data.moves);
       setSettingsState(data.settings);
@@ -5757,7 +5939,6 @@ function InventorySystem() {
       setRuns(data.runs);
       setDowns(data.downs);
     }, setLiveStatus);
-    return unsubscribe;
   }, []);
 
   const showToast = useCallback((msg, type = "info") => {
@@ -5780,9 +5961,9 @@ function InventorySystem() {
     showToast("최신 데이터로 새로고침했어요.", "success");
   }, [showToast]);
 
-  // 모든 쓰기는 lots/moves/settings/master 네 조각을 통째로 합쳐서 Firebase에 한 번에 PUT해요.
-  // (부분만 따로 쓰면, 같은 동작 안에서 두 조각을 연달아 쓸 때 옛 값으로 덮어쓰는 경합이 생길 수 있어서
-  //  항상 "지금 이 순간의 완성된 전체 값"을 명시적으로 만들어서 써요.)
+  // 저장할 때는 언제나 "지금 이 순간의 완성된 전체 값"을 넘겨요. 그래야 한 동작 안에서 두 조각을
+  // 연달아 바꿔도 옛 값으로 덮어쓰는 일이 없습니다.
+  // 다만 실제로 서버에 보내는 것은 그중 바뀐 서랍뿐이에요 (writeLive가 직전 사본과 견줘 골라냅니다).
   const writeAll = useCallback(async (next) => {
     if (PREVIEW_MODE) return; // 미리보기: 화면 상태만 바뀌고 실제 데이터에는 저장되지 않아요
     setSaving(true);
@@ -6222,6 +6403,17 @@ function InventorySystem() {
     return rows;
   }, [lots, filters, sort]);
 
+  // 화면에 실제로 그리는 구간만 잘라요. 필터·정렬은 전체 기준 그대로라 집계 숫자는 달라지지 않아요.
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pageNo = Math.min(page, pageCount);
+  const pageStart = (pageNo - 1) * pageSize;
+  const paged = useMemo(
+    () => filtered.slice(pageStart, pageStart + pageSize),
+    [filtered, pageStart, pageSize]
+  );
+  // 필터를 바꾸면 3페이지에 머물러 있다가 빈 화면을 보게 되니 첫 장으로 되돌려요.
+  useEffect(() => { setPage(1); }, [filters, sort, pageSize]);
+
   const resetFilters = () =>
     setFilters({ search: "", dateFrom: "", dateTo: "", year: "all", tollingOnly: false, stage: "all", category: "all" });
 
@@ -6339,7 +6531,15 @@ function InventorySystem() {
   const offStage = useMemo(() => selectedLots.filter((l) => l.stage !== "usable"), [selectedLots]);
   const shipReady = selectedLots.length > 0 && offStage.length === 0;
 
+  // 표 머리의 체크박스는 "지금 보이는 장"만, 아래 버튼은 "필터에 걸린 전체"를 잡아요.
+  const allPageSelected = paged.length > 0 && paged.every((l) => selected.has(l.id));
   const allVisibleSelected = filtered.length > 0 && filtered.every((l) => selected.has(l.id));
+  const togglePageAll = () => {
+    const next = new Set(selected);
+    if (allPageSelected) paged.forEach((l) => next.delete(l.id));
+    else paged.forEach((l) => next.add(l.id));
+    setSelected(next);
+  };
   const toggleSelectAll = () => {
     if (allVisibleSelected) setSelected(new Set());
     else setSelected(new Set(filtered.map((l) => l.id)));
@@ -6589,7 +6789,7 @@ function InventorySystem() {
           <div className="ivs-qrbar-actions">
             <span className=${`ivs-chip ${selectedLots.length ? "accent" : "neutral"}`}>${selectedLots.length}건 선택됨</span>
             <button className="ivs-btn ivs-btn-sm" onClick=${toggleSelectAll} disabled=${filtered.length === 0}>
-              ${allVisibleSelected ? "선택 해제" : `표시된 ${filtered.length}건 모두 선택`}
+              ${allVisibleSelected ? "선택 해제" : `필터에 걸린 ${filtered.length}건 모두 선택`}
             </button>
             <button className="ivs-btn ivs-btn-primary" onClick=${() => setLabelLots(selectedLots)} disabled=${selectedLots.length === 0}>
               <${QrCode} size=${13} /> 선택한 ${selectedLots.length}건 라벨 출력
@@ -6622,7 +6822,7 @@ function InventorySystem() {
             <thead>
               <tr>
                 <th className="ivs-th-check">
-                  <input type="checkbox" checked=${allVisibleSelected} onChange=${toggleSelectAll} title="표시된 행 전체 선택" />
+                  <input type="checkbox" checked=${allPageSelected} onChange=${togglePageAll} title="이 장에 보이는 행 전체 선택" />
                 </th>
                 <${Th} label="품목코드" sortKey="code" sort=${sort} onSort=${toggleSort} />
                 <th>품목명</th>
@@ -6644,7 +6844,7 @@ function InventorySystem() {
             <tbody>
               ${filtered.length === 0 ? html`
                 <tr><td colSpan=${16} className="ivs-empty">조건에 맞는 로트가 없어요. 필터를 조정해보세요.</td></tr>
-              ` : filtered.map((l) => {
+              ` : paged.map((l) => {
                 const cat = categoryById[l.categoryId];
                 const stage = getStage(l.stage);
                 const made = l.origin === "production";
@@ -6751,7 +6951,21 @@ function InventorySystem() {
             </tbody>
           </table>
         </div>
-        <div className="ivs-tablefoot">${filtered.length}건 표시 중 · 전체 ${openLots.length}건</div>
+        <div className="ivs-tablefoot ivs-pager">
+          <span>전체 ${filtered.length}건 중 ${filtered.length === 0 ? 0 : pageStart + 1}~${pageStart + paged.length}번째 · 재고 ${openLots.length}건</span>
+          <span className="ivs-pager-ctl">
+            <label>한 장에
+              <select value=${pageSize} onChange=${(e) => setPageSize(Number(e.target.value))}>
+                ${[50, 100, 200, 500].map((n) => html`<option key=${n} value=${n}>${n}건</option>`)}
+              </select>
+            </label>
+            <button className="ivs-btn ivs-btn-sm" onClick=${() => setPage(1)} disabled=${pageNo <= 1}>처음</button>
+            <button className="ivs-btn ivs-btn-sm" onClick=${() => setPage(pageNo - 1)} disabled=${pageNo <= 1}>이전</button>
+            <span className="ivs-pager-no">${pageNo} / ${pageCount}</span>
+            <button className="ivs-btn ivs-btn-sm" onClick=${() => setPage(pageNo + 1)} disabled=${pageNo >= pageCount}>다음</button>
+            <button className="ivs-btn ivs-btn-sm" onClick=${() => setPage(pageCount)} disabled=${pageNo >= pageCount}>마지막</button>
+          </span>
+        </div>
       ` : activeTab === "production" ? html`<${ProductionTab} lots=${openLots} moves=${moves} canEdit=${canEdit} onClearMoves=${() => setClearMovesConfirm(true)} onDeleteMoves=${handleDeleteMoves} />`
         : activeTab === "ship" ? html`<${ShipTab} lots=${openLots} moves=${moves} canEdit=${canEdit}
             onShip=${handleShip} onLabel=${(sel) => setLabelLots(sel)} />`
@@ -10152,12 +10366,18 @@ function LotPickerModal({ lots, proc, selected, onToggle, onSetSelected, onClose
     if (!w) return pool;
     return pool.filter((l) => [l.lotNo, l.code, l.name, l.vendor].join(" ").toLowerCase().includes(w));
   }, [pool, q]);
-  const pickedKg = lots.filter((l) => selected.includes(l.id)).reduce((a, l) => a + (Number(l.qtyKg) || 0), 0);
+  // 대기 Lot이 수천 건이면 한 번에 다 그리느라 창이 멈춰서, 200건씩 끊어 보여주고 "더 보기"로 늘려요.
+  const STEP = 200;
+  const [limit, setLimit] = useState(STEP);
+  useEffect(() => { setLimit(STEP); }, [tab, q]);
+  const shown = useMemo(() => rows.slice(0, limit), [rows, limit]);
+  const selSet = useMemo(() => new Set(selected), [selected]);
+  const pickedKg = lots.filter((l) => selSet.has(l.id)).reduce((a, l) => a + (Number(l.qtyKg) || 0), 0);
   const countAt = (p) => lots.filter((l) => !l.closed && p.from.includes(l.stage)).length;
-  const allShown = rows.length > 0 && rows.every((l) => selected.includes(l.id));
+  const allShown = shown.length > 0 && shown.every((l) => selSet.has(l.id));
   const toggleAll = () => {
-    const ids = rows.map((l) => l.id);
-    onSetSelected(allShown ? selected.filter((id) => !ids.includes(id))
+    const ids = new Set(shown.map((l) => l.id));
+    onSetSelected(allShown ? selected.filter((id) => !ids.has(id))
       : Array.from(new Set([...selected, ...ids])));
   };
   return html`
@@ -10198,7 +10418,7 @@ function LotPickerModal({ lots, proc, selected, onToggle, onSetSelected, onClose
                 <tr>
                   <th className="ivs-th-check">
                     <input type="checkbox" checked=${allShown} onChange=${toggleAll}
-                      title=${`표시된 ${rows.length}건 전체 선택`} />
+                      title=${`표시된 ${shown.length}건 전체 선택`} />
                   </th>
                   <th>Lot 번호</th><th>품목</th><th>거래처</th>
                   <th>현재공정</th><th>구분</th><th>입고일</th><th className="ivs-right">수량(Kg)</th>
@@ -10209,9 +10429,9 @@ function LotPickerModal({ lots, proc, selected, onToggle, onSetSelected, onClose
                   <tr><td colSpan=${8} className="ivs-empty">
                     ${stageLabels(view.from)} 단계에 있는 Lot이 없어요.
                   </td></tr>
-                ` : rows.map((l) => html`
+                ` : shown.map((l) => html`
                   <tr key=${l.id}>
-                    <td><input type="checkbox" checked=${selected.includes(l.id)} onChange=${() => onToggle(l.id)} /></td>
+                    <td><input type="checkbox" checked=${selSet.has(l.id)} onChange=${() => onToggle(l.id)} /></td>
                     <td className="ivs-mono">${l.lotNo}</td>
                     <td>${l.code} · ${l.name}</td>
                     <td>${l.vendor || "-"}</td>
@@ -10223,6 +10443,12 @@ function LotPickerModal({ lots, proc, selected, onToggle, onSetSelected, onClose
                     <td className="ivs-mono ivs-right">${fmtKg(l.qtyKg)}</td>
                   </tr>
                 `)}
+                ${rows.length > shown.length ? html`
+                  <tr><td colSpan=${8} className="ivs-empty">
+                    ${rows.length}건 중 ${shown.length}건 보는 중 ·${" "}
+                    <button className="ivs-btn ivs-btn-sm" onClick=${() => setLimit((n) => n + STEP)}>${STEP}건 더 보기</button>
+                  </td></tr>
+                ` : null}
               </tbody>
             </table>
           </div>
@@ -12115,18 +12341,22 @@ function ConfirmModal({ icon, title, body, confirmLabel, danger, onCancel, onCon
 }
 
 // ---------- 마운트 ----------
-// 렌더 전에 Firebase에서 한 번 읽어와 LIVE_DATA를 채워요. 그래야 InventorySystem이 처음
-// 렌더될 때부터 올바른 초기값(잠금 여부 포함)을 가지고 시작하고, 그 다음부터는 실시간 구독이 이어받아요.
+// 실시간 구독을 먼저 열고, 첫 응답이 오면 그것으로 화면을 그려요.
+// 예전에는 GET으로 한 번 받고 구독에서 또 한 번 받아 전체 데이터를 두 벌씩 내려받았습니다.
+// 이제 한 벌만 받으므로, 화면을 열 때 오가는 양이 절반입니다.
 (async function bootstrap() {
   const rootEl = document.getElementById("ivs-app-root");
   if (PREVIEW_MODE) {
     // 샘플 화면 — 실제 팀 데이터(Firebase)는 읽지도 쓰지도 않아요. 잠금 PIN도 없이 바로 보여줘요.
-    LIVE_DATA = normalizeLive({
+    LIVE_DOC = liveToDoc({
       lots: seedData(), moves: moveSeedData(), runs: runSeedData(), downs: downSeedData(), master: {},
       settings: { title: "DRT · 재고관리", subtitle: "로트 단위 공정 흐름 관리", editPin: "", viewPin: "" },
+      mes: {},
     });
+    LIVE_DATA = docToLive(LIVE_DOC);
   } else {
-    LIVE_DATA = (await fetchLive()) || FALLBACK_DATA;
+    await startLive();
+    LIVE_DATA = docToLive(LIVE_DOC);
   }
   ReactDOM.createRoot(rootEl).render(html`<${InventorySystem} />`);
 })();

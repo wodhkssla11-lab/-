@@ -4572,6 +4572,12 @@ const SNAP_PATH = "/inventory_snapshots";
 // 화면을 열 때마다 백업 전체를 내려받는 일이 없어요 (그러면 아낀 통신량이 도로 나가버립니다).
 const SNAP_INDEX = "/inventory_snapindex.json";
 const SNAP_KEEP = 7;
+// 지난 연도 보관함 — 해가 바뀌면 작년 기록을 이 칸으로 옮겨 장부를 얇게 유지해요.
+// 기록이 없어지는 게 아니라 자리를 옮기는 것이고, 볼 일이 있으면 그때 꺼내 옵니다.
+const ARCH_PATH = "/inventory_archive";          // /inventory_archive/<연도>.json
+const ARCH_INDEX = "/inventory_archindex.json";  // { "2025": { savedAt, lots, moves, runs, downs } }
+// 새해 첫 달은 지난해 마무리 입력이 남아 있을 수 있어서 그대로 둬요. 2월부터 정리합니다.
+const ARCH_GRACE_MONTH = 2;
 const FALLBACK_DATA = {
   lots: [], moves: [],
   settings: { ...DEFAULT_SETTINGS }, master: { ...DEFAULT_MASTER }, mes: { ...DEFAULT_MES }, runs: [], downs: [],
@@ -4675,9 +4681,10 @@ function docToLive(doc) {
   };
 }
 function liveToDoc(live) {
+  // _arc 가 붙은 것은 보관함에서 잠깐 꺼내 본 기록이에요. 화면에는 보이지만 장부에는 다시 쓰지 않아요.
   const map = (arr) => {
     const out = {};
-    (arr || []).forEach((r, i) => { if (r && typeof r === "object") out[recKey(r, i)] = r; });
+    (arr || []).forEach((r, i) => { if (r && typeof r === "object" && !r._arc) out[recKey(r, i)] = r; });
     return out;
   };
   return { schema: SCHEMA,
@@ -4810,6 +4817,194 @@ async function markOpen() {
   } catch (e) { /* 계량기가 실패해도 화면은 그대로 써요 */ }
 }
 
+// 저장 구조를 바꾸는 건 딱 한 번이라, 바꾸기 직전 모습을 백업 칸에 통째로 한 부 남겨둬요.
+// 이미 백업이 있으면 절대 덮어쓰지 않아요 — 잘 떠둔 한 부가 나중에 잘못된 저장으로 지워지면
+// 되돌릴 데가 없어지니까요.
+async function keepPreMigrationBackup() {
+  try {
+    const kept = await fetch(`${DB_BASE}${BACKUP_PATH}?shallow=true`)
+      .then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    if (kept) return false;
+    const old = await fetch(`${DB_BASE}${DATA_PATH}`).then((r) => (r.ok ? r.json() : null));
+    const hasRecords = old && COLL.some((k) => {
+      const v = old[k];
+      return Array.isArray(v) ? v.length > 0 : v && typeof v === "object" && Object.keys(v).length > 0;
+    });
+    if (!hasRecords) return false;
+    await fetch(`${DB_BASE}${BACKUP_PATH}`, {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ savedAt: new Date().toISOString(), note: "구조 변경 직전 백업", data: old }),
+    });
+    return true;
+  } catch (e) { return false; } // 백업이 실패해도 저장 자체는 막지 않아요
+}
+
+// ---------- 지난 연도 보관 ----------
+const yearOf = (d) => String(d || "").slice(0, 4);
+const lotEndDate = (l) => l.shippedDate || l.lastMove || l.receivedDate || "";
+
+// 지금 장부에 반드시 남아야 하는 로트 — 아직 공정에 서 있는 것과, 그것이 나온 뿌리 전부.
+// 뿌리를 같이 두지 않으면 "이 톤백이 어디서 나왔나"를 거슬러 올라갈 수 없게 돼요.
+function keepLotIds(doc) {
+  const lots = Object.keys(doc.lots || {}).map((k) => doc.lots[k]);
+  const byId = new Map(lots.map((l) => [l.id, l]));
+  const byNo = new Map(lots.map((l) => [l.lotNo, l]));
+  const keep = new Set();
+  const walk = (l, d) => {
+    if (!l || d > 12 || keep.has(l.id)) return;
+    keep.add(l.id);
+    (l.parentLotIds || []).forEach((id) => walk(byId.get(id), d + 1));
+    (l.parentLotNos || []).forEach((no) => walk(byNo.get(no), d + 1));
+  };
+  lots.forEach((l) => { if (isLiveLot(l)) walk(l, 0); });
+  return keep;
+}
+
+// 장부를 "보관함으로 옮길 것"과 "그대로 둘 것"으로 갈라요.
+// 살아있는 로트와 그 뿌리, 그리고 그것들에 딸린 이동·실적 기록은 연도와 상관없이 남겨둡니다.
+function splitByYear(doc, cutoffYear) {
+  const keep = keepLotIds(doc);
+  const move = { lots: {}, moves: {}, runs: {}, downs: {} };
+  const stay = { lots: {}, moves: {}, runs: {}, downs: {} };
+  const old = (d) => { const y = yearOf(d); return y && y <= cutoffYear; };
+
+  Object.keys(doc.lots || {}).forEach((k) => {
+    const l = doc.lots[k];
+    const finished = !!l.closed || FINAL_STAGE_KEYS.includes(l.stage);
+    (old(lotEndDate(l)) && finished && !keep.has(l.id) ? move : stay).lots[k] = l;
+  });
+  Object.keys(doc.moves || {}).forEach((k) => {
+    const m = doc.moves[k];
+    (old(m.date) && !keep.has(m.lotId) ? move : stay).moves[k] = m;
+  });
+  Object.keys(doc.runs || {}).forEach((k) => {
+    const r = doc.runs[k];
+    const touchesKept = [...(r.inputs || []), ...(r.outputs || [])].some((o) => keep.has(o.lotId));
+    (old(r.date) && !touchesKept ? move : stay).runs[k] = r;
+  });
+  Object.keys(doc.downs || {}).forEach((k) => {
+    const d = doc.downs[k];
+    (old(d.date) ? move : stay).downs[k] = d;
+  });
+  return { move, stay };
+}
+
+const archCount = (o) => COLL.reduce((a, c) => a + Object.keys((o && o[c]) || {}).length, 0);
+
+// 보관할 수 있는 가장 늦은 연도. 올해는 손대지 않고, 새해 첫 달도 건너뜁니다.
+function archCutoffYear(now = new Date()) {
+  const y = now.getFullYear();
+  if (now.getMonth() + 1 < ARCH_GRACE_MONTH) return y - 2; // 1월엔 재작년까지만
+  return y - 1;
+}
+
+// 지금 정리하면 무엇이 몇 건 옮겨지는지 — 버튼을 누르기 전에 보여줄 값이에요.
+function archPreview(cutoff = archCutoffYear()) {
+  const { move, stay } = splitByYear(LIVE_DOC, String(cutoff));
+  const byYear = {};
+  COLL.forEach((c) => Object.keys(move[c]).forEach((k) => {
+    const r = move[c][k];
+    const y = yearOf(c === "lots" ? lotEndDate(r) : r.date) || String(cutoff);
+    byYear[y] = byYear[y] || { lots: 0, moves: 0, runs: 0, downs: 0 };
+    byYear[y][c] += 1;
+  }));
+  return { cutoff: String(cutoff), total: archCount(move), byYear,
+    stayBytes: byteLen(JSON.stringify({ ...LIVE_DOC, ...stay })) };
+}
+
+async function listArchives() {
+  try {
+    const idx = await fetch(`${DB_BASE}${ARCH_INDEX}`).then((r) => (r.ok ? r.json() : null));
+    return idx || {};
+  } catch (e) { return {}; }
+}
+async function readArchive(year) {
+  const res = await fetch(`${DB_BASE}${ARCH_PATH}/${year}.json`);
+  if (!res.ok) throw new Error(`보관함 읽기 실패: ${res.status}`);
+  return (await res.json()) || null;
+}
+
+// 정리 실행 — 연도별로 갈라 보관함에 붙이고, 장부에서는 그만큼 덜어냅니다.
+// 옮기기 전에 오늘 백업이 있는지 먼저 확인해요. 없으면 한 부 뜨고 나서 옮깁니다.
+async function runArchive(cutoff = archCutoffYear()) {
+  const json = { "Content-Type": "application/json" };
+  const { move, stay } = splitByYear(LIVE_DOC, String(cutoff));
+  const moved = archCount(move);
+  if (moved === 0) return { moved: 0, years: [] };
+  await autoSnapshot();
+
+  // 연도별로 나눠 담아요 (2024년치와 2025년치가 섞이지 않게).
+  const buckets = {};
+  COLL.forEach((c) => Object.keys(move[c]).forEach((k) => {
+    const r = move[c][k];
+    const y = yearOf(c === "lots" ? lotEndDate(r) : r.date) || String(cutoff);
+    buckets[y] = buckets[y] || { lots: {}, moves: {}, runs: {}, downs: {} };
+    buckets[y][c][k] = r;
+  }));
+
+  const idx = await listArchives();
+  const years = Object.keys(buckets).sort();
+  for (const y of years) {
+    const prev = idx[y] ? await readArchive(y).catch(() => null) : null;
+    const merged = { savedAt: new Date().toISOString() };
+    COLL.forEach((c) => { merged[c] = { ...((prev && prev[c]) || {}), ...buckets[y][c] }; });
+    const res = await fetch(`${DB_BASE}${ARCH_PATH}/${y}.json`,
+      { method: "PUT", headers: json, body: JSON.stringify(merged) });
+    if (!res.ok) throw new Error(`보관 실패: ${res.status}`);
+    idx[y] = { savedAt: merged.savedAt,
+      lots: Object.keys(merged.lots).length, moves: Object.keys(merged.moves).length,
+      runs: Object.keys(merged.runs).length, downs: Object.keys(merged.downs).length };
+  }
+  await fetch(`${DB_BASE}${ARCH_INDEX}`, { method: "PUT", headers: json, body: JSON.stringify(idx) });
+
+  // 보관함에 무사히 넣은 뒤에야 장부에서 덜어냅니다.
+  const next = { ...LIVE_DOC, schema: SCHEMA };
+  COLL.forEach((c) => { next[c] = stay[c]; });
+  if (Number(LIVE_DOC.schema) !== SCHEMA) {
+    // 아직 옛 구조(목록)예요. 이때 "항목 하나만 지우기"를 보내면 목록 전체가 날아가므로,
+    // 구조 변경과 덜어내기를 한 번에 통째로 씁니다.
+    await keepPreMigrationBackup();
+    const res = await fetch(DB_BASE + DATA_PATH, { method: "PUT", headers: json, body: JSON.stringify(next) });
+    if (!res.ok) throw new Error(`정리 실패: ${res.status}`);
+  } else {
+    const patch = {};
+    COLL.forEach((c) => Object.keys(move[c]).forEach((k) => { patch[`${c}/${k}`] = null; }));
+    const res = await fetch(DB_BASE + DATA_PATH, { method: "PATCH", headers: json, body: JSON.stringify(patch) });
+    if (!res.ok) throw new Error(`정리 실패: ${res.status}`);
+  }
+  LIVE_DOC = next;
+  notifyLive();
+  return { moved, years };
+}
+
+// 보관함에서 한 해를 꺼내 화면에 얹어요. 꺼낸 기록에는 _arc 를 붙여서,
+// 실수로 저장돼 장부로 되돌아가는 일이 없게 합니다 (liveToDoc 이 걸러냅니다).
+async function loadArchiveYear(year) {
+  const raw = await readArchive(year);
+  if (!raw) return null;
+  const out = {};
+  COLL.forEach((c) => {
+    out[c] = Object.keys(raw[c] || {}).map((k) => ({ ...raw[c][k], _arc: String(year) }))
+      .filter((r) => r && typeof r === "object");
+  });
+  return out;
+}
+
+// 해가 바뀌면 한 번, 알아서 지난해를 보관함으로 옮겨요.
+// 오늘 백업을 먼저 떠둔 뒤에만 돌고, 옮길 게 없으면 아무것도 하지 않습니다.
+async function autoArchive() {
+  try {
+    const cutoff = archCutoffYear();
+    const idx = await listArchives();
+    // 이미 그 해까지 정리해 두었으면 건너뜁니다.
+    const done = Object.keys(idx).sort().pop();
+    if (done && done >= String(cutoff)) return null;
+    const { move } = splitByYear(LIVE_DOC, String(cutoff));
+    if (archCount(move) === 0) return null;
+    return await runArchive(cutoff);
+  } catch (e) { return null; }
+}
+
 // ---------- 자동 백업 (매일 한 부) ----------
 // 누가 실수로 지우거나 옛 화면이 덮어써도 되돌릴 수 있게, 하루에 한 부씩 통째로 떠둬요.
 // 화면을 처음 연 사람의 브라우저가 "오늘 것이 없네" 하고 한 번만 뜹니다.
@@ -4930,25 +5125,7 @@ async function writeLive(live) {
   const url = DB_BASE + DATA_PATH;
   const headers = { "Content-Type": "application/json" };
   if (Number(LIVE_DOC.schema) !== SCHEMA) {
-    // 저장 구조를 바꾸는 건 딱 한 번이라, 바꾸기 직전 모습을 백업 칸에 통째로 한 부 남겨둬요.
-    // 혹시 문제가 생기면 이 칸의 내용을 inventory로 되돌리면 예전 상태로 복구돼요.
-    try {
-      // 이미 백업이 있으면 절대 덮어쓰지 않아요. 한 번 잘 떠둔 백업이 나중에 잘못된 저장으로
-      // 지워지면 되돌릴 데가 없어지니, 첫 한 부만 남기고 그대로 둡니다.
-      const kept = await fetch(`${DB_BASE}${BACKUP_PATH}?shallow=true`)
-        .then((r) => (r.ok ? r.json() : null)).catch(() => null);
-      const old = await fetch(`${DB_BASE}${DATA_PATH}`).then((r) => (r.ok ? r.json() : null));
-      const hasRecords = old && ["lots", "moves", "runs", "downs"].some((k) => {
-        const v = old[k];
-        return Array.isArray(v) ? v.length > 0 : v && typeof v === "object" && Object.keys(v).length > 0;
-      });
-      if (!kept && hasRecords) {
-        await fetch(`${DB_BASE}${BACKUP_PATH}`, {
-          method: "PUT", headers,
-          body: JSON.stringify({ savedAt: new Date().toISOString(), note: "구조 변경 직전 백업", data: old }),
-        });
-      }
-    } catch (e) { /* 백업이 실패해도 저장 자체는 막지 않아요 */ }
+    await keepPreMigrationBackup();
     // 구조를 옮기며 통째로 올린 양(그리고 백업 한 부)도 계량기에 정직하게 적어요.
     const draft = JSON.stringify(next);
     next.usage = usageNow({ saves: 1, up: byteLen(draft) * 2 });
@@ -6058,6 +6235,8 @@ function InventorySystem() {
     tollingOnly: false, stage: "all", category: "all",
   });
   const [usage, setUsage] = useState(() => (LIVE_DATA && LIVE_DATA.usage) || {});
+  // 보관함에서 꺼내 본 연도들 — 화면에만 얹히고 저장에는 끼지 않아요.
+  const [archOpen, setArchOpen] = useState(() => ({})); // { "2025": {lots, moves, runs, downs} }
   const [sort, setSort] = useState({ key: "receivedDate", dir: "desc" });
   // 표에 한 번에 그리는 줄 수 — 로트가 몇 천 건 쌓이면 전부 그리느라 화면이 멈춰서, 끊어서 보여줘요.
   const [pageSize, setPageSize] = useState(100);
@@ -6539,9 +6718,20 @@ function InventorySystem() {
   // 다른 탭에는 "지금 살아있는" 로트만 넘겨요 (공정에 투입돼 다음 Lot으로 바뀐 건 제외).
   // 생산실적 탭만 추적을 위해 전체 로트를 그대로 받아요.
   const openLots = useMemo(() => lots.filter((l) => !l.closed), [lots]);
+  // 보관함에서 꺼낸 해가 있으면, 이력·집계·보고서에서만 그 기록을 함께 봅니다.
+  // 재고현황처럼 고치는 화면에는 얹지 않아요 (다 끝난 기록이라 손댈 일이 없습니다).
+  const archRows = useCallback((coll, base) => {
+    const ys = Object.keys(archOpen);
+    if (ys.length === 0) return base;
+    return base.concat(...ys.map((y) => archOpen[y][coll] || []));
+  }, [archOpen]);
+  const movesAll = useMemo(() => archRows("moves", moves), [archRows, moves]);
+  const runsAll = useMemo(() => archRows("runs", runs), [archRows, runs]);
+  const downsAll = useMemo(() => archRows("downs", downs), [archRows, downs]);
+  const lotsAll = useMemo(() => archRows("lots", lots), [archRows, lots]);
   // Lot 추적용 색인 — 닫힌 로트도 들어있어야 출하대기 Lot에서 원입고 Lot까지 거슬러 갈 수 있어요.
-  const lotsById = useMemo(() => new Map(lots.map((l) => [l.id, l])), [lots]);
-  const lotsByNo = useMemo(() => new Map(lots.map((l) => [l.lotNo, l])), [lots]);
+  const lotsById = useMemo(() => new Map(lotsAll.map((l) => [l.id, l])), [lotsAll]);
+  const lotsByNo = useMemo(() => new Map(lotsAll.map((l) => [l.lotNo, l])), [lotsAll]);
   const runById = useMemo(() => new Map(runs.map((r) => [r.id, r])), [runs]);
   // 출하일: 로트에 적혀 있으면 그걸 쓰고, 없으면 "출하완료로 넘어간" 이동 기록에서 찾아요.
   const shipDateByLot = useMemo(() => {
@@ -7146,21 +7336,21 @@ function InventorySystem() {
             <button className="ivs-btn ivs-btn-sm" onClick=${() => setPage(pageCount)} disabled=${pageNo >= pageCount}>마지막</button>
           </span>
         </div>
-      ` : activeTab === "production" ? html`<${ProductionTab} lots=${openLots} moves=${moves} canEdit=${canEdit} onClearMoves=${() => setClearMovesConfirm(true)} onDeleteMoves=${handleDeleteMoves} />`
+      ` : activeTab === "production" ? html`<${ProductionTab} lots=${openLots} moves=${movesAll} canEdit=${canEdit} onClearMoves=${() => setClearMovesConfirm(true)} onDeleteMoves=${handleDeleteMoves} />`
         : activeTab === "ship" ? html`<${ShipTab} lots=${openLots} moves=${moves} canEdit=${canEdit}
             onShip=${handleShip} onLabel=${(sel) => setLabelLots(sel)} />`
         : activeTab === "tolling" ? html`<${TollingTab} lots=${openLots} />`
         : activeTab === "dashboard" ? html`<${DashboardTab} lots=${openLots} moves=${moves} dayDelta=${dayDelta} />`
         : activeTab === "plan" ? html`<${PlanTab} mes=${mes} canEdit=${canEdit} onSave=${persistMes} />`
-        : activeTab === "act" ? html`<${ActualTab} lots=${lots} runs=${runs} mes=${mes} master=${master} canEdit=${canEdit}
+        : activeTab === "act" ? html`<${ActualTab} lots=${lotsAll} runs=${runsAll} mes=${mes} master=${master} canEdit=${canEdit}
             ym=${actYm} onYm=${setActYm}
             onSave=${handleSaveRun} onDelete=${handleDeleteRun} />`
         : activeTab === "basis" ? html`<${BasisTab} mes=${mes} canEdit=${canEdit} onSave=${persistMes}
-            usage=${usage} onToast=${showToast}
+            usage=${usage} onToast=${showToast} archOpen=${archOpen} onArchOpen=${setArchOpen}
             counts=${{ lots: lots.length, moves: moves.length, runs: runs.length, downs: downs.length }} />`
-        : activeTab === "report" ? html`<${ReportTab} mes=${mes} runs=${runs} downs=${downs} lots=${openLots} settings=${settings} />`
-        : activeTab === "util" ? html`<${UtilTab} mes=${mes} runs=${runs} downs=${downs} />`
-        : activeTab === "down" ? html`<${DownTab} mes=${mes} runs=${runs} downs=${downs} canEdit=${canEdit}
+        : activeTab === "report" ? html`<${ReportTab} mes=${mes} runs=${runsAll} downs=${downsAll} lots=${openLots} settings=${settings} />`
+        : activeTab === "util" ? html`<${UtilTab} mes=${mes} runs=${runsAll} downs=${downsAll} />`
+        : activeTab === "down" ? html`<${DownTab} mes=${mes} runs=${runsAll} downs=${downsAll} canEdit=${canEdit}
             onSave=${handleSaveDown} onDelete=${handleDeleteDown} />`
         : html`<div className="ivs-comingsoon">이 탭은 다음 단계에서 만들어요.</div>`}
 
@@ -11223,7 +11413,7 @@ function PlanCalendar({ ym, days, mes }) {
 // ---------- 기준정보 ----------
 // 계획을 만드는 데 쓰는 값들을 한곳에 모았어요. 생산계획 화면에서는 결과만 보고,
 // "왜 그 숫자가 나오는지"와 그걸 바꾸는 일은 여기서 합니다.
-function BasisTab({ mes, canEdit, onSave, usage, counts, onToast }) {
+function BasisTab({ mes, canEdit, onSave, usage, counts, onToast, archOpen, onArchOpen }) {
   const [editOpen, setEditOpen] = useState(null);
   const days = useMemo(() => planDays(mes), [mes]);
   const months = useMemo(() => planByMonth(mes, days), [mes, days]);
@@ -11424,6 +11614,7 @@ function BasisTab({ mes, canEdit, onSave, usage, counts, onToast }) {
       </div>
 
       ${canEdit ? html`<${UsageCard} usage=${usage} counts=${counts} />` : null}
+      ${canEdit ? html`<${ArchiveCard} archOpen=${archOpen} onArchOpen=${onArchOpen} onToast=${onToast} />` : null}
       ${canEdit ? html`<${BackupCard} counts=${counts} onToast=${onToast} />` : null}
 
       ${editOpen ? html`<${PlanEditModal} which=${editOpen} mes=${mes} months=${months}
@@ -11555,6 +11746,122 @@ function UsageCard({ usage, counts }) {
           저장과 실시간 반영이 차지하는 몫은 아주 작아요.
         `}
       </div>
+    </div>`;
+}
+
+// ---------- 지난 연도 보관함 (관리자만) ----------
+// 장부가 두꺼워지면 화면을 열 때마다 받는 양도 같이 무거워져요. 작년 기록을 옆 칸으로 옮겨두면
+// 늘 올해치만 받게 되어 가볍습니다. 기록이 없어지는 게 아니라 자리를 옮기는 것이고,
+// 볼 일이 있을 때 "꺼내 보기"로 그 해를 화면에 얹으면 이력·집계·보고서가 그대로 나옵니다.
+function ArchiveCard({ archOpen, onArchOpen, onToast }) {
+  const [index, setIndex] = useState(null);   // null = 아직 안 불러옴
+  const [plan, setPlan] = useState(null);     // 지금 정리하면 무엇이 옮겨지는지
+  const [busy, setBusy] = useState("");
+  const [confirm, setConfirm] = useState(false);
+
+  const refresh = useCallback(async () => {
+    setIndex(await listArchives());
+    setPlan(archPreview());
+  }, []);
+  useEffect(() => { refresh(); }, [refresh]);
+
+  const size = (b) => (b >= 1024 * 1024 ? `${(b / 1024 ** 2).toFixed(1)} MB` : `${Math.round(b / 1024)} KB`);
+  const years = Object.keys(index || {}).sort().reverse();
+  const openYears = Object.keys(archOpen || {});
+
+  const doArchive = async () => {
+    setBusy("run");
+    try {
+      const r = await runArchive();
+      onToast && onToast(r.moved === 0 ? "옮길 기록이 없어요."
+        : `${r.years.join(" · ")}년 기록 ${r.moved.toLocaleString("ko-KR")}건을 보관함으로 옮겼어요.`, "success");
+      await refresh();
+    } catch (e) { onToast && onToast("정리에 실패했어요. 네트워크를 확인해주세요.", "error"); }
+    setBusy(""); setConfirm(false);
+  };
+
+  const toggleYear = async (y) => {
+    if (archOpen[y]) { const next = { ...archOpen }; delete next[y]; onArchOpen(next); return; }
+    setBusy(`open-${y}`);
+    try {
+      const data = await loadArchiveYear(y);
+      if (data) { onArchOpen({ ...archOpen, [y]: data });
+        onToast && onToast(`${y}년 기록을 꺼냈어요. 생산이력 · 가동율 · 보고서에서 함께 보입니다.`, "success"); }
+    } catch (e) { onToast && onToast("보관함을 여는 데 실패했어요.", "error"); }
+    setBusy("");
+  };
+
+  return html`
+    <div className="ivs-card ivs-backup">
+      <div className="ivs-card-head-row">
+        <h2 className="ivs-section-title">지난 연도 보관함</h2>
+        <div className="ivs-card-head-actions">
+          <span className="ivs-section-hint">장부를 얇게 유지해 화면 열 때 받는 양을 줄여요 · 관리자에게만 보여요</span>
+        </div>
+      </div>
+
+      <div className="ivs-backup-rows">
+        <div className="ivs-backup-row">
+          <div className="ivs-backup-txt">
+            <b>정리하기 — ${plan ? `${plan.cutoff}년까지` : "…"}</b>
+            <span>
+              ${plan == null ? "확인하는 중이에요."
+                : plan.total === 0
+                ? "지금은 옮길 기록이 없어요. 올해 기록과, 아직 공정에 서 있는 로트와 그 뿌리는 옮기지 않습니다."
+                : html`
+                  ${Object.keys(plan.byYear).sort().map((y) => `${y}년 ${(plan.byYear[y].lots + plan.byYear[y].moves + plan.byYear[y].runs + plan.byYear[y].downs).toLocaleString("ko-KR")}건`).join(" · ")}
+                  ${" "}총 ${plan.total.toLocaleString("ko-KR")}건을 옮깁니다. 옮기고 나면 장부가 ${size(plan.stayBytes)}가 돼요.
+                  아직 공정에 서 있는 로트와 그 뿌리는 연도와 상관없이 그대로 둡니다.`}
+            </span>
+          </div>
+          <div className="ivs-backup-act">
+            <button className="ivs-btn ivs-btn-primary" disabled=${busy !== "" || !plan || plan.total === 0}
+              onClick=${() => setConfirm(true)}>
+              <${Icon} name="package" size=${13} /> ${busy === "run" ? "옮기는 중…" : "지금 정리하기"}
+            </button>
+          </div>
+        </div>
+
+        <div className="ivs-backup-row">
+          <div className="ivs-backup-txt">
+            <b>보관된 연도</b>
+            <span>
+              ${index === null ? "불러오는 중이에요."
+                : years.length === 0 ? "아직 보관된 해가 없어요. 해가 바뀌고 2월이 되면 자동으로 정리됩니다."
+                : years.map((y) => `${y}년 로트 ${(index[y].lots || 0).toLocaleString("ko-KR")} · 이동 ${(index[y].moves || 0).toLocaleString("ko-KR")} · 실적 ${(index[y].runs || 0).toLocaleString("ko-KR")}`).join(" / ")}
+            </span>
+          </div>
+          <div className="ivs-backup-act">
+            ${years.map((y) => html`
+              <button key=${y} className=${`ivs-btn ivs-btn-sm ${archOpen[y] ? "ivs-btn-primary" : ""}`}
+                disabled=${busy !== ""} onClick=${() => toggleYear(y)}>
+                ${busy === `open-${y}` ? "여는 중…" : archOpen[y] ? `${y}년 닫기` : `${y}년 꺼내 보기`}
+              </button>`)}
+          </div>
+        </div>
+      </div>
+
+      <div className=${`ivs-usage-note ${openYears.length ? "warn" : "ok"}`}>
+        ${openYears.length ? html`
+          <b>${openYears.sort().join(" · ")}년을 꺼내 놓았습니다.</b> 생산이력 · 가동율 · 비가동 · 보고서에서
+          그 해 기록이 함께 보입니다. 꺼내 본 기록은 화면에만 얹히고 장부에는 다시 저장되지 않아요.
+          이 화면을 새로 열면 저절로 닫힙니다.
+        ` : html`
+          <b>해가 바뀌고 2월이 되면 저절로 정리됩니다.</b> 연말에 손으로 내보내실 일은 없어요.
+          1월은 지난해 마무리 입력이 남아 있을 수 있어 건너뜁니다. 옮기기 전에 그날 백업을 먼저 떠두고,
+          보관함에 무사히 넣은 뒤에야 장부에서 덜어냅니다.
+        `}
+      </div>
+
+      ${confirm && plan ? html`
+        <${ConfirmModal}
+          icon=${html`<${Icon} name="package" size=${18} />`}
+          title=${`${plan.cutoff}년까지의 기록을 보관함으로 옮길까요?`}
+          body=${`${plan.total.toLocaleString("ko-KR")}건이 옮겨지고, 장부는 ${size(plan.stayBytes)}가 됩니다. 기록은 없어지지 않고 "꺼내 보기"로 언제든 다시 볼 수 있어요. 옮기기 전에 오늘 백업을 한 부 떠둡니다.`}
+          confirmLabel=${busy === "run" ? "옮기는 중…" : "보관함으로 옮기기"}
+          onCancel=${() => setConfirm(false)}
+          onConfirm=${doArchive}
+        />` : null}
     </div>`;
 }
 
@@ -12830,7 +13137,8 @@ function ConfirmModal({ icon, title, body, confirmLabel, danger, onCancel, onCon
     await startLive();
     LIVE_DATA = docToLive(LIVE_DOC);
     markOpen(); // 계량기에 "화면 한 번 열림"을 적어요 (화면이 뜬 뒤에 조용히)
-    autoSnapshot(); // 오늘치 백업이 없으면 한 부 떠둬요 (하루 한 번, 조용히)
+    autoSnapshot() // 오늘치 백업이 없으면 한 부 떠둬요 (하루 한 번, 조용히)
+      .then(autoArchive); // 해가 바뀌었으면 지난해 기록을 보관함으로 옮겨요 (한 해 한 번)
   }
   ReactDOM.createRoot(rootEl).render(html`<${InventorySystem} />`);
 })();

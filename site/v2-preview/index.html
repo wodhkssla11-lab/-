@@ -226,8 +226,10 @@
   .ivs-usage-bars { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 18px; }
   .ivs-usage-bars > * { min-width: 0; }
   .ivs-usage-bar-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 7px; }
-  .ivs-usage-bar-h span { font-size: 12.5px; color: var(--text-dim); }
-  .ivs-usage-bar-h b { font-size: 15px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .ivs-usage-bar-h span { font-size: 14.5px; font-weight: 700; color: var(--text); letter-spacing: -.2px; }
+  .ivs-usage-bar-h b { font-size: 16px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .ivs-usage-bar-sub { margin-top: 7px; font-size: 11.5px; line-height: 1.55; color: var(--text-faint); }
+  .ivs-usage-bar-sub b { color: var(--text-dim); }
   .ivs-usage-track { height: 9px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
   .ivs-usage-fill { height: 100%; border-radius: 99px; background: #16A34A; transition: width .3s ease; }
   .ivs-usage-track.warn .ivs-usage-fill { background: #D97706; }
@@ -244,6 +246,18 @@
     border: 1px solid var(--border); background: var(--surface-2); color: var(--text-dim); }
   .ivs-usage-note b { color: var(--text); }
   .ivs-usage-note.warn { border-color: #D97706; }
+  /* 백업과 되돌리기 */
+  .ivs-backup { margin-top: 16px; }
+  .ivs-backup-rows { display: flex; flex-direction: column; gap: 12px; }
+  .ivs-backup-row { display: flex; align-items: center; justify-content: space-between; gap: 18px;
+    flex-wrap: wrap; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
+    background: var(--surface-2); }
+  .ivs-backup-txt { flex: 1 1 340px; min-width: 0; }
+  .ivs-backup-txt b { display: block; font-size: 14px; color: var(--text); margin-bottom: 4px; }
+  .ivs-backup-txt span { display: block; font-size: 12px; line-height: 1.6; color: var(--text-dim); }
+  .ivs-backup-txt span b { display: inline; font-size: inherit; }
+  .ivs-backup-act { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }
+  .ivs-backup-act .ivs-select { min-width: 168px; }
   .ivs-pager-no { min-width: 62px; text-align: center; font-variant-numeric: tabular-nums; color: var(--text); }
   @media (max-width: 900px) { .ivs-hide-sm { display: none; } }
 
@@ -3800,6 +3814,7 @@ const ICON_DEFS = {
   check: '<path d="M20 6 9 17l-5-5"/>',
   "alert-triangle": '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
   download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
+  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
   monitor: '<rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/>',
   users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
@@ -3837,6 +3852,7 @@ const Loader2 = mkIcon("loader-2");
 const Check = mkIcon("check");
 const AlertTriangle = mkIcon("alert-triangle");
 const Download = mkIcon("download");
+const Upload = mkIcon("upload");
 const Monitor = mkIcon("monitor");
 const Users = mkIcon("users");
 const Sun = mkIcon("sun");
@@ -4550,6 +4566,12 @@ const DB_BASE = "https://drt-stock-status-default-rtdb.firebaseio.com";
 const DATA_PATH = "/inventory.json";
 // 저장 구조를 새로 바꿀 때, 바꾸기 직전 데이터를 한 부 남겨두는 칸이에요 (딱 한 번만 씀).
 const BACKUP_PATH = "/inventory_backup_v1.json";
+// 매일 한 부씩 자동으로 떠두는 자리. 최근 7일치만 두고 오래된 건 지워요.
+const SNAP_PATH = "/inventory_snapshots";
+// 어떤 날짜가 있는지만 적어둔 아주 작은 목록. 백업 본문을 열어보지 않고 이것만 읽으면 되니,
+// 화면을 열 때마다 백업 전체를 내려받는 일이 없어요 (그러면 아낀 통신량이 도로 나가버립니다).
+const SNAP_INDEX = "/inventory_snapindex.json";
+const SNAP_KEEP = 7;
 const FALLBACK_DATA = {
   lots: [], moves: [],
   settings: { ...DEFAULT_SETTINGS }, master: { ...DEFAULT_MASTER }, mes: { ...DEFAULT_MES }, runs: [], downs: [],
@@ -4786,6 +4808,69 @@ async function markOpen() {
       body: JSON.stringify({ usage: next }),
     });
   } catch (e) { /* 계량기가 실패해도 화면은 그대로 써요 */ }
+}
+
+// ---------- 자동 백업 (매일 한 부) ----------
+// 누가 실수로 지우거나 옛 화면이 덮어써도 되돌릴 수 있게, 하루에 한 부씩 통째로 떠둬요.
+// 화면을 처음 연 사람의 브라우저가 "오늘 것이 없네" 하고 한 번만 뜹니다.
+// 올리는 양은 무료 한도(내려받기 10 GB)에 잡히지 않아서, 통신량 걱정 없이 둘 수 있어요.
+async function autoSnapshot() {
+  const today = new Date().toISOString().slice(0, 10);
+  const hasRecords = COLL.some((c) => Object.keys(LIVE_DOC[c] || {}).length > 0);
+  if (!hasRecords) return null; // 빈 장부는 떠둘 이유가 없어요 (오히려 덮어쓰면 위험해요)
+  const json = { "Content-Type": "application/json" };
+  try {
+    const idx = await fetch(`${DB_BASE}${SNAP_INDEX}`)
+      .then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    const days = Object.keys(idx || {}).sort();
+    let wrote = false;
+    if (!days.includes(today)) { // 오늘 것이 없을 때만 새로 떠요
+      const body = JSON.stringify({ savedAt: new Date().toISOString(), data: LIVE_DOC });
+      const res = await fetch(`${DB_BASE}${SNAP_PATH}/${today}.json`, { method: "PUT", headers: json, body });
+      wrote = res.ok;
+    }
+    // 오래된 것부터 지워 최근 며칠치만 남겨요. 오늘 것을 새로 뜨지 않았어도 정리는 합니다.
+    const all = Array.from(new Set(wrote ? [...days, today] : days)).sort();
+    const drop = all.slice(0, -SNAP_KEEP);
+    for (const d of drop) {
+      await fetch(`${DB_BASE}${SNAP_PATH}/${d}.json`, { method: "DELETE" }).catch(() => {});
+    }
+    if (wrote || drop.length) {
+      const patch = {};
+      drop.forEach((d) => { patch[d] = null; });
+      if (wrote) patch[today] = new Date().toISOString();
+      await fetch(`${DB_BASE}${SNAP_INDEX}`, { method: "PATCH", headers: json, body: JSON.stringify(patch) });
+    }
+    return wrote ? today : null;
+  } catch (e) { return null; }
+}
+
+// 백업 목록 — 되돌리기 창에서 어떤 날짜가 있는지 보여줘요.
+async function listSnapshots() {
+  try {
+    const idx = await fetch(`${DB_BASE}${SNAP_INDEX}`).then((r) => (r.ok ? r.json() : null));
+    return Object.keys(idx || {}).sort().reverse();
+  } catch (e) { return []; }
+}
+async function readSnapshot(day) {
+  const res = await fetch(`${DB_BASE}${SNAP_PATH}/${day}.json`);
+  if (!res.ok) throw new Error(`읽기 실패: ${res.status}`);
+  return await res.json();
+}
+
+// 되돌리기 — 고른 백업을 지금 장부 자리에 통째로 씁니다.
+async function restoreDoc(doc) {
+  const next = rawToDoc(doc);
+  next.schema = SCHEMA;
+  next.usage = LIVE_DOC.usage || {}; // 계량기는 되돌리지 않아요
+  const res = await fetch(DB_BASE + DATA_PATH, {
+    method: "PUT", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(next),
+  });
+  if (!res.ok) throw new Error(`되돌리기 실패: ${res.status}`);
+  LIVE_DOC = next;
+  notifyLive();
+  return docToLive(next);
 }
 
 // 지금 장부가 차지하는 크기 — 실제로 주고받는 글자 수 그대로예요.
@@ -7071,7 +7156,8 @@ function InventorySystem() {
             ym=${actYm} onYm=${setActYm}
             onSave=${handleSaveRun} onDelete=${handleDeleteRun} />`
         : activeTab === "basis" ? html`<${BasisTab} mes=${mes} canEdit=${canEdit} onSave=${persistMes}
-            usage=${usage} counts=${{ lots: lots.length, moves: moves.length, runs: runs.length, downs: downs.length }} />`
+            usage=${usage} onToast=${showToast}
+            counts=${{ lots: lots.length, moves: moves.length, runs: runs.length, downs: downs.length }} />`
         : activeTab === "report" ? html`<${ReportTab} mes=${mes} runs=${runs} downs=${downs} lots=${openLots} settings=${settings} />`
         : activeTab === "util" ? html`<${UtilTab} mes=${mes} runs=${runs} downs=${downs} />`
         : activeTab === "down" ? html`<${DownTab} mes=${mes} runs=${runs} downs=${downs} canEdit=${canEdit}
@@ -11137,7 +11223,7 @@ function PlanCalendar({ ym, days, mes }) {
 // ---------- 기준정보 ----------
 // 계획을 만드는 데 쓰는 값들을 한곳에 모았어요. 생산계획 화면에서는 결과만 보고,
 // "왜 그 숫자가 나오는지"와 그걸 바꾸는 일은 여기서 합니다.
-function BasisTab({ mes, canEdit, onSave, usage, counts }) {
+function BasisTab({ mes, canEdit, onSave, usage, counts, onToast }) {
   const [editOpen, setEditOpen] = useState(null);
   const days = useMemo(() => planDays(mes), [mes]);
   const months = useMemo(() => planByMonth(mes, days), [mes, days]);
@@ -11338,6 +11424,7 @@ function BasisTab({ mes, canEdit, onSave, usage, counts }) {
       </div>
 
       ${canEdit ? html`<${UsageCard} usage=${usage} counts=${counts} />` : null}
+      ${canEdit ? html`<${BackupCard} counts=${counts} onToast=${onToast} />` : null}
 
       ${editOpen ? html`<${PlanEditModal} which=${editOpen} mes=${mes} months=${months}
         onClose=${() => setEditOpen(null)} onSave=${onSave} />` : null}
@@ -11349,7 +11436,13 @@ function BasisTab({ mes, canEdit, onSave, usage, counts }) {
 // 세어 둔 값이라, 이 숫자가 곧 Firebase에 잡히는 양과 거의 같습니다.
 function UsageCard({ usage, counts }) {
   const u = usage || {};
-  const store = docBytes();
+  // 자동 백업도 같은 저장 공간을 씁니다. 부수는 목록만 읽어서 세고, 크기는 지금 장부 크기로 잡아요
+  // (지난 날짜는 더 작으니 실제보다 넉넉하게 잡히는 쪽이에요).
+  const [snapCount, setSnapCount] = useState(0);
+  useEffect(() => { listSnapshots().then((d) => setSnapCount(d.length)).catch(() => {}); }, []);
+  const live = docBytes();
+  const snapBytes = live * snapCount;
+  const store = live + snapBytes;
   const down = Number(u.down) || 0;
   const up = Number(u.up) || 0;
   const used = down + up;
@@ -11370,7 +11463,7 @@ function UsageCard({ usage, counts }) {
   // 한 달에 이만큼 열면, 장부가 얼마나 두꺼워질 때까지 10 GB 안에 머무는가
   const roomBytes = opensPerMonth > 0 ? FREE_MONTH_BYTES / opensPerMonth : 0;
   const growthPerMonth = 0.78 * 1024 * 1024; // 정상 양산 월 712톤 기준 장부 증가량
-  const monthsLeft = Math.max(0, Math.floor((roomBytes - store) / growthPerMonth));
+  const monthsLeft = Math.max(0, Math.floor((roomBytes - live) / growthPerMonth));
 
   const size = (b) => (b >= 1024 * 1024 * 1024 ? `${(b / 1024 ** 3).toFixed(2)} GB`
     : b >= 1024 * 1024 ? `${(b / 1024 ** 2).toFixed(1)} MB`
@@ -11383,13 +11476,14 @@ function UsageCard({ usage, counts }) {
   const monthPct = pct(projected, FREE_MONTH_BYTES);
   const show = (v) => v.toFixed(v < 1 ? 2 : v < 10 ? 1 : 0);
   const tone = (v) => (v >= 90 ? "bad" : v >= 70 ? "warn" : "ok");
-  const Bar = ({ value, label, left, right }) => html`
+  const Bar = ({ value, label, left, right, sub }) => html`
     <div className="ivs-usage-bar">
       <div className="ivs-usage-bar-h"><span>${label}</span><b>${left}</b></div>
       <div className=${`ivs-usage-track ${tone(value)}`}>
         <div className="ivs-usage-fill" style=${{ width: `${Math.max(value, 0.6)}%` }} />
       </div>
       <div className="ivs-usage-bar-f"><span>${show(value)}% 사용</span><span>${right}</span></div>
+      <div className="ivs-usage-bar-sub">${sub}</div>
     </div>`;
 
   return html`
@@ -11406,9 +11500,16 @@ function UsageCard({ usage, counts }) {
 
       <div className="ivs-usage-bars">
         <${Bar} value=${storePct} label="저장 공간"
-          left=${`${size(store)} / 1 GB`} right=${`${size(FREE_STORE_BYTES - store)} 남음`} />
+          left=${`${size(store)} / 1 GB`} right=${`${size(FREE_STORE_BYTES - store)} 남음`}
+          sub=${html`<b>계속 쌓이는 총량이에요 — 달이 바뀌어도 줄지 않아요.</b> 지운 기록만큼만 줄어듭니다.
+            다 차면 새로 저장이 안 되고, 이미 있는 기록은 그대로 보입니다.
+            지금 장부 ${size(live)}${snapCount > 0 ? ` + 자동 백업 ${snapCount}부 약 ${size(snapBytes)}` : ""}.
+            양산 기준으로 한 달에 0.8 MB씩 늘어나니 다 차는 데 수십 년 걸립니다.`} />
         <${Bar} value=${monthPct} label="이번 달 통신량 (이대로 가면)"
-          left=${`${size(projected)} / 10 GB`} right=${`${size(Math.max(FREE_MONTH_BYTES - projected, 0))} 남음`} />
+          left=${`${size(projected)} / 10 GB`} right=${`${size(Math.max(FREE_MONTH_BYTES - projected, 0))} 남음`}
+          sub=${html`<b>매달 1일에 0으로 되돌아가요.</b> 이번 달에 오간 양만 셉니다. 다 쓰면 그 달
+            남은 기간 동안 화면이 안 열릴 수 있고, 다음 달 1일에 저절로 풀립니다.
+            여기가 우리가 신경 써야 할 쪽이에요.`} />
       </div>
 
       <div className="ivs-usage-grid">
@@ -11418,7 +11519,7 @@ function UsageCard({ usage, counts }) {
         </div>
         <div className="ivs-usage-cell">
           <span>화면 열기</span><b>${opens.toLocaleString("ko-KR")}회</b>
-          <em>한 번 열 때 ${size(store)}씩 받아요 — 통신량은 거의 이게 전부예요</em>
+          <em>한 번 열 때 ${size(live)}씩 받아요 — 통신량은 거의 이게 전부예요</em>
         </div>
         <div className="ivs-usage-cell">
           <span>저장</span><b>${saves.toLocaleString("ko-KR")}회</b>
@@ -11454,6 +11555,159 @@ function UsageCard({ usage, counts }) {
           저장과 실시간 반영이 차지하는 몫은 아주 작아요.
         `}
       </div>
+    </div>`;
+}
+
+// ---------- 백업과 되돌리기 (관리자만) ----------
+// "혹시 다 날아가면?"에 대한 답이에요. 세 겹으로 둡니다.
+//  1) 하루 한 부씩 자동으로 뜨는 백업 (최근 7일) — 손댈 것 없이 알아서 됩니다.
+//  2) 파일로 내려받기 — 내 컴퓨터에 두면 Firebase 자체에 문제가 생겨도 남습니다.
+//  3) 되돌리기 — 위 둘 중 아무거나 골라 그때 상태로 되돌립니다.
+function BackupCard({ counts, onToast }) {
+  const [days, setDays] = useState(null);      // null = 아직 안 불러옴
+  const [busy, setBusy] = useState("");
+  const [confirmDay, setConfirmDay] = useState(null);
+  const [pending, setPending] = useState(null); // 파일에서 읽어온 것
+  const fileRef = useRef(null);
+
+  useEffect(() => { listSnapshots().then(setDays).catch(() => setDays([])); }, []);
+
+  const total = (counts && (counts.lots + counts.moves + counts.runs + counts.downs)) || 0;
+
+  const handleDownload = async () => {
+    setBusy("download");
+    try {
+      const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "");
+      downloadFile(`DRT-생산시스템-백업-${stamp}.json`,
+        JSON.stringify({ savedAt: new Date().toISOString(), data: LIVE_DOC }, null, 0),
+        "application/json");
+      onToast && onToast("백업 파일을 내려받았어요. 안전한 곳에 보관해주세요.", "success");
+    } catch (e) { onToast && onToast("내려받기에 실패했어요.", "error"); }
+    setBusy("");
+  };
+
+  const handlePick = async (e) => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (!f) return;
+    try {
+      const parsed = JSON.parse(await f.text());
+      const doc = parsed && parsed.data ? parsed.data : parsed;
+      const d = rawToDoc(doc);
+      const n = COLL.reduce((a, c) => a + Object.keys(d[c] || {}).length, 0);
+      if (n === 0) { onToast && onToast("이 파일에는 기록이 없어요. 다른 파일을 골라주세요.", "error"); return; }
+      setPending({ name: f.name, savedAt: parsed.savedAt || "", doc,
+        counts: Object.fromEntries(COLL.map((c) => [c, Object.keys(d[c] || {}).length])) });
+    } catch (err) { onToast && onToast("백업 파일이 아니거나 읽을 수 없어요.", "error"); }
+  };
+
+  const doRestore = async (doc, label) => {
+    setBusy("restore");
+    try {
+      await restoreDoc(doc);
+      onToast && onToast(`${label} 상태로 되돌렸어요.`, "success");
+    } catch (e) { onToast && onToast("되돌리기에 실패했어요. 네트워크를 확인해주세요.", "error"); }
+    setBusy(""); setPending(null); setConfirmDay(null);
+  };
+
+  const restoreDay = async (day) => {
+    setBusy("restore");
+    try {
+      const snap = await readSnapshot(day);
+      await restoreDoc(snap && snap.data ? snap.data : snap);
+      onToast && onToast(`${day} 백업으로 되돌렸어요.`, "success");
+    } catch (e) { onToast && onToast("되돌리기에 실패했어요.", "error"); }
+    setBusy(""); setConfirmDay(null);
+  };
+
+  return html`
+    <div className="ivs-card ivs-backup">
+      <div className="ivs-card-head-row">
+        <h2 className="ivs-section-title">백업과 되돌리기</h2>
+        <div className="ivs-card-head-actions">
+          <span className="ivs-section-hint">기록이 사라져도 되돌릴 수 있게 · 관리자에게만 보여요</span>
+        </div>
+      </div>
+
+      <div className="ivs-backup-rows">
+        <div className="ivs-backup-row">
+          <div className="ivs-backup-txt">
+            <b>자동 백업 — 하루 한 부</b>
+            <span>
+              누가 화면을 처음 열 때 그날 치가 없으면 한 부 떠둬요. 최근 ${SNAP_KEEP}일치를 두고
+              오래된 건 지웁니다. 손대실 것 없어요.
+            </span>
+          </div>
+          <div className="ivs-backup-act">
+            ${days === null ? html`<span className="ivs-dim">불러오는 중…</span>`
+              : days.length === 0 ? html`<span className="ivs-dim">아직 없어요</span>`
+              : html`
+                <select className="ivs-select" value=${confirmDay || ""}
+                  onChange=${(e) => setConfirmDay(e.target.value || null)}>
+                  <option value="">되돌릴 날짜 고르기</option>
+                  ${days.map((d) => html`<option key=${d} value=${d}>${d}</option>`)}
+                </select>`}
+          </div>
+        </div>
+
+        <div className="ivs-backup-row">
+          <div className="ivs-backup-txt">
+            <b>파일로 내려받기 — 내 컴퓨터에 보관</b>
+            <span>
+              지금 장부 전체를 파일 하나로 받아둬요. Firebase 자체에 문제가 생기거나 계정이
+              막혀도 이 파일만 있으면 되살릴 수 있어요. 한 달에 한 번쯤 받아두시길 권합니다.
+            </span>
+          </div>
+          <div className="ivs-backup-act">
+            <button className="ivs-btn ivs-btn-primary" disabled=${busy !== "" || total === 0}
+              onClick=${handleDownload}>
+              <${Download} size=${13} /> ${busy === "download" ? "받는 중…" : "백업 파일 받기"}
+            </button>
+          </div>
+        </div>
+
+        <div className="ivs-backup-row">
+          <div className="ivs-backup-txt">
+            <b>파일로 되돌리기</b>
+            <span>
+              받아둔 백업 파일을 골라 그때 상태로 되돌려요. <b>지금 장부는 전부 그 파일 내용으로
+              바뀝니다.</b> 되돌리기 전에 지금 것을 한 부 받아두시는 편이 안전해요.
+            </span>
+          </div>
+          <div className="ivs-backup-act">
+            <input ref=${fileRef} type="file" accept="application/json,.json"
+              style=${{ display: "none" }} onChange=${handlePick} />
+            <button className="ivs-btn" disabled=${busy !== ""}
+              onClick=${() => fileRef.current && fileRef.current.click()}>
+              <${Upload} size=${13} /> 백업 파일 고르기
+            </button>
+          </div>
+        </div>
+      </div>
+
+      ${confirmDay ? html`
+        <${ConfirmModal}
+          icon=${html`<${AlertTriangle} size=${18} />`}
+          title=${`${confirmDay} 백업으로 되돌릴까요?`}
+          body=${`지금 장부(${total.toLocaleString("ko-KR")}건)가 그날 저장된 내용으로 통째로 바뀝니다. 그 뒤에 넣은 기록은 사라져요.`}
+          confirmLabel=${busy === "restore" ? "되돌리는 중…" : "되돌리기"}
+          danger=${true}
+          onCancel=${() => setConfirmDay(null)}
+          onConfirm=${() => restoreDay(confirmDay)}
+        />` : null}
+
+      ${pending ? html`
+        <${ConfirmModal}
+          icon=${html`<${AlertTriangle} size=${18} />`}
+          title="이 백업 파일로 되돌릴까요?"
+          body=${`${pending.name}${pending.savedAt ? ` · ${pending.savedAt.slice(0, 16).replace("T", " ")}` : ""}
+            · 로트 ${pending.counts.lots.toLocaleString("ko-KR")}건 · 공정이동 ${pending.counts.moves.toLocaleString("ko-KR")}건.
+            지금 장부(${total.toLocaleString("ko-KR")}건)는 이 내용으로 통째로 바뀝니다.`}
+          confirmLabel=${busy === "restore" ? "되돌리는 중…" : "되돌리기"}
+          danger=${true}
+          onCancel=${() => setPending(null)}
+          onConfirm=${() => doRestore(pending.doc, pending.name)}
+        />` : null}
     </div>`;
 }
 
@@ -12569,6 +12823,7 @@ function ConfirmModal({ icon, title, body, confirmLabel, danger, onCancel, onCon
     await startLive();
     LIVE_DATA = docToLive(LIVE_DOC);
     markOpen(); // 계량기에 "화면 한 번 열림"을 적어요 (화면이 뜬 뒤에 조용히)
+    autoSnapshot(); // 오늘치 백업이 없으면 한 부 떠둬요 (하루 한 번, 조용히)
   }
   ReactDOM.createRoot(rootEl).render(html`<${InventorySystem} />`);
 })();

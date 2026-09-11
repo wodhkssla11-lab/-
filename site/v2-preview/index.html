@@ -221,6 +221,29 @@
   .ivs-pager-ctl label { display: inline-flex; align-items: center; gap: 4px; }
   .ivs-pager-ctl select { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border);
     border-radius: 6px; padding: 3px 6px; }
+  /* 데이터 잔량 (관리자 전용) */
+  .ivs-usage { margin-top: 16px; }
+  .ivs-usage-bars { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 18px; }
+  .ivs-usage-bars > * { min-width: 0; }
+  .ivs-usage-bar-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 7px; }
+  .ivs-usage-bar-h span { font-size: 12.5px; color: var(--text-dim); }
+  .ivs-usage-bar-h b { font-size: 15px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .ivs-usage-track { height: 9px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+  .ivs-usage-fill { height: 100%; border-radius: 99px; background: #16A34A; transition: width .3s ease; }
+  .ivs-usage-track.warn .ivs-usage-fill { background: #D97706; }
+  .ivs-usage-track.bad .ivs-usage-fill { background: #DC2626; }
+  .ivs-usage-bar-f { display: flex; justify-content: space-between; gap: 10px; margin-top: 6px;
+    font-size: 11.5px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .ivs-usage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .ivs-usage-grid > * { min-width: 0; }
+  .ivs-usage-cell { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; background: var(--surface-2); }
+  .ivs-usage-cell span { display: block; font-size: 11.5px; color: var(--text-faint); }
+  .ivs-usage-cell b { display: block; font-size: 19px; margin: 3px 0 4px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .ivs-usage-cell em { display: block; font-style: normal; font-size: 11.5px; color: var(--text-dim); line-height: 1.5; }
+  .ivs-usage-note { margin-top: 16px; border-radius: 10px; padding: 12px 14px; font-size: 13px; line-height: 1.65;
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--text-dim); }
+  .ivs-usage-note b { color: var(--text); }
+  .ivs-usage-note.warn { border-color: #D97706; }
   .ivs-pager-no { min-width: 62px; text-align: center; font-variant-numeric: tabular-nums; color: var(--text); }
   @media (max-width: 900px) { .ivs-hide-sm { display: none; } }
 
@@ -4590,7 +4613,7 @@ const KEY_BAD = /[.$#[\]/\s]/g;
 const recKey = (r, i) => String((r && r.id) || "").replace(KEY_BAD, "-") || `k${i}`;
 
 const emptyDoc = () => ({ schema: SCHEMA, lots: {}, moves: {}, runs: {}, downs: {},
-  settings: {}, master: {}, mes: {} });
+  settings: {}, master: {}, mes: {}, usage: {} });
 
 // 배열로 오든 서랍으로 오든 서랍 모양으로 맞춰요 (옛 데이터도 그대로 읽힙니다).
 function asMap(v) {
@@ -4607,6 +4630,7 @@ function rawToDoc(raw) {
     settings: d.settings && typeof d.settings === "object" ? d.settings : {},
     master: d.master && typeof d.master === "object" ? d.master : {},
     mes: d.mes && typeof d.mes === "object" ? d.mes : {},
+    usage: d.usage && typeof d.usage === "object" ? d.usage : {},
   };
 }
 // 서랍 → 화면이 쓰는 배열. 최신이 위로 오도록 날짜 내림차순으로 세워요.
@@ -4625,6 +4649,7 @@ function docToLive(doc) {
     settings: { ...DEFAULT_SETTINGS, ...(doc.settings || {}) },
     master: normalizeMaster(doc.master),
     mes: normalizeMes(doc.mes),
+    usage: doc.usage || {},
   };
 }
 function liveToDoc(live) {
@@ -4635,7 +4660,9 @@ function liveToDoc(live) {
   };
   return { schema: SCHEMA,
     lots: map(live.lots), moves: map(live.moves), runs: map(live.runs), downs: map(live.downs),
-    settings: live.settings || {}, master: live.master || {}, mes: live.mes || {} };
+    settings: live.settings || {}, master: live.master || {}, mes: live.mes || {},
+    // 사용량 계량기는 화면에서 고치는 값이 아니라, 저장할 때 손대지 않고 그대로 둬요.
+    usage: live.usage || LIVE_DOC.usage || {} };
 }
 
 // 두 값이 사실상 같은지 — Firebase는 빈 값(null)을 저장하지 않고 키 순서도 보장하지 않아서,
@@ -4718,6 +4745,54 @@ let LAST_WRITE = null; // 마지막으로 보낸 양 (바이트) — 상태 표�
 const notifyLive = () => { if (liveOnData) liveOnData(docToLive(LIVE_DOC)); };
 const setLiveStat = (s) => { LIVE_STATUS = s; if (liveOnStatus) liveOnStatus(s); };
 
+// ---------- 데이터 사용량 계량기 ----------
+// 무료 한도 안에서 쓰고 있는지 관리자가 눈으로 확인할 수 있게, 실제로 오간 바이트를 적어둬요.
+// 값은 장부와 같은 곳(usage 칸)에 있어서 누가 어느 화면에서 봐도 같은 숫자가 나옵니다.
+const FREE_STORE_BYTES = 1024 * 1024 * 1024;      // 저장 공간 무료 한도 1 GB
+const FREE_MONTH_BYTES = 10 * 1024 * 1024 * 1024; // 한 달 통신량 무료 한도 10 GB
+const byteLen = (str) => {
+  try { return new TextEncoder().encode(String(str)).length; }
+  catch (e) { return String(str).length; }
+};
+const monthKey = (d = new Date()) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
+let OPEN_BYTES = 0; // 이번에 화면을 열며 받은 첫 한 통의 크기
+
+// 이번 달 칸을 꺼내요. 달이 바뀌었으면 지난달 숫자를 한 줄로 접어두고 새로 시작해요.
+function usageNow(extra) {
+  const u = (LIVE_DOC && LIVE_DOC.usage) || {};
+  const m = monthKey();
+  const cur = u.month === m ? u : {
+    month: m, opens: 0, saves: 0, down: 0, up: 0,
+    since: new Date().toISOString().slice(0, 10),
+    prevMonth: u.month || "", prevDown: Number(u.down) || 0, prevUp: Number(u.up) || 0,
+  };
+  return {
+    ...cur,
+    opens: Number(cur.opens || 0) + Number((extra && extra.opens) || 0),
+    saves: Number(cur.saves || 0) + Number((extra && extra.saves) || 0),
+    down: Number(cur.down || 0) + Number((extra && extra.down) || 0),
+    up: Number(cur.up || 0) + Number((extra && extra.up) || 0),
+  };
+}
+
+// 화면을 연 것 한 번을 계량기에 적어요. 80바이트쯤 되는 아주 작은 쓰기 한 번입니다.
+async function markOpen() {
+  if (!OPEN_BYTES) return;
+  const next = usageNow({ opens: 1, down: OPEN_BYTES });
+  LIVE_DOC = { ...LIVE_DOC, usage: next };
+  try {
+    await fetch(DB_BASE + DATA_PATH, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usage: next }),
+    });
+  } catch (e) { /* 계량기가 실패해도 화면은 그대로 써요 */ }
+}
+
+// 지금 장부가 차지하는 크기 — 실제로 주고받는 글자 수 그대로예요.
+function docBytes() {
+  try { return byteLen(JSON.stringify(LIVE_DOC)); } catch (e) { return 0; }
+}
+
 function startLive() {
   return new Promise((resolve) => {
     let settled = false;
@@ -4728,6 +4803,8 @@ function startLive() {
     LIVE_ES = es;
     const handle = (type) => (e) => {
       try {
+        // 화면을 열 때 처음 받는 한 통이 통신량의 대부분이라, 그 크기를 재어 계량기에 적어요.
+        if (!settled && type === "put") OPEN_BYTES = byteLen(e.data);
         const p = JSON.parse(e.data); // { path, data }
         LIVE_DOC = applyEvent(LIVE_DOC, type, p.path, p.data);
         notifyLive();
@@ -4771,28 +4848,43 @@ async function writeLive(live) {
     // 저장 구조를 바꾸는 건 딱 한 번이라, 바꾸기 직전 모습을 백업 칸에 통째로 한 부 남겨둬요.
     // 혹시 문제가 생기면 이 칸의 내용을 inventory로 되돌리면 예전 상태로 복구돼요.
     try {
+      // 이미 백업이 있으면 절대 덮어쓰지 않아요. 한 번 잘 떠둔 백업이 나중에 잘못된 저장으로
+      // 지워지면 되돌릴 데가 없어지니, 첫 한 부만 남기고 그대로 둡니다.
+      const kept = await fetch(`${DB_BASE}${BACKUP_PATH}?shallow=true`)
+        .then((r) => (r.ok ? r.json() : null)).catch(() => null);
       const old = await fetch(`${DB_BASE}${DATA_PATH}`).then((r) => (r.ok ? r.json() : null));
-      if (old) {
+      const hasRecords = old && ["lots", "moves", "runs", "downs"].some((k) => {
+        const v = old[k];
+        return Array.isArray(v) ? v.length > 0 : v && typeof v === "object" && Object.keys(v).length > 0;
+      });
+      if (!kept && hasRecords) {
         await fetch(`${DB_BASE}${BACKUP_PATH}`, {
           method: "PUT", headers,
           body: JSON.stringify({ savedAt: new Date().toISOString(), note: "구조 변경 직전 백업", data: old }),
         });
       }
     } catch (e) { /* 백업이 실패해도 저장 자체는 막지 않아요 */ }
+    // 구조를 옮기며 통째로 올린 양(그리고 백업 한 부)도 계량기에 정직하게 적어요.
+    const draft = JSON.stringify(next);
+    next.usage = usageNow({ saves: 1, up: byteLen(draft) * 2 });
     const body = JSON.stringify(next);
     const res = await fetch(url, { method: "PUT", headers, body });
     if (!res.ok) throw new Error(`write failed: ${res.status}`);
     LIVE_DOC = next;
-    LAST_WRITE = { bytes: body.length, full: true };
+    LAST_WRITE = { bytes: byteLen(body), full: true };
     return LAST_WRITE;
   }
   const patch = diffPaths(LIVE_DOC, next);
   if (Object.keys(patch).length === 0) { LAST_WRITE = { bytes: 0, full: false }; return LAST_WRITE; }
+  // 저장 한 번에 오간 양도 같은 요청에 실어 보내요 — 이것 때문에 요청이 더 늘지는 않아요.
+  const draft = JSON.stringify(patch);
+  const usage = usageNow({ saves: 1, up: byteLen(draft) + 90 });
+  patch.usage = usage; next.usage = usage;
   const body = JSON.stringify(patch);
   const res = await fetch(url, { method: "PATCH", headers, body });
   if (!res.ok) throw new Error(`write failed: ${res.status}`);
   LIVE_DOC = next;
-  LAST_WRITE = { bytes: body.length, full: false, paths: Object.keys(patch).length };
+  LAST_WRITE = { bytes: byteLen(body), full: false, paths: Object.keys(patch).length };
   return LAST_WRITE;
 }
 
@@ -5880,6 +5972,7 @@ function InventorySystem() {
     search: "", dateFrom: "", dateTo: "", year: "all",
     tollingOnly: false, stage: "all", category: "all",
   });
+  const [usage, setUsage] = useState(() => (LIVE_DATA && LIVE_DATA.usage) || {});
   const [sort, setSort] = useState({ key: "receivedDate", dir: "desc" });
   // 표에 한 번에 그리는 줄 수 — 로트가 몇 천 건 쌓이면 전부 그리느라 화면이 멈춰서, 끊어서 보여줘요.
   const [pageSize, setPageSize] = useState(100);
@@ -5938,6 +6031,7 @@ function InventorySystem() {
       setMes(data.mes);
       setRuns(data.runs);
       setDowns(data.downs);
+      setUsage(data.usage || {});
     }, setLiveStatus);
   }, []);
 
@@ -5958,6 +6052,7 @@ function InventorySystem() {
     setMes(data.mes);
     setRuns(data.runs);
     setDowns(data.downs);
+    setUsage(data.usage || {});
     showToast("최신 데이터로 새로고침했어요.", "success");
   }, [showToast]);
 
@@ -6975,7 +7070,8 @@ function InventorySystem() {
         : activeTab === "act" ? html`<${ActualTab} lots=${lots} runs=${runs} mes=${mes} master=${master} canEdit=${canEdit}
             ym=${actYm} onYm=${setActYm}
             onSave=${handleSaveRun} onDelete=${handleDeleteRun} />`
-        : activeTab === "basis" ? html`<${BasisTab} mes=${mes} canEdit=${canEdit} onSave=${persistMes} />`
+        : activeTab === "basis" ? html`<${BasisTab} mes=${mes} canEdit=${canEdit} onSave=${persistMes}
+            usage=${usage} counts=${{ lots: lots.length, moves: moves.length, runs: runs.length, downs: downs.length }} />`
         : activeTab === "report" ? html`<${ReportTab} mes=${mes} runs=${runs} downs=${downs} lots=${openLots} settings=${settings} />`
         : activeTab === "util" ? html`<${UtilTab} mes=${mes} runs=${runs} downs=${downs} />`
         : activeTab === "down" ? html`<${DownTab} mes=${mes} runs=${runs} downs=${downs} canEdit=${canEdit}
@@ -11041,7 +11137,7 @@ function PlanCalendar({ ym, days, mes }) {
 // ---------- 기준정보 ----------
 // 계획을 만드는 데 쓰는 값들을 한곳에 모았어요. 생산계획 화면에서는 결과만 보고,
 // "왜 그 숫자가 나오는지"와 그걸 바꾸는 일은 여기서 합니다.
-function BasisTab({ mes, canEdit, onSave }) {
+function BasisTab({ mes, canEdit, onSave, usage, counts }) {
   const [editOpen, setEditOpen] = useState(null);
   const days = useMemo(() => planDays(mes), [mes]);
   const months = useMemo(() => planByMonth(mes, days), [mes, days]);
@@ -11241,8 +11337,123 @@ function BasisTab({ mes, canEdit, onSave }) {
         <//>
       </div>
 
+      ${canEdit ? html`<${UsageCard} usage=${usage} counts=${counts} />` : null}
+
       ${editOpen ? html`<${PlanEditModal} which=${editOpen} mes=${mes} months=${months}
         onClose=${() => setEditOpen(null)} onSave=${onSave} />` : null}
+    </div>`;
+}
+
+// ---------- 데이터 잔량 (관리자만 보여요) ----------
+// 무료로 계속 쓸 수 있는지 한눈에 보라고 만든 칸이에요. 추측이 아니라 실제로 오간 바이트를
+// 세어 둔 값이라, 이 숫자가 곧 Firebase에 잡히는 양과 거의 같습니다.
+function UsageCard({ usage, counts }) {
+  const u = usage || {};
+  const store = docBytes();
+  const down = Number(u.down) || 0;
+  const up = Number(u.up) || 0;
+  const used = down + up;
+  const opens = Number(u.opens) || 0;
+  const saves = Number(u.saves) || 0;
+
+  // 며칠째 세고 있는지 — 달 중간에 시작했을 수도 있어서 "1일부터"로 치면 실제보다 작게 나와요.
+  const today = new Date();
+  const startedAt = u.since ? new Date(`${u.since}T00:00:00`) : today;
+  const daysCounted = Math.max(1, Math.round((today - startedAt) / 86400000) + 1);
+  const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  const projected = (used / daysCounted) * daysInMonth;
+
+  // 앞날 예상은 표본이 어느 정도 쌓인 뒤에만 보여줘요. 며칠 쓴 걸로 몇 년을 점치면 엉뚱한 숫자가 나옵니다.
+  const ENOUGH = 20; // 화면 열기 20회
+  const enough = opens >= ENOUGH && daysCounted >= 5;
+  const opensPerMonth = (opens / daysCounted) * daysInMonth;
+  // 한 달에 이만큼 열면, 장부가 얼마나 두꺼워질 때까지 10 GB 안에 머무는가
+  const roomBytes = opensPerMonth > 0 ? FREE_MONTH_BYTES / opensPerMonth : 0;
+  const growthPerMonth = 0.78 * 1024 * 1024; // 정상 양산 월 712톤 기준 장부 증가량
+  const monthsLeft = Math.max(0, Math.floor((roomBytes - store) / growthPerMonth));
+
+  const size = (b) => (b >= 1024 * 1024 * 1024 ? `${(b / 1024 ** 3).toFixed(2)} GB`
+    : b >= 1024 * 1024 ? `${(b / 1024 ** 2).toFixed(1)} MB`
+    : b >= 1024 ? `${Math.round(b / 1024)} KB` : `${Math.round(b)} B`);
+  const span = (m) => (m >= 120 ? "10년 넘게"
+    : m >= 12 ? `${Math.floor(m / 12)}년 ${m % 12 > 0 ? `${m % 12}개월` : ""}`.trim()
+    : `${m}개월`);
+  const pct = (a, b) => Math.min(100, b > 0 ? (a / b) * 100 : 0);
+  const storePct = pct(store, FREE_STORE_BYTES);
+  const monthPct = pct(projected, FREE_MONTH_BYTES);
+  const show = (v) => v.toFixed(v < 1 ? 2 : v < 10 ? 1 : 0);
+  const tone = (v) => (v >= 90 ? "bad" : v >= 70 ? "warn" : "ok");
+  const Bar = ({ value, label, left, right }) => html`
+    <div className="ivs-usage-bar">
+      <div className="ivs-usage-bar-h"><span>${label}</span><b>${left}</b></div>
+      <div className=${`ivs-usage-track ${tone(value)}`}>
+        <div className="ivs-usage-fill" style=${{ width: `${Math.max(value, 0.6)}%` }} />
+      </div>
+      <div className="ivs-usage-bar-f"><span>${show(value)}% 사용</span><span>${right}</span></div>
+    </div>`;
+
+  return html`
+    <div className="ivs-card ivs-usage">
+      <div className="ivs-card-head-row">
+        <h2 className="ivs-section-title">데이터 잔량</h2>
+        <div className="ivs-card-head-actions">
+          <span className="ivs-section-hint">
+            ${u.month ? `${u.month} · ${daysCounted}일째 세는 중` : "아직 센 기록이 없어요"}
+            ${" · "}관리자에게만 보여요
+          </span>
+        </div>
+      </div>
+
+      <div className="ivs-usage-bars">
+        <${Bar} value=${storePct} label="저장 공간"
+          left=${`${size(store)} / 1 GB`} right=${`${size(FREE_STORE_BYTES - store)} 남음`} />
+        <${Bar} value=${monthPct} label="이번 달 통신량 (이대로 가면)"
+          left=${`${size(projected)} / 10 GB`} right=${`${size(Math.max(FREE_MONTH_BYTES - projected, 0))} 남음`} />
+      </div>
+
+      <div className="ivs-usage-grid">
+        <div className="ivs-usage-cell">
+          <span>${daysCounted}일 동안 실제로 쓴 양</span><b>${size(used)}</b>
+          <em>받은 것 ${size(down)} · 보낸 것 ${size(up)}</em>
+        </div>
+        <div className="ivs-usage-cell">
+          <span>화면 열기</span><b>${opens.toLocaleString("ko-KR")}회</b>
+          <em>한 번 열 때 ${size(store)}씩 받아요 — 통신량은 거의 이게 전부예요</em>
+        </div>
+        <div className="ivs-usage-cell">
+          <span>저장</span><b>${saves.toLocaleString("ko-KR")}회</b>
+          <em>${saves > 0 ? `한 번에 ${size(up / saves)} 정도 — 장부가 두꺼워져도 그대로예요`
+            : "아직 저장한 적이 없어요"}</em>
+        </div>
+        <div className="ivs-usage-cell">
+          <span>쌓인 기록</span>
+          <b>${((counts && counts.lots) || 0).toLocaleString("ko-KR")}건</b>
+          <em>로트 기준 · 공정이동 ${((counts && counts.moves) || 0).toLocaleString("ko-KR")} ·
+            실적 ${((counts && counts.runs) || 0).toLocaleString("ko-KR")} ·
+            비가동 ${((counts && counts.downs) || 0).toLocaleString("ko-KR")}</em>
+        </div>
+      </div>
+
+      <div className=${`ivs-usage-note ${monthPct >= 70 ? "warn" : "ok"}`}>
+        ${used === 0 ? html`
+          <b>아직 셀 거리가 없어요.</b> 화면을 열고 저장을 하면 여기에 실제로 오간 양이 쌓입니다.
+        ` : monthPct >= 90 ? html`
+          <b>이번 달 한도에 거의 닿았어요.</b> 지난 연도 기록을 따로 보관해 장부를 얇게 만들면
+          한 번 열 때 받는 양이 줄어 곧바로 여유가 생깁니다.
+        ` : !enough ? html`
+          <b>이대로면 이번 달은 한도의 ${show(monthPct)}%를 씁니다.</b>${" "}
+          앞으로 몇 년 더 쓸 수 있는지는 아직 계산하지 않아요. 화면 열기 ${ENOUGH}회는 모여야
+          쓰는 습관이 보여서, 지금(${opens}회) 숫자로 점치면 엉뚱한 값이 나옵니다.
+          며칠 더 쓰시면 여기에 예상이 나와요.
+        ` : html`
+          <b>이대로면 이번 달은 한도의 ${show(monthPct)}%를 씁니다.</b>${" "}
+          지금처럼 한 달에 ${Math.round(opensPerMonth).toLocaleString("ko-KR")}번쯤 열어 본다면,
+          장부가 <b>${size(roomBytes)}</b>가 될 때까지 무료 한도 안입니다.
+          양산 기준으로 장부는 한 달에 0.8 MB씩 두꺼워지니, 앞으로 <b>약 ${span(monthsLeft)}</b>${" "}
+          더 무료로 쓸 수 있어요. 통신량은 거의 전부 <b>화면을 처음 열 때 장부를 한 통 받는 몫</b>이고,
+          저장과 실시간 반영이 차지하는 몫은 아주 작아요.
+        `}
+      </div>
     </div>`;
 }
 
@@ -12357,6 +12568,7 @@ function ConfirmModal({ icon, title, body, confirmLabel, danger, onCancel, onCon
   } else {
     await startLive();
     LIVE_DATA = docToLive(LIVE_DOC);
+    markOpen(); // 계량기에 "화면 한 번 열림"을 적어요 (화면이 뜬 뒤에 조용히)
   }
   ReactDOM.createRoot(rootEl).render(html`<${InventorySystem} />`);
 })();

@@ -342,7 +342,9 @@
 
   .ivs-master-form { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
   .ivs-master-form .ivs-input { flex: 1; min-width: 140px; }
+  .ivs-master-form .ivs-input.ivs-mono { flex: 0 0 auto; }
   .ivs-master-list { border: 1px solid var(--border); border-radius: var(--radius-sm); max-height: 250px; overflow-y: auto; }
+  .ivs-master-act { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
   .ivs-master-row { display: flex; justify-content: space-between; align-items: center; gap: 10px;
     padding: 10px 13px; border-bottom: 1px solid var(--border); font-size: 13px; }
   .ivs-master-row:last-child { border-bottom: none; }
@@ -3904,33 +3906,40 @@ const getStage = (key) =>
 
 // 카테고리를 고르면 품목코드가 자동으로 정해져요. 카테고리 : 품목코드 = 1 : 1 고정 대응이에요.
 // 카테고리 색도 서로 헷갈리지 않게 색상환에 고르게 벌려놨어요 (파랑끼리·초록끼리 겹치던 걸 정리).
+// lot = 생산 Lot 번호에 들어가는 품목 코드 (Lot Code 기준표의 "Code." 칸).
+// (P)는 Pyrolysis(열분해)를 뜻해요. code는 화면·엑셀에 쓰는 품목코드로 지금 그대로 둡니다.
+// mix: true 이면 여러 업체 것을 섞어 배출하는 품목이라 Lot 번호에 업체·변화값을 붙이지 않아요.
 const CATEGORIES = [
-  { id: "blackmass", label: "블랙매스", color: "#94A3B8", code: "BM0001" },              // 밝은 회색
+  { id: "blackmass", label: "블랙매스", color: "#94A3B8", code: "BM0001", lot: "CP(P)" },              // 밝은 회색
   { id: "ev_pack", label: "EV PACK", color: "#3B82F6", code: "PK0001" },                 // 파랑
   { id: "ev_module", label: "EV MODULE", color: "#22C55E", code: "MD0001" },             // 초록
   { id: "ess", label: "ESS", color: "#A855F7", code: "ES0001" },                         // 보라
-  { id: "hv_cell", label: "전기차셀", color: "#F59E0B", code: "HVC0001" },                // 호박
-  { id: "mid_large_cell", label: "중대형셀", color: "#06B6D4", code: "LIPC0001" },        // 청록
-  { id: "cylindrical_cell", label: "원형셀", color: "#EC4899", code: "ECRC0001" },        // 분홍
-  { id: "pouch_cell", label: "파우치셀", color: "#F97316", code: "PC0001" },              // 주황
-  { id: "small_prismatic_polymer_cell", label: "소형각형&폴리머셀", color: "#FB7185", code: "EPGC0001" }, // 로즈
-  { id: "hp_cell", label: "H.P배터리셀", color: "#EF4444", code: "HPC0001" },             // 빨강
-  { id: "mixed_powder", label: "혼합 분말", color: "#84CC16", code: "DRBM0001" },         // 라임
-  { id: "mixed_cu_chip", label: "혼합 Cu-chip", color: "#A16207", code: "DRCC0001" },     // 구리
-  { id: "mixed_al_chip", label: "혼합 Al-chip", color: "#14B8A6", code: "DRAC0001" },     // 틸
-  { id: "mixed_magnetic", label: "혼합 자력", color: "#57534E", code: "DRM0001" },        // 진회색
-  { id: "condensate", label: "응축액", color: "#0EA5E9", code: "CD0001" },                 // 하늘 (열분해 산출물)
+  { id: "hv_cell", label: "전기차셀", color: "#F59E0B", code: "HVC0001", lot: "HVP(P)" },                // 호박
+  { id: "mid_large_cell", label: "중대형셀", color: "#06B6D4", code: "LIPC0001", lot: "LIPP(P)" },        // 청록
+  { id: "cylindrical_cell", label: "원형셀", color: "#EC4899", code: "ECRC0001", lot: "ECRP(P)" },        // 분홍
+  { id: "pouch_cell", label: "파우치셀", color: "#F97316", code: "PC0001", lot: "PCP(P)" },              // 주황
+  { id: "small_prismatic_polymer_cell", label: "소형각형&폴리머셀", color: "#FB7185", code: "EPGC0001", lot: "EPGP(P)" }, // 로즈
+  { id: "hp_cell", label: "H.P배터리셀", color: "#EF4444", code: "HPC0001", lot: "SIBP(P)" },             // 빨강
+  { id: "mixed_powder", label: "혼합 분말", color: "#84CC16", code: "DRBM0001", lot: "DR-혼합(P)", mix: true },  // 라임
+  { id: "mixed_cu_chip", label: "혼합 Cu-chip", color: "#A16207", code: "DRCC0001", lot: "DRCC", mix: true },   // 구리
+  { id: "mixed_al_chip", label: "혼합 Al-chip", color: "#14B8A6", code: "DRAC0001", lot: "DRAC", mix: true },   // 틸
+  { id: "mixed_magnetic", label: "혼합 자력", color: "#57534E", code: "DRM0001", lot: "DR자력(P)", mix: true },  // 진회색
+  { id: "condensate", label: "응축액", color: "#0EA5E9", code: "CD0001", lot: "CD" },                 // 하늘 (열분해 산출물)
 ];
 const categoryById = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
 
 // 기본 거래처 / 기본 품목 — 설정에서 자유롭게 추가·삭제할 수 있어요.
+// code = 업체 LOT 약칭. 생산 Lot 번호의 맨 앞에 붙고, 새 로트를 넣을 때 입고 Lot 번호에도 먼저 찍혀요.
+// (Lot Code 기준표의 "업체 LOT." 칸)
 const DEFAULT_VENDORS = [
-  { name: "삼성에스디아이(주)", loc: "천안SDI" },
-  { name: "LG에너지솔루션(주)", loc: "오창LG" },
-  { name: "SK온(주)", loc: "서산SK" },
-  { name: "에코프로머티리얼즈", loc: "포항EM" },
-  { name: "포스코HY클린메탈", loc: "광양PHY" },
-  { name: "성일하이텍", loc: "대구SY" },
+  { name: "삼성에스디아이(주)", loc: "천안SDI", code: "SD" },
+  { name: "LG에너지솔루션(주)", loc: "오창LG", code: "LG" },
+  { name: "SK온(주)", loc: "서산SK", code: "SK" },
+  { name: "에코프로머티리얼즈", loc: "포항EM", code: "EM" },
+  { name: "포스코HY클린메탈", loc: "광양PHY", code: "PH" },
+  { name: "성일하이텍", loc: "대구SY", code: "SE" },
+  { name: "현대", loc: "", code: "HD" },
+  { name: "새빗켐", loc: "", code: "SB" },
 ];
 const VENDORS = DEFAULT_VENDORS; // 샘플 데이터 생성용
 
@@ -4502,6 +4511,45 @@ const CATEGORY_ITEM_NAME = { blackmass: "CP" };
 const MIXED_VENDOR = "혼합";
 const MIXED_KINDS = ["cu", "al"];
 const autoItemName = (catId) => CATEGORY_ITEM_NAME[catId] || (categoryById[catId] ? categoryById[catId].label : "");
+
+// ---------- 생산 Lot 번호 체계 ----------
+// 기준표(Lot Code)대로 "업체-변화값-품목-YYMMDD-연번"으로 붙여요.
+//   예) SE-BASF-CP(P)-260916-1
+//       SE   성일하이텍 (투입 Lot의 거래처에서 따옴)
+//       BASF 변화값 — 그 업체가 받아온 곳이나 업체 LOT의 일부
+//       CP(P) 열처리 분말 (산출 품목에서 따옴, (P)는 Pyrolysis)
+//       260916 생산일,  1 그날의 연번
+// 여러 업체 것을 섞어 배출하는 품목(혼합 Cu/Al chip 등)은 업체·변화값 없이 "DRCC-260916-1"이에요.
+const lotCodeOf = (catId) => {
+  const c = categoryById[catId];
+  return (c && (c.lot || c.code)) || "";
+};
+const isMixedCat = (catId) => !!(categoryById[catId] && categoryById[catId].mix);
+const vendorCodeOf = (master, name) => {
+  const v = ((master && master.vendors) || []).find((x) => x.name === name);
+  return String((v && v.code) || "").trim();
+};
+const lotStamp = (date) => String(date || "").replace(/-/g, "").slice(2); // 2026-09-16 → 260916
+
+// 이미 붙어 있는 Lot 번호에서 변화값만 골라내요.
+// "SE-BASF-CP(P)-260916-1" 에서 BASF, "SE-BASF" 에서도 BASF 를 집어옵니다.
+function srcTagOf(lot, master) {
+  if (!lot) return "";
+  if (lot.srcLot) return String(lot.srcLot).trim();
+  const parts = String(lot.lotNo || "").split("-").map((t) => t.trim()).filter(Boolean);
+  if (parts.length < 2) return "";
+  const vc = vendorCodeOf(master, lot.vendor);
+  // 맨 앞이 업체 코드면 그 다음 칸이 변화값이에요.
+  if (vc && parts[0].toUpperCase() === vc.toUpperCase()) return parts[1];
+  return "";
+}
+
+// 조각을 이어 붙여요 — 빈 조각은 건너뜁니다.
+function buildLotNo({ vendorCode, srcTag, itemCode, date, seq }) {
+  return [vendorCode, srcTag, itemCode, lotStamp(date), seq]
+    .map((x) => String(x == null ? "" : x).trim()).filter(Boolean).join("-");
+}
+
 // 사람이 직접 고쳐 쓴 이름은 건드리지 않으려고, "자동으로 채워졌던 이름인지"를 봐요.
 const isAutoItemName = (name) => !String(name || "").trim() || CATEGORIES.some((c) => name === autoItemName(c.id));
 const procOutputs = (proc) => (proc && proc.outputs ? proc.outputs.map((k) => outputKindByKey[k]).filter(Boolean) : []);
@@ -4613,7 +4661,11 @@ function normalizeMes(raw) {
 // Firebase는 배열을 가끔 {0:…, 1:…} 형태의 객체로 돌려줘요. 어느 쪽이 와도 배열로 맞춰줘요.
 function normalizeVendors(raw) {
   const list = Array.isArray(raw) ? raw : (raw && typeof raw === "object" ? Object.values(raw) : []);
-  return list.filter((x) => x && typeof x === "object" && x.name);
+  return list.filter((x) => x && typeof x === "object" && x.name).map((x) => ({
+    ...x,
+    // 코드를 아직 넣지 않은 옛 거래처는 기본 목록에서 찾아 채워줘요 (없으면 빈 칸).
+    code: String(x.code || (DEFAULT_VENDORS.find((d) => d.name === x.name) || {}).code || "").trim(),
+  }));
 }
 function normalizeMaster(raw) {
   const m = raw && typeof raw === "object" ? raw : null;
@@ -6214,7 +6266,8 @@ const newLotForm = (master) => {
   return {
     code: CATEGORIES[0].code, name: autoItemName(CATEGORIES[0].id), categoryId: CATEGORIES[0].id,
     vendor: first ? first.name : "", shipLoc: first ? (first.loc || "") : "",
-    lotNo: "", receivedDate: new Date().toISOString().slice(0, 10),
+    lotNo: first && first.code ? `${first.code}-` : "", srcLot: "",
+    receivedDate: new Date().toISOString().slice(0, 10),
     stage: "raw_in", qtyKg: "", waterKg: "", excludeKg: "", tolling: false, carriedOver: false,
   };
 };
@@ -6507,17 +6560,17 @@ function InventorySystem() {
     const inputKg = inputLots.reduce((a, l) => a + (Number(l.qtyKg) || 0), 0);
 
     const runId = `run-${Date.now()}`;
-    const stamp = date.replace(/-/g, "").slice(2); // YYMMDD
     const usedLotNos = new Set(lots.map((l) => l.lotNo));
-    const autoLotNo = (code) => {
+    // 기준표대로 "업체-변화값-품목-YYMMDD-연번". 같은 조합이 이미 있으면 연번만 올려요.
+    const autoLotNo = (parts) => {
       let seq = 1, no = "";
-      do { no = `${code}-${stamp}-${seq}`; seq += 1; } while (usedLotNos.has(no));
+      do { no = buildLotNo({ ...parts, date, seq }); seq += 1; } while (usedLotNos.has(no));
       usedLotNos.add(no);
       return no;
     };
-    const takeLotNo = (typed, code) => {
+    const takeLotNo = (typed, parts) => {
       const t = String(typed || "").trim();
-      if (!t) return autoLotNo(code);
+      if (!t) return autoLotNo(parts);
       if (usedLotNos.has(t)) return null; // 이미 쓰고 있는 번호
       usedLotNos.add(t);
       return t;
@@ -6539,11 +6592,11 @@ function InventorySystem() {
         lossQty: Math.max(0, (Number(l.qtyKg) || 0) - outQty), mixQty: 0, runId, process: proc.key,
       });
     };
-    const makeLot = ({ code, name, categoryId, lotNo, qtyKg, stage, kind, vendor: v2, shipLoc: s2 }) => {
+    const makeLot = ({ code, name, categoryId, lotNo, srcLot, qtyKg, stage, kind, vendor: v2, shipLoc: s2 }) => {
       const lot = {
         id: `lot-${Date.now()}-${created.length}-${Math.random().toString(36).slice(2, 6)}`,
         code, name, categoryId, vendor: v2 != null ? v2 : vendor, shipLoc: s2 != null ? s2 : shipLoc,
-        lotNo, receivedDate: date, stage, qtyKg,
+        lotNo, srcLot: srcLot || "", receivedDate: date, stage, qtyKg,
         waterKg: null, excludeKg: null, tolling: !!base.tolling, carriedOver: false,
         lastMove: date,
         origin: "production", // 밖에서 사온 게 아니라 우리 공정에서 나온 Lot
@@ -6574,11 +6627,11 @@ function InventorySystem() {
       const kg = Number(draft.cdKg);
       if (!Number.isFinite(kg) || kg <= 0) { showToast("탱크로리로 빼낸 응축액 중량을 넣어주세요.", "error"); return; }
       const k = outputKindByKey.cd;
-      const lotNo = takeLotNo(draft.cdLotNo, k.code);
+      const lotNo = takeLotNo(draft.cdLotNo, { itemCode: lotCodeOf(k.categoryId) });
       if (!lotNo) { showToast(`이미 쓰고 있는 Lot 번호예요 — ${draft.cdLotNo}`, "error"); return; }
       const cat = categoryById[k.categoryId];
       const cd = makeLot({ code: k.code, name: cat ? cat.label : k.label, categoryId: k.categoryId,
-        lotNo, qtyKg: kg, stage: "shipped", kind: "cd" });
+        lotNo, qtyKg: kg, stage: "shipped", kind: "cd", srcLot: "" });
       cd.shippedDate = date;
       newLots.push(cd);
       addMove(cd, "usable", "shipped", kg);
@@ -6587,7 +6640,8 @@ function InventorySystem() {
       // 산출은 행 목록이에요. 톤백 하나가 곧 생산 Lot 하나라, 같은 품목이라도
       // 몇 개를 뽑았느냐에 따라 행이 여러 개 나옵니다.
       const rows = (draft.outRows || [])
-        .map((o) => ({ k: outputKindByKey[o.kind], qty: Number(o.qty), typed: o.lotNo, vendor: o.vendor }))
+        .map((o) => ({ k: outputKindByKey[o.kind], qty: Number(o.qty), typed: o.lotNo,
+                       vendor: o.vendor, srcTag: o.srcTag }))
         .filter((r) => r.k && Number.isFinite(r.qty) && r.qty > 0);
       if (rows.length === 0) { showToast("산출량을 하나 이상 입력해주세요.", "error"); return; }
       // 투입 Lot이 모두 같은 품목이면 그 품목을 그대로 들고 갈 수 있어요.
@@ -6600,18 +6654,27 @@ function InventorySystem() {
       for (const r of rows) {
         const outCat = keepCat || categoryById[r.k.categoryId];
         const outCode = keepCat ? (sameCode || keepCat.code) : r.k.code;
-        const lotNo = takeLotNo(r.typed, outCode);
+        // 거래처: 비우면 투입 Lot 그대로, "혼합"이면 출고지도 혼합으로 둬요.
+        const rv0 = r.vendor || "";
+        const mixedRow = rv0 === MIXED_VENDOR || isMixedCat(outCat ? outCat.id : r.k.categoryId);
+        // Lot 번호 조각 — 섞어 배출하는 품목은 업체·변화값 없이 품목코드부터 시작해요.
+        const lotVendor = mixedRow ? "" : (rv0 || vendor);
+        const srcTag = mixedRow ? "" : (r.srcTag != null ? String(r.srcTag).trim() : srcTagOf(base, master));
+        const lotNo = takeLotNo(r.typed, {
+          vendorCode: mixedRow ? "" : vendorCodeOf(master, lotVendor),
+          srcTag,
+          itemCode: lotCodeOf(outCat ? outCat.id : r.k.categoryId),
+        });
         if (!lotNo) { showToast(`이미 쓰고 있는 생산 Lot 번호예요 — ${r.typed}`, "error"); return; }
         // 품목명: keepItem이면 투입 Lot 이름, 아니면 그 품목의 기본 이름 (블랙매스 → CP).
         const outName = keepCat ? (sameName || autoItemName(keepCat.id))
           : (outCat ? autoItemName(outCat.id) : r.k.label);
-        // 거래처: 비우면 투입 Lot 그대로, "혼합"이면 출고지도 혼합으로 둬요.
-        const rv = r.vendor || "";
+        const rv = rv0;
         const mixed = rv === MIXED_VENDOR;
         const rvLoc = (master.vendors || []).find((v) => v.name === rv);
         newLots.push(makeLot({
           code: outCode, name: outName, categoryId: outCat ? outCat.id : r.k.categoryId,
-          lotNo, qtyKg: r.qty, stage: proc.to, kind: r.k.key,
+          lotNo, srcLot: srcTag, qtyKg: r.qty, stage: proc.to, kind: r.k.key,
           vendor: mixed ? MIXED_VENDOR : (rv || vendor),
           shipLoc: mixed ? MIXED_VENDOR : (rv ? (rvLoc ? rvLoc.loc : shipLoc) : shipLoc),
         }));
@@ -7538,7 +7601,20 @@ function LotFormModal({ mode, initial, master, onCancel, onSave, onOpenMaster })
   const onVendorChange = (e) => {
     if (e.target.value === "__manage__") { onOpenMaster("vendors"); return; }
     const vendor = vendors.find((x) => x.name === e.target.value);
-    if (vendor) setV((prev) => ({ ...prev, vendor: vendor.name, shipLoc: vendor.loc || prev.shipLoc }));
+    if (!vendor) return;
+    setV((prev) => {
+      // 입고 Lot 번호 앞자리는 업체 LOT 약칭이에요 (성일하이텍 → SE-). 거래처를 바꾸면 앞자리만 갈아끼워요.
+      const prevCode = vendorCodeOf(master, prev.vendor);
+      const code = String(vendor.code || "").trim();
+      let lotNo = String(prev.lotNo || "");
+      if (prevCode && lotNo.toUpperCase().startsWith(`${prevCode.toUpperCase()}-`)) {
+        lotNo = lotNo.slice(prevCode.length + 1);           // 옛 업체 코드는 떼어내고
+      } else if (prevCode && lotNo.toUpperCase() === prevCode.toUpperCase()) {
+        lotNo = "";
+      }
+      if (code) lotNo = lotNo ? `${code}-${lotNo}` : `${code}-`;
+      return { ...prev, vendor: vendor.name, shipLoc: vendor.loc || prev.shipLoc, lotNo };
+    });
   };
   // 카테고리를 고르면 품목코드가 그에 맞춰 자동으로 정해져요.
   const onCategoryChange = (e) => {
@@ -7574,7 +7650,14 @@ function LotFormModal({ mode, initial, master, onCancel, onSave, onOpenMaster })
             </select>
           <//>
           <${Field} label="출고지"><input className="ivs-input" value=${v.shipLoc} onChange=${set("shipLoc")} /><//>
-          <${Field} label="입고 Lot *"><input className="ivs-input" value=${v.lotNo} onChange=${set("lotNo")} /><//>
+          <${Field} label=${`입고 Lot *${vendorCodeOf(master, v.vendor) ? ` — ${vendorCodeOf(master, v.vendor)}는 거래처에 따라 자동` : ""}`}>
+            <input className="ivs-input ivs-mono" value=${v.lotNo} onChange=${set("lotNo")}
+              placeholder=${vendorCodeOf(master, v.vendor) ? `${vendorCodeOf(master, v.vendor)}-BASF` : "업체 LOT"} />
+          <//>
+          <${Field} label="변화값 (그 업체가 받아온 곳)">
+            <input className="ivs-input ivs-mono" value=${v.srcLot == null ? "" : v.srcLot} onChange=${set("srcLot")}
+              placeholder=${srcTagOf(v, master) || "예: BASF"} />
+          <//>
           <${Field} label="현재공정">
             <select className="ivs-select ivs-select-full" value=${v.stage} onChange=${set("stage")}>
               ${STAGES.map((s) => html`<option key=${s.key} value=${s.key}>${s.label}</option>`)}
@@ -7604,6 +7687,7 @@ function MasterModal({ master, lots, onSave, onClose }) {
   const usedCount = (name) => (lots || []).filter((l) => l.vendor === name).length;
   const [vName, setVName] = useState("");
   const [vLoc, setVLoc] = useState("");
+  const [vCode, setVCode] = useState("");
   const [error, setError] = useState("");
 
   const addVendor = () => {
@@ -7611,9 +7695,17 @@ function MasterModal({ master, lots, onSave, onClose }) {
     if (!name) { setError("거래처명을 입력해주세요."); return; }
     if (vendors.some((x) => x.name === name)) { setError("이미 등록된 거래처예요."); return; }
     setError("");
-    onSave({ ...master, vendors: [...vendors, { name, loc: vLoc.trim() }] }, `거래처 "${name}"을(를) 등록했어요.`);
-    setVName(""); setVLoc("");
+    const code = vCode.trim().toUpperCase();
+    if (code && vendors.some((x) => String(x.code || "").toUpperCase() === code)) {
+      setError(`업체 LOT "${code}"는 이미 다른 거래처가 쓰고 있어요.`); return;
+    }
+    onSave({ ...master, vendors: [...vendors, { name, loc: vLoc.trim(), code }] }, `거래처 "${name}"을(를) 등록했어요.`);
+    setVName(""); setVLoc(""); setVCode("");
   };
+  // 업체 LOT 약칭은 생산 Lot 번호 맨 앞에 붙는 값이라 나중에도 고칠 수 있어야 해요.
+  const setVendorCode = (name, code) =>
+    onSave({ ...master, vendors: vendors.map((x) => (x.name === name
+      ? { ...x, code: String(code || "").trim().toUpperCase() } : x)) }, "");
   const removeVendor = (name) =>
     onSave({ ...master, vendors: vendors.filter((x) => x.name !== name) }, `거래처 "${name}"을(를) 삭제했어요.`);
 
@@ -7630,10 +7722,15 @@ function MasterModal({ master, lots, onSave, onClose }) {
               onChange=${(e) => setVName(e.target.value)} onKeyDown=${(e) => e.key === "Enter" && addVendor()} />
             <input className="ivs-input" placeholder="기본 출고지" value=${vLoc}
               onChange=${(e) => setVLoc(e.target.value)} onKeyDown=${(e) => e.key === "Enter" && addVendor()} />
+            <input className="ivs-input ivs-mono" placeholder="업체 LOT (예: SE)" style=${{ maxWidth: 140 }}
+              value=${vCode} onChange=${(e) => setVCode(e.target.value)}
+              onKeyDown=${(e) => e.key === "Enter" && addVendor()} />
             <button className="ivs-btn ivs-btn-primary" onClick=${addVendor}><${Plus} size=${13} /> 등록</button>
           </div>
           <p className="ivs-dash-note" style=${{ marginBottom: 10 }}>
             기본 출고지는 로트 추가 시 자동으로 채워지고, 필요하면 그때 바꿀 수 있어요.
+            ${" "}<b>업체 LOT</b>은 Lot 번호 맨 앞에 붙는 약칭이에요 — 성일하이텍이면 <b className="ivs-mono">SE</b>,${" "}
+            생산 Lot은 <b className="ivs-mono">SE-BASF-CP(P)-260916-1</b>처럼 붙습니다.
           </p>
           <div className="ivs-master-list">
             ${vendors.length === 0 ? html`<div className="ivs-prod-empty">등록된 거래처가 없어요.</div>` : vendors.map((x) => html`
@@ -7642,24 +7739,35 @@ function MasterModal({ master, lots, onSave, onClose }) {
                   <strong>${x.name}</strong>${x.loc ? html`<span className="ivs-dim"> · ${x.loc}</span>` : null}
                   ${usedCount(x.name) > 0 ? html`<span className="ivs-dim"> · 사용 중 ${usedCount(x.name)}건</span>` : null}
                 </div>
-                <button className="ivs-icon-btn ivs-menu-danger" onClick=${() => removeVendor(x.name)} title="삭제"><${Trash2} size=${13} /></button>
+                <div className="ivs-master-act">
+                  <input className="ivs-input ivs-input-cell ivs-mono" style=${{ width: 92 }}
+                    placeholder="업체 LOT" defaultValue=${x.code || ""}
+                    onBlur=${(e) => { if ((e.target.value || "").trim().toUpperCase() !== (x.code || "")) setVendorCode(x.name, e.target.value); }} />
+                  <button className="ivs-icon-btn ivs-menu-danger" onClick=${() => removeVendor(x.name)} title="삭제"><${Trash2} size=${13} /></button>
+                </div>
               </div>
             `)}
           </div>
           ${error ? html`<p className="ivs-move-diff loss" style=${{ marginTop: 10 }}>${error}</p>` : null}
 
           <div className="ivs-settings-divider" style=${{ margin: "16px 0 12px" }} />
-          <div className="ivs-card-label" style=${{ marginBottom: 10 }}>카테고리 · 품목코드 (고정)</div>
+          <div className="ivs-card-label" style=${{ marginBottom: 10 }}>카테고리 · 품목코드 · Lot 코드 (고정)</div>
           <div className="ivs-master-list">
             ${CATEGORIES.map((c) => html`
               <div className="ivs-master-row" key=${c.id}>
                 <div><span className="ivs-badge" style=${{ "--c": c.color }}>${c.label}</span></div>
-                <strong className="ivs-mono">${c.code}</strong>
+                <div className="ivs-master-act">
+                  <span className="ivs-dim ivs-mono">${c.code}</span>
+                  ${c.lot ? html`<strong className="ivs-mono">${c.lot}</strong>` : html`<span className="ivs-dim">-</span>`}
+                </div>
               </div>
             `)}
           </div>
           <p className="ivs-dash-note" style=${{ marginTop: 10, marginBottom: 0 }}>
             품목코드는 카테고리마다 하나로 고정돼요. 로트를 추가할 때 카테고리를 고르면 자동으로 입력됩니다.
+            오른쪽 굵은 글씨가 생산 Lot 번호에 들어가는 <b>Lot 코드</b>입니다 ((P)는 열분해 Pyrolysis).
+            혼합 Cu·Al chip처럼 여러 업체 것을 섞어 배출하는 품목은 업체·변화값 없이${" "}
+            <b className="ivs-mono">DRCC-260916-1</b>처럼 붙어요.
             거래처를 삭제해도 이미 등록된 로트 데이터는 그대로 남고, 앞으로 선택지에서만 빠져요.
           </p>
         </div>
@@ -10028,7 +10136,7 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
   // Cu-chip · Al-chip은 섞어서 배출하니 거래처를 "혼합"으로 미리 잡아둡니다.
   const mkOutRow = (kind) => ({
     rid: `o${Date.now()}${Math.random().toString(36).slice(2, 6)}`,
-    kind, qty: "", lotNo: "", vendor: MIXED_KINDS.includes(kind) ? MIXED_VENDOR : "",
+    kind, qty: "", lotNo: "", srcTag: null, vendor: MIXED_KINDS.includes(kind) ? MIXED_VENDOR : "",
   });
   const outRowsFor = (pk) => procOutputs(processByKey[pk] || FLOW_PROCESSES[0]).map((k) => mkOutRow(k.key));
   const [form, setForm] = useState(() => ({
@@ -10046,6 +10154,26 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
   const [cd, setCd] = useState({ date: today, kg: "", lotNo: "", note: "" }); // 응축액 출고
 
   const proc = processByKey[form.process] || FLOW_PROCESSES[0];
+  // 저장 눌렀을 때 실제로 붙을 Lot 번호를 미리 그대로 계산해 보여줘요 (규칙은 저장 쪽과 같습니다).
+  const previewLotNo = (o, i) => {
+    const k = outputKindByKey[o.kind];
+    if (!k) return "";
+    const ins = lots.filter((l) => form.inputIds.includes(l.id));
+    const b = ins[0] || {};
+    const sameCat = ins.length > 0 && ins.every((l) => l.categoryId === b.categoryId) ? b.categoryId : null;
+    const keepCat = proc.keepItem && sameCat ? categoryById[sameCat] : null;
+    const catId = keepCat ? keepCat.id : k.categoryId;
+    const rv = o.vendor || "";
+    const mixedRow = rv === MIXED_VENDOR || isMixedCat(catId);
+    const lotVendor = mixedRow ? "" : (rv || form.vendor || b.vendor || "");
+    const srcTag = mixedRow ? "" : (o.srcTag != null ? String(o.srcTag).trim() : srcTagOf(b, master));
+    const seq = (form.outRows || []).filter((x, j) => j <= i
+      && (x.vendor || "") === (o.vendor || "")
+      && (x.srcTag != null ? String(x.srcTag).trim() : srcTagOf(b, master)) === srcTag
+      && outputKindByKey[x.kind] && (keepCat ? keepCat.id : outputKindByKey[x.kind].categoryId) === catId).length;
+    return buildLotNo({ vendorCode: mixedRow ? "" : vendorCodeOf(master, lotVendor),
+      srcTag, itemCode: lotCodeOf(catId), date: form.date, seq: seq || 1 });
+  };
   const route = ROUTES[proc.route];
   const kinds = procOutputs(proc);
   const vendors = (master && master.vendors) || [];
@@ -10161,6 +10289,9 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
   const outCodeOf = (k) => (keepBase ? (keepBase.code || (outCatOf(k) || {}).code) : k.code);
   const outNameOf = (k) => (keepBase ? (keepBase.name || autoItemName(keepBase.categoryId))
     : autoItemName(k.categoryId));
+  const outCatIdOf = (k) => (outCatOf(k) || {}).id || k.categoryId;
+  // Lot 번호에 들어갈 품목 코드 (기준표의 Code. 칸)
+  const outLotCodeOf = (k) => lotCodeOf(outCatIdOf(k));
 
   const canSubmit = chosen.length > 0 && (proc.mode === "move" || outSum > 0);
   const doSubmit = async () => {
@@ -10340,11 +10471,14 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
               한 줄이 생산 Lot 한 건이에요. 톤백을 여러 개 뽑았으면 오른쪽 <b>+</b>로 줄을 늘려 한 번에 등록하세요.${" "}
               거래처를 비우면 투입 Lot 것을 그대로 씁니다${chosen.length ? ` (${chosen[0].vendor || "-"} · ${chosen[0].shipLoc || "-"})` : ""}.
               Cu-chip · Al-chip처럼 섞어서 배출하는 품목은 "${MIXED_VENDOR}"으로 두세요.
+              <br />생산 Lot 번호는 <b className="ivs-mono">업체-변화값-품목-YYMMDD-연번</b> 순으로 저절로 붙어요.
+              회색 글씨가 그대로 붙을 번호이고, 직접 적으면 그 번호를 씁니다.
+              변화값은 그 업체가 받아온 곳이에요 (투입 Lot 번호에서 따오고, 필요하면 고치세요).
             </div>
             <div className="ivs-table-wrap">
               <table className="ivs-table">
                 <thead>
-                  <tr><th>산출 품목</th><th className="ivs-right">회수량 (Kg)</th><th>생산 Lot 번호</th><th>거래처</th>
+                  <tr><th>산출 품목</th><th className="ivs-right">회수량 (Kg)</th><th>변화값</th><th>생산 Lot 번호</th><th>거래처</th>
                     <th className="ivs-right">회수율</th><th className="ivs-th-actions"></th></tr>
                 </thead>
                 <tbody>
@@ -10374,7 +10508,16 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
                             onChange=${(e) => setOutRow(o.rid, { qty: e.target.value })} />
                         </td>
                         <td>
-                          <input className="ivs-input ivs-input-cell" placeholder=${`비우면 자동 · ${outCodeOf(k)}-YYMMDD-n`}
+                          ${isMixedCat(outCatIdOf(k)) || o.vendor === MIXED_VENDOR ? html`
+                            <span className="ivs-dim">-</span>
+                          ` : html`
+                            <input className="ivs-input ivs-input-cell" placeholder=${srcTagOf(chosen[0] || {}, master) || "예: BASF"}
+                              value=${o.srcTag == null ? (srcTagOf(chosen[0] || {}, master) || "") : o.srcTag}
+                              onChange=${(e) => setOutRow(o.rid, { srcTag: e.target.value })} />
+                          `}
+                        </td>
+                        <td>
+                          <input className="ivs-input ivs-input-cell ivs-mono" placeholder=${previewLotNo(o, i) || "비우면 자동"}
                             value=${o.lotNo}
                             onChange=${(e) => setOutRow(o.rid, { lotNo: e.target.value })} />
                         </td>
@@ -10401,7 +10544,7 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
                   <tfoot><tr className="ivs-tablefoot">
                     <td>합계 · 생산 Lot ${(form.outRows || []).filter((o) => Number(o.qty) > 0).length}건</td>
                     <td className="ivs-mono ivs-right">${fmtKg(outSum)}</td>
-                    <td colSpan=${2}></td>
+                    <td colSpan=${3}></td>
                     <td className="ivs-mono ivs-right">${inputKg > 0 ? `${((outSum / inputKg) * 100).toFixed(1)}%` : "-"}</td>
                     <td></td>
                   </tr></tfoot>` : null}

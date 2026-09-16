@@ -344,6 +344,15 @@
   .ivs-master-form .ivs-input { flex: 1; min-width: 140px; }
   .ivs-master-form .ivs-input.ivs-mono { flex: 0 0 auto; }
   .ivs-master-list { border: 1px solid var(--border); border-radius: var(--radius-sm); max-height: 250px; overflow-y: auto; }
+  /* 일 작업일보 줄 */
+  .ivs-daylog { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: var(--radius); padding: 12px 15px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+  .ivs-daylog-txt { flex: 1 1 380px; min-width: 0; }
+  .ivs-daylog-txt b { display: flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 650; margin-bottom: 3px; }
+  .ivs-daylog-txt span { display: block; font-size: 12px; line-height: 1.6; color: var(--text-dim); }
+  .ivs-daylog-act { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex: 0 0 auto; }
+  .ivs-daylog-act .ivs-input { width: 148px; }
   .ivs-master-act { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
   .ivs-master-row { display: flex; justify-content: space-between; align-items: center; gap: 10px;
     padding: 10px 13px; border-bottom: 1px solid var(--border); font-size: 13px; }
@@ -4530,6 +4539,13 @@ const vendorCodeOf = (master, name) => {
   return String((v && v.code) || "").trim();
 };
 const lotStamp = (date) => String(date || "").replace(/-/g, "").slice(2); // 2026-09-16 → 260916
+// 날짜를 하루씩 옮겨요.
+const shiftDay = (date, n) => {
+  const d = new Date(`${date}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return date;
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+};
 
 // 이미 붙어 있는 Lot 번호에서 변화값만 골라내요.
 // "SE-BASF-CP(P)-260916-1" 에서 BASF, "SE-BASF" 에서도 BASF 를 집어옵니다.
@@ -4542,6 +4558,25 @@ function srcTagOf(lot, master) {
   // 맨 앞이 업체 코드면 그 다음 칸이 변화값이에요.
   if (vc && parts[0].toUpperCase() === vc.toUpperCase()) return parts[1];
   return "";
+}
+
+// 입고 Lot 번호는 "업체코드-변화값-나머지"로 봅니다.
+// 거래처나 변화값을 바꾸면 그 자리만 갈아끼우고, 뒤에 적어둔 나머지는 그대로 둬요.
+function lotTail(lotNo, ...prefixes) {
+  let rest = String(lotNo || "").trim();
+  for (const pre of prefixes) {
+    const p = String(pre || "").trim();
+    if (!p) continue;
+    if (rest.toUpperCase() === p.toUpperCase()) { rest = ""; continue; }
+    if (rest.toUpperCase().startsWith(`${p.toUpperCase()}-`)) rest = rest.slice(p.length + 1);
+  }
+  return rest;
+}
+function joinLotNo(code, tag, tail) {
+  const parts = [code, tag, tail].map((x) => String(x || "").trim()).filter(Boolean);
+  if (parts.length === 0) return "";
+  // 뒤에 더 적을 자리가 남았으면 "SE-"처럼 이음표를 남겨둬요.
+  return parts.join("-") + (String(tail || "").trim() ? "" : "-");
 }
 
 // 조각을 이어 붙여요 — 빈 조각은 건너뜁니다.
@@ -5586,6 +5621,144 @@ function downloadXlsx(filename, sheetName, rows, widths) {
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 }
 
+// ---------- 인쇄 ----------
+// 화면 CSS와 섞이면 A4에 엉뚱하게 나와서, 완성된 문서를 숨은 틀(iframe)에 그려 그것만 인쇄해요.
+// 새 창이 아니라 iframe이라 팝업 차단에 걸리지 않고, "PDF로 저장"도 그대로 됩니다.
+function printDocument(title, bodyHtml) {
+  const doc = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(title)}</title>
+<style>
+  @page { size: A4; margin: 12mm 12mm 14mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", sans-serif;
+    font-size: 10.5pt; color: #111827; line-height: 1.5; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  h1 { font-size: 17pt; margin: 0 0 2mm; letter-spacing: -.02em; }
+  .sub { color: #6B7280; font-size: 9pt; margin: 0; }
+  .head { display: flex; justify-content: space-between; align-items: flex-end;
+    border-bottom: 2px solid #1B348F; padding-bottom: 3mm; margin-bottom: 4mm; }
+  .sign { border: 1px solid #9CA3AF; border-collapse: collapse; font-size: 8.5pt; text-align: center; }
+  .sign td { border: 1px solid #9CA3AF; width: 20mm; height: 7mm; padding: 0; }
+  .sign td.h { background: #F3F4F6; height: 5mm; color: #4B5563; }
+  h2 { font-size: 11pt; margin: 5mm 0 2mm; padding-left: 2mm; border-left: 3px solid #1B348F; }
+  table.t { width: 100%; border-collapse: collapse; font-size: 9pt; }
+  table.t th, table.t td { border: 1px solid #D1D5DB; padding: 1.6mm 2mm; text-align: left; vertical-align: top; }
+  table.t th { background: #F3F4F6; font-weight: 600; color: #374151; white-space: nowrap; }
+  table.t td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  table.t td.c { text-align: center; white-space: nowrap; }
+  table.t tfoot td { background: #F9FAFB; font-weight: 600; }
+  .kpis { display: flex; gap: 2mm; margin-bottom: 1mm; }
+  .kpi { flex: 1; border: 1px solid #D1D5DB; border-top: 2px solid #1B348F; padding: 2mm 2.5mm; }
+  .kpi span { display: block; font-size: 8pt; color: #6B7280; }
+  .kpi b { display: block; font-size: 13pt; letter-spacing: -.02em; }
+  .empty { color: #9CA3AF; font-size: 9pt; padding: 2.5mm; border: 1px dashed #D1D5DB; text-align: center; }
+  .mono { font-family: "Consolas", "D2Coding", monospace; }
+  .foot { margin-top: 6mm; padding-top: 2mm; border-top: 1px solid #D1D5DB; color: #9CA3AF; font-size: 8pt;
+    display: flex; justify-content: space-between; }
+  tr, .kpis { break-inside: avoid; page-break-inside: avoid; }
+</style></head><body>${bodyHtml}</body></html>`;
+  const f = document.createElement("iframe");
+  f.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
+  document.body.appendChild(f);
+  f.onload = () => {
+    try { f.contentWindow.focus(); f.contentWindow.print(); } catch (e) {}
+    setTimeout(() => f.remove(), 60000); // 인쇄 창이 뜨는 동안은 살려둬요
+  };
+  f.srcdoc = doc;
+}
+const esc = (v) => String(v == null ? "" : v)
+  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+// ---------- 일 작업일보 ----------
+// 고른 날짜 하루치를 A4 한 장으로 묶어요 — 생산실적, 신규 입고, 공정이동, 비가동, 확인란.
+function dailyReportHtml({ date, runs, lots, moves, downs, settings, mes }) {
+  const kg = (v) => `${Math.round(Number(v) || 0).toLocaleString("ko-KR")}`;
+  const ton = (v) => ((Number(v) || 0) / 1000).toFixed(2);
+  const dayRuns = (runs || []).filter((r) => r.date === date);
+  const dayIn = (lots || []).filter((l) => l.receivedDate === date && l.origin !== "production");
+  const dayMoves = (moves || []).filter((m) => m.date === date);
+  const dayDowns = (downs || []).filter((d) => d.date === date);
+  const inKg = dayRuns.reduce((a, r) => a + (Number(r.inputKg) || 0), 0);
+  const outKg = dayRuns.reduce((a, r) => a + (r.outputs || []).reduce((b, o) => b + (Number(o.qtyKg) || 0), 0), 0);
+  const dtMin = dayDowns.reduce((a, d) => a + (Number(d.min) || 0), 0);
+  // 회수율은 "넣어서 뽑아낸" 공정만 셉니다. 단계만 옮기는 공정(전기방전 등)과 응축액 출고를 섞으면
+  // 분모·분자가 어긋나 엉뚱한 숫자가 나와요.
+  const madeRuns = dayRuns.filter((r) => (Number(r.inputKg) || 0) > 0 && (r.outputs || []).length > 0);
+  const madeIn = madeRuns.reduce((a, r) => a + (Number(r.inputKg) || 0), 0);
+  const madeOut = madeRuns.reduce((a, r) => a + (r.outputs || []).reduce((b, o) => b + (Number(o.qtyKg) || 0), 0), 0);
+  const rate = madeIn > 0 ? ((madeOut / madeIn) * 100).toFixed(1) : "-";
+  const crews = Array.from(new Set(dayRuns.map((r) => r.crew).filter(Boolean))).join(" · ") || "-";
+  const d = new Date(`${date}T00:00:00`);
+  const wd = ["일", "월", "화", "수", "목", "금", "토"][d.getDay()];
+  const now = new Date().toISOString().slice(0, 16).replace("T", " ");
+
+  const rows = (list, cols, empty) => (list.length === 0
+    ? `<div class="empty">${esc(empty)}</div>`
+    : `<table class="t"><thead><tr>${cols.head.map((h) => `<th${h[1] ? ` class="${h[1]}"` : ""}>${esc(h[0])}</th>`).join("")}</tr></thead>`
+      + `<tbody>${list.map((x) => `<tr>${cols.row(x).map((c) => `<td${c[1] ? ` class="${c[1]}"` : ""}>${c[0]}</td>`).join("")}</tr>`).join("")}</tbody>`
+      + (cols.foot ? `<tfoot><tr>${cols.foot().map((c) => `<td${c[1] ? ` class="${c[1]}"` : ""}>${c[0]}</td>`).join("")}</tr></tfoot>` : "")
+      + `</table>`);
+
+  const runRows = rows(dayRuns, {
+    head: [["교대", "c"], ["조", "c"], ["공정", ""], ["투입 Lot", ""], ["투입(Kg)", "n"], ["산출 Lot", ""], ["산출(Kg)", "n"], ["회수율", "n"], ["인원", "n"]],
+    row: (r) => {
+      const o = (r.outputs || []);
+      const oKg = o.reduce((a, x) => a + (Number(x.qtyKg) || 0), 0);
+      const rr = Number(r.inputKg) > 0 ? `${((oKg / Number(r.inputKg)) * 100).toFixed(1)}%` : "-";
+      return [
+        [esc(SHIFT_LABEL[r.shift] || r.shift || "-"), "c"], [esc(r.crew || "-"), "c"],
+        [esc(r.processLabel || r.process || "-"), ""],
+        [`<span class="mono">${(r.inputs || []).map((x) => esc(x.lotNo)).join("<br>") || "-"}</span>`, ""],
+        [kg(r.inputKg), "n"],
+        [`<span class="mono">${o.map((x) => esc(x.lotNo)).join("<br>") || "-"}</span>`, ""],
+        [kg(oKg), "n"], [rr, "n"], [r.workers ? `${r.workers}명` : "-", "n"],
+      ];
+    },
+    foot: () => [["합계", "c"], ["", ""], [`${dayRuns.length}건`, ""], ["", ""], [kg(inKg), "n"], ["", ""], [kg(outKg), "n"],
+      [madeIn > 0 ? `${rate}%` : "-", "n"], ["", ""]],
+  }, "이 날 등록된 생산실적이 없습니다.");
+
+  const inRows = rows(dayIn, {
+    head: [["Lot 번호", ""], ["품목코드", ""], ["품목명", ""], ["거래처", ""], ["출고지", ""], ["중량(Kg)", "n"]],
+    row: (l) => [[`<span class="mono">${esc(l.lotNo)}</span>`, ""], [esc(l.code), ""], [esc(l.name), ""],
+      [esc(l.vendor || "-"), ""], [esc(l.shipLoc || "-"), ""], [kg(l.qtyKg), "n"]],
+    foot: () => [[`합계 ${dayIn.length}건`, ""], ["", ""], ["", ""], ["", ""], ["", ""],
+      [kg(dayIn.reduce((a, l) => a + (Number(l.qtyKg) || 0), 0)), "n"]],
+  }, "이 날 등록된 신규 입고가 없습니다.");
+
+  const moveRows = rows(dayMoves, {
+    head: [["Lot 번호", ""], ["품목", ""], ["이전 공정", "c"], ["다음 공정", "c"], ["투입(Kg)", "n"], ["산출(Kg)", "n"], ["손실(Kg)", "n"]],
+    row: (m) => [[`<span class="mono">${esc(m.lotNo)}</span>`, ""], [esc(m.name || m.code || "-"), ""],
+      [esc(getStage(m.fromStage).label), "c"], [esc(getStage(m.toStage).label), "c"],
+      [kg(m.inputQty), "n"], [kg(m.outputQty), "n"], [kg(m.lossQty), "n"]],
+  }, "이 날 공정이동 기록이 없습니다.");
+
+  const dtRows = rows(dayDowns, {
+    head: [["설비", ""], ["대분류", ""], ["소분류", ""], ["상세", ""], ["정지(분)", "n"], ["비고", ""]],
+    row: (x) => [[esc(eqShort(x.eqId)), ""], [esc(x.major || "-"), ""], [esc(x.minor || "-"), ""],
+      [esc(x.detail || "-"), ""], [kg(x.min), "n"], [esc(x.note || ""), ""]],
+    foot: () => [[`합계 ${dayDowns.length}건`, ""], ["", ""], ["", ""], ["", ""], [kg(dtMin), "n"], ["", ""]],
+  }, "이 날 비가동 기록이 없습니다.");
+
+  return `
+<div class="head">
+  <div>
+    <h1>일 작업일보</h1>
+    <p class="sub">${esc(settings && settings.title || "리사이클링팀")} · ${esc(date)} (${wd}) · 근무조 ${esc(crews)}</p>
+  </div>
+  <table class="sign"><tr><td class="h">작성</td><td class="h">검토</td><td class="h">승인</td></tr><tr><td></td><td></td><td></td></tr></table>
+</div>
+<div class="kpis">
+  <div class="kpi"><span>투입량</span><b>${ton(inKg)} 톤</b></div>
+  <div class="kpi"><span>산출량</span><b>${ton(outKg)} 톤</b></div>
+  <div class="kpi"><span>회수율</span><b>${madeIn > 0 ? `${rate}%` : "-"}</b></div>
+  <div class="kpi"><span>비가동</span><b>${Math.floor(dtMin / 60)}시간 ${dtMin % 60}분</b></div>
+</div>
+<h2>생산실적 (${dayRuns.length}건)</h2>${runRows}
+<h2>신규 입고 (${dayIn.length}건)</h2>${inRows}
+<h2>공정이동 (${dayMoves.length}건)</h2>${moveRows}
+<h2>비가동 (${dayDowns.length}건)</h2>${dtRows}
+<div class="foot"><span>${esc(settings && settings.manager || "")}</span><span>출력 ${esc(now)}</span></div>`;
+}
+
 // ---------- 파일 내려받기 (일반 웹사이트라서 브라우저 다운로드를 바로 써요) ----------
 function downloadFile(filename, content, mime) {
   const blob = new Blob([content], { type: mime });
@@ -6266,7 +6439,7 @@ const newLotForm = (master) => {
   return {
     code: CATEGORIES[0].code, name: autoItemName(CATEGORIES[0].id), categoryId: CATEGORIES[0].id,
     vendor: first ? first.name : "", shipLoc: first ? (first.loc || "") : "",
-    lotNo: first && first.code ? `${first.code}-` : "", srcLot: "",
+    lotNo: joinLotNo(first ? first.code : "", "", ""), srcLot: "",
     receivedDate: new Date().toISOString().slice(0, 10),
     stage: "raw_in", qtyKg: "", waterKg: "", excludeKg: "", tolling: false, carriedOver: false,
   };
@@ -7405,7 +7578,8 @@ function InventorySystem() {
         : activeTab === "tolling" ? html`<${TollingTab} lots=${openLots} />`
         : activeTab === "dashboard" ? html`<${DashboardTab} lots=${openLots} moves=${moves} dayDelta=${dayDelta} />`
         : activeTab === "plan" ? html`<${PlanTab} mes=${mes} canEdit=${canEdit} onSave=${persistMes} />`
-        : activeTab === "act" ? html`<${ActualTab} lots=${lotsAll} runs=${runsAll} mes=${mes} master=${master} canEdit=${canEdit}
+        : activeTab === "act" ? html`<${ActualTab} lots=${lotsAll} runs=${runsAll} moves=${movesAll} downs=${downsAll}
+            settings=${settings} mes=${mes} master=${master} canEdit=${canEdit}
             ym=${actYm} onYm=${setActYm}
             onSave=${handleSaveRun} onDelete=${handleDeleteRun} />`
         : activeTab === "basis" ? html`<${BasisTab} mes=${mes} canEdit=${canEdit} onSave=${persistMes}
@@ -7603,17 +7777,30 @@ function LotFormModal({ mode, initial, master, onCancel, onSave, onOpenMaster })
     const vendor = vendors.find((x) => x.name === e.target.value);
     if (!vendor) return;
     setV((prev) => {
-      // 입고 Lot 번호 앞자리는 업체 LOT 약칭이에요 (성일하이텍 → SE-). 거래처를 바꾸면 앞자리만 갈아끼워요.
-      const prevCode = vendorCodeOf(master, prev.vendor);
-      const code = String(vendor.code || "").trim();
-      let lotNo = String(prev.lotNo || "");
-      if (prevCode && lotNo.toUpperCase().startsWith(`${prevCode.toUpperCase()}-`)) {
-        lotNo = lotNo.slice(prevCode.length + 1);           // 옛 업체 코드는 떼어내고
-      } else if (prevCode && lotNo.toUpperCase() === prevCode.toUpperCase()) {
-        lotNo = "";
-      }
-      if (code) lotNo = lotNo ? `${code}-${lotNo}` : `${code}-`;
-      return { ...prev, vendor: vendor.name, shipLoc: vendor.loc || prev.shipLoc, lotNo };
+      // 입고 Lot 번호 앞자리는 업체 LOT 약칭이에요 (성일하이텍 → SE-). 앞자리만 갈아끼웁니다.
+      const tail = lotTail(prev.lotNo, vendorCodeOf(master, prev.vendor), prev.srcLot);
+      return { ...prev, vendor: vendor.name, shipLoc: vendor.loc || prev.shipLoc,
+        lotNo: joinLotNo(vendor.code, prev.srcLot, tail) };
+    });
+  };
+  // 변화값을 적으면 입고 Lot 번호의 가운데 자리가 따라 바뀌어요 (SE- → SE-BASF-).
+  const onSrcChange = (e) => {
+    const tag = e.target.value;
+    setV((prev) => {
+      const code = vendorCodeOf(master, prev.vendor);
+      const tail = lotTail(prev.lotNo, code, prev.srcLot);
+      return { ...prev, srcLot: tag, lotNo: joinLotNo(code, tag, tail) };
+    });
+  };
+  // 입고 Lot 번호를 직접 고치면, 가운데 자리를 변화값으로 그대로 읽어와요 (둘이 어긋나지 않게).
+  const onLotNoChange = (e) => {
+    const lotNo = e.target.value;
+    setV((prev) => {
+      const code = vendorCodeOf(master, prev.vendor);
+      const parts = String(lotNo || "").split("-");
+      const tag = code && parts[0] && parts[0].toUpperCase() === code.toUpperCase()
+        ? (parts[1] || "").trim() : prev.srcLot;
+      return { ...prev, lotNo, srcLot: tag };
     });
   };
   // 카테고리를 고르면 품목코드가 그에 맞춰 자동으로 정해져요.
@@ -7650,13 +7837,13 @@ function LotFormModal({ mode, initial, master, onCancel, onSave, onOpenMaster })
             </select>
           <//>
           <${Field} label="출고지"><input className="ivs-input" value=${v.shipLoc} onChange=${set("shipLoc")} /><//>
-          <${Field} label=${`입고 Lot *${vendorCodeOf(master, v.vendor) ? ` — ${vendorCodeOf(master, v.vendor)}는 거래처에 따라 자동` : ""}`}>
-            <input className="ivs-input ivs-mono" value=${v.lotNo} onChange=${set("lotNo")}
-              placeholder=${vendorCodeOf(master, v.vendor) ? `${vendorCodeOf(master, v.vendor)}-BASF` : "업체 LOT"} />
-          <//>
           <${Field} label="변화값 (그 업체가 받아온 곳)">
-            <input className="ivs-input ivs-mono" value=${v.srcLot == null ? "" : v.srcLot} onChange=${set("srcLot")}
-              placeholder=${srcTagOf(v, master) || "예: BASF"} />
+            <input className="ivs-input ivs-mono" value=${v.srcLot == null ? "" : v.srcLot}
+              onChange=${onSrcChange} placeholder="예: BASF" />
+          <//>
+          <${Field} label=${`입고 Lot *${vendorCodeOf(master, v.vendor) ? " — 거래처와 변화값에 따라 자동" : ""}`}>
+            <input className="ivs-input ivs-mono" value=${v.lotNo} onChange=${onLotNoChange}
+              placeholder=${vendorCodeOf(master, v.vendor) ? `${vendorCodeOf(master, v.vendor)}-BASF` : "업체 LOT"} />
           <//>
           <${Field} label="현재공정">
             <select className="ivs-select ivs-select-full" value=${v.stage} onChange=${set("stage")}>
@@ -10129,7 +10316,7 @@ function ShipTab({ lots, moves, canEdit, onShip, onLabel }) {
     </div>`;
 }
 
-function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onYm }) {
+function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, onSave, onDelete, ym, onYm }) {
   const today = new Date().toISOString().slice(0, 10);
   const setYm = onYm; // 화면 제목("9월 생산실적")과 같은 달을 봐야 해서 위에서 내려받아요
   // 산출 한 줄 = 생산 Lot 한 건. 톤백을 여러 개 뽑으면 같은 품목이라도 줄이 여러 개예요.
@@ -10152,6 +10339,7 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
   const [delTarget, setDelTarget] = useState(null);
   const [procFilter, setProcFilter] = useState("all");
   const [cd, setCd] = useState({ date: today, kg: "", lotNo: "", note: "" }); // 응축액 출고
+  const [logDate, setLogDate] = useState(today); // 일 작업일보로 뽑을 날짜
 
   const proc = processByKey[form.process] || FLOW_PROCESSES[0];
   // 저장 눌렀을 때 실제로 붙을 Lot 번호를 미리 그대로 계산해 보여줘요 (규칙은 저장 쪽과 같습니다).
@@ -10293,6 +10481,16 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
   // Lot 번호에 들어갈 품목 코드 (기준표의 Code. 칸)
   const outLotCodeOf = (k) => lotCodeOf(outCatIdOf(k));
 
+  // 작업일보로 뽑을 날짜의 건수 — 뽑기 전에 몇 건인지 보여줘요.
+  const logCount = useMemo(() => ({
+    runs: (runs || []).filter((r) => r.date === logDate).length,
+    ins: (lots || []).filter((l) => l.receivedDate === logDate && l.origin !== "production").length,
+    moves: (moves || []).filter((m) => m.date === logDate).length,
+    downs: (downs || []).filter((d) => d.date === logDate).length,
+  }), [runs, lots, moves, downs, logDate]);
+  const printDayLog = () => printDocument(`일 작업일보 ${logDate}`,
+    dailyReportHtml({ date: logDate, runs, lots, moves, downs, settings, mes }));
+
   const canSubmit = chosen.length > 0 && (proc.mode === "move" || outSum > 0);
   const doSubmit = async () => {
     await onSave({ ...form, crew });
@@ -10316,6 +10514,28 @@ function ActualTab({ lots, runs, mes, master, canEdit, onSave, onDelete, ym, onY
       <div className="ivs-section-head">
         <h2 className="ivs-section-title">생산실적</h2>
         <span className="ivs-section-hint">일일 작업실적을 넣으면 그 Lot이 다음 공정으로 넘어가면서 재고현황이 같이 바뀌어요</span>
+      </div>
+
+      <div className="ivs-daylog">
+        <div className="ivs-daylog-txt">
+          <b><${Printer} size=${13} /> 일 작업일보</b>
+          <span>
+            고른 날 하루치를 A4 한 장으로 뽑아요 — 생산실적 · 신규 입고 · 공정이동 · 비가동과 결재란까지 들어갑니다.
+            ${logCount.runs + logCount.ins + logCount.moves + logCount.downs === 0
+              ? " 고른 날에는 아직 기록이 없어요."
+              : ` ${logDate}: 생산실적 ${logCount.runs}건 · 신규 입고 ${logCount.ins}건 · 공정이동 ${logCount.moves}건 · 비가동 ${logCount.downs}건.`}
+          </span>
+        </div>
+        <div className="ivs-daylog-act">
+          <button className="ivs-btn ivs-btn-sm" onClick=${() => setLogDate(shiftDay(logDate, -1))} title="하루 전">◀</button>
+          <input type="date" className="ivs-input ivs-input-cell" value=${logDate}
+            onChange=${(e) => setLogDate(e.target.value)} />
+          <button className="ivs-btn ivs-btn-sm" onClick=${() => setLogDate(shiftDay(logDate, 1))} title="하루 뒤">▶</button>
+          <button className="ivs-btn ivs-btn-sm" onClick=${() => setLogDate(today)}>오늘</button>
+          <button className="ivs-btn ivs-btn-primary" onClick=${printDayLog}>
+            <${Printer} size=${13} /> 인쇄 · PDF
+          </button>
+        </div>
       </div>
 
       <div className="ivs-kpis cols-5">

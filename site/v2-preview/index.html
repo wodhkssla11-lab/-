@@ -354,6 +354,10 @@
   .ivs-catgrid { padding: 7px 13px; border-bottom: 1px solid var(--border); }
   .ivs-catgrid:last-child { border-bottom: none; }
   .ivs-catgrid-name { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .ivs-catdot { position: relative; width: 15px; height: 15px; border-radius: 50%; flex: 0 0 auto;
+    cursor: pointer; border: 1px solid rgba(255,255,255,.22); box-shadow: 0 0 0 1px rgba(0,0,0,.18) inset; }
+  .ivs-catdot input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer;
+    padding: 0; border: 0; }
   .ivs-catgrid-name .ivs-input { min-width: 0; }
   .ivs-catgrid-mix { display: flex; justify-content: center; }
   .ivs-catgrid-act { display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: 11px; }
@@ -3959,6 +3963,31 @@ function setCategories(list) {
   CATEGORIES = list;
   categoryById = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
 }
+// 품목 배지 색 — 기본 15가지를 먼저 쓰고, 다 쓰면 색상환을 황금각(137.5°)으로 돌며 새 색을 만들어요.
+// 황금각으로 돌면 몇 개를 더 만들어도 서로 붙지 않습니다.
+const CAT_PALETTE = ["#94A3B8", "#3B82F6", "#22C55E", "#A855F7", "#F59E0B", "#06B6D4",
+  "#EC4899", "#F97316", "#FB7185", "#EF4444", "#84CC16", "#A16207", "#14B8A6", "#57534E", "#0EA5E9"];
+function hslHex(h, sPct, lPct) {
+  const sv = sPct / 100, lv = lPct / 100;
+  const c = (1 - Math.abs(2 * lv - 1)) * sv;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = lv - c / 2;
+  const t = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x]
+    : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+  return `#${t.map((v) => Math.round((v + m) * 255).toString(16).padStart(2, "0")).join("").toUpperCase()}`;
+}
+// 이미 쓰고 있는 색을 빼고 새 색을 하나 골라줘요.
+function nextCatColor(used) {
+  const taken = new Set((used || []).map((c) => String(c || "").toUpperCase()));
+  const free = CAT_PALETTE.find((c) => !taken.has(c.toUpperCase()));
+  if (free) return free;
+  for (let i = 0; i < 360; i += 1) {
+    const hex = hslHex((200 + i * 137.508) % 360, 62, 58);
+    if (!taken.has(hex)) return hex;
+  }
+  return CAT_PALETTE[0];
+}
+
 // 저장된 품목 목록을 화면이 쓰는 모양으로 다듬어요. 한 번도 등록한 적이 없으면 기본 목록을 씁니다.
 function normalizeCategories(raw, configured) {
   const list = Array.isArray(raw) ? raw : (raw && typeof raw === "object" ? Object.values(raw) : []);
@@ -3967,9 +3996,16 @@ function normalizeCategories(raw, configured) {
     code: String(x.code || "").trim(),
     lot: String(x.lot || "").trim(),
     item: String(x.item || "").trim(),          // 현장에서 부르는 품목명 (블랙매스 → CP)
-    color: String(x.color || "#94A3B8"),
+    color: String(x.color || "").trim(),
     mix: !!x.mix,                                // 여러 업체 것을 섞어 배출하는 품목
   }));
+  // 색이 비었거나 앞선 품목과 겹치면 안 쓰는 색으로 갈라줘요 — 배지가 다 똑같아 보이지 않게.
+  const used = [];
+  clean.forEach((c) => {
+    const up = c.color.toUpperCase();
+    if (!c.color || used.includes(up)) c.color = nextCatColor(used);
+    used.push(c.color.toUpperCase());
+  });
   if (clean.length > 0) return clean;
   return configured ? [] : DEFAULT_CATEGORIES.map((c) => ({ ...c }));
 }
@@ -7932,8 +7968,6 @@ function MasterModal({ master, lots, onSave, onClose }) {
   const [cErr, setCErr] = useState("");
   const [delCat, setDelCat] = useState(null);
   const catUsed = (id) => (lots || []).filter((l) => l.categoryId === id).length;
-  const CAT_COLORS = ["#94A3B8", "#3B82F6", "#22C55E", "#A855F7", "#F59E0B", "#06B6D4",
-    "#EC4899", "#F97316", "#FB7185", "#EF4444", "#84CC16", "#A16207", "#14B8A6", "#57534E", "#0EA5E9"];
 
   const addCat = () => {
     const label = cLabel.trim();
@@ -7943,7 +7977,7 @@ function MasterModal({ master, lots, onSave, onClose }) {
     if (code && cats.some((c) => c.code === code)) { setCErr(`품목코드 "${code}"는 이미 쓰고 있어요.`); return; }
     setCErr("");
     const id = `cat-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`;
-    const color = CAT_COLORS[cats.length % CAT_COLORS.length];
+    const color = nextCatColor(cats.map((c) => c.color)); // 이미 쓰는 색은 피해서 골라요
     onSave({ ...master, catConfigured: true,
       categories: [...cats, { id, label, code, lot: cLot.trim(), item: cItem.trim(), color, mix: false }] },
       `품목 "${label}"을(를) 등록했어요.`);
@@ -8038,7 +8072,10 @@ function MasterModal({ master, lots, onSave, onClose }) {
             ${cats.length === 0 ? html`<div className="ivs-prod-empty">등록된 품목이 없어요.</div>` : cats.map((c) => html`
               <div className="ivs-catgrid" key=${c.id}>
                 <div className="ivs-catgrid-name">
-                  <span className="ivs-badge-dot" style=${{ background: c.color }} />
+                  <label className="ivs-catdot" style=${{ background: c.color }} title="색 바꾸기">
+                    <input type="color" value=${c.color}
+                      onChange=${(e) => patchCat(c.id, { color: e.target.value.toUpperCase() })} />
+                  </label>
                   <input className="ivs-input ivs-input-cell" defaultValue=${c.label}
                     onBlur=${(e) => { const v = e.target.value.trim(); if (v && v !== c.label) patchCat(c.id, { label: v }); }} />
                 </div>
@@ -8066,6 +8103,7 @@ function MasterModal({ master, lots, onSave, onClose }) {
             <b>기본 품목명</b>은 로트를 추가할 때 품목명 칸에 저절로 채워지는 이름입니다 (비우면 품목 이름을 그대로 써요).${" "}
             <b>혼합</b>에 체크하면 여러 업체 것을 섞어 배출하는 품목이라, Lot 번호가 업체·변화값 없이${" "}
             <b className="ivs-mono">DRCC-260916-1</b>처럼 붙어요.
+            품목 앞의 <b>동그란 색</b>을 누르면 배지 색을 직접 고를 수 있어요 — 새로 등록하면 아직 안 쓰는 색이 저절로 붙습니다.
             거래처나 품목을 삭제해도 이미 등록된 로트 데이터는 그대로 남고, 앞으로 선택지에서만 빠져요.
           </p>
         </div>

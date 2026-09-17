@@ -8061,9 +8061,9 @@ function MasterModal({ master, lots, onSave, onClose }) {
           </div>
           ${cErr ? html`<p className="ivs-move-diff loss" style=${{ marginTop: 10 }}>${cErr}</p>` : null}
           <p className="ivs-dash-note" style=${{ marginTop: 10, marginBottom: 0 }}>
-            칸을 고치고 다른 곳을 누르면 바로 저장돼요. <b>품목코드</b>는 화면과 엑셀에 쓰는 코드이고,
-            <b>Lot 코드</b>는 생산 Lot 번호에 들어가는 자리예요 ((P)는 열분해 Pyrolysis).
-            <b>기본 품목명</b>은 로트를 추가할 때 품목명 칸에 저절로 채워지는 이름입니다 (비우면 품목 이름을 그대로 써요).
+            칸을 고치고 다른 곳을 누르면 바로 저장돼요. <b>품목코드</b>는 화면과 엑셀에 쓰는 코드이고,${" "}
+            <b>Lot 코드</b>는 생산 Lot 번호에 들어가는 자리예요 ((P)는 열분해 Pyrolysis).${" "}
+            <b>기본 품목명</b>은 로트를 추가할 때 품목명 칸에 저절로 채워지는 이름입니다 (비우면 품목 이름을 그대로 써요).${" "}
             <b>혼합</b>에 체크하면 여러 업체 것을 섞어 배출하는 품목이라, Lot 번호가 업체·변화값 없이${" "}
             <b className="ivs-mono">DRCC-260916-1</b>처럼 붙어요.
             거래처나 품목을 삭제해도 이미 등록된 로트 데이터는 그대로 남고, 앞으로 선택지에서만 빠져요.

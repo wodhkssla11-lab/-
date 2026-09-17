@@ -345,6 +345,22 @@
   .ivs-master-form .ivs-input.ivs-mono { flex: 0 0 auto; }
   .ivs-master-list { border: 1px solid var(--border); border-radius: var(--radius-sm); max-height: 250px; overflow-y: auto; }
   /* 일 작업일보 줄 */
+  /* 품목 등록 관리 표 */
+  .ivs-catgrid-head, .ivs-catgrid { display: grid;
+    grid-template-columns: minmax(120px,1.4fr) minmax(90px,1fr) minmax(90px,1fr) minmax(80px,1fr) 42px 64px;
+    gap: 6px; align-items: center; }
+  .ivs-catgrid-head { padding: 0 13px 6px; font-size: 11px; color: var(--text-faint); font-weight: 600; }
+  .ivs-catgrid-head .ivs-center { text-align: center; }
+  .ivs-catgrid { padding: 7px 13px; border-bottom: 1px solid var(--border); }
+  .ivs-catgrid:last-child { border-bottom: none; }
+  .ivs-catgrid-name { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .ivs-catgrid-name .ivs-input { min-width: 0; }
+  .ivs-catgrid-mix { display: flex; justify-content: center; }
+  .ivs-catgrid-act { display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: 11px; }
+  @media (max-width: 720px) {
+    .ivs-catgrid-head { display: none; }
+    .ivs-catgrid { grid-template-columns: 1fr 1fr; gap: 6px 8px; }
+  }
   .ivs-daylog { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
     background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
     border-radius: var(--radius); padding: 12px 15px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
@@ -3918,8 +3934,8 @@ const getStage = (key) =>
 // lot = 생산 Lot 번호에 들어가는 품목 코드 (Lot Code 기준표의 "Code." 칸).
 // (P)는 Pyrolysis(열분해)를 뜻해요. code는 화면·엑셀에 쓰는 품목코드로 지금 그대로 둡니다.
 // mix: true 이면 여러 업체 것을 섞어 배출하는 품목이라 Lot 번호에 업체·변화값을 붙이지 않아요.
-const CATEGORIES = [
-  { id: "blackmass", label: "블랙매스", color: "#94A3B8", code: "BM0001", lot: "CP(P)" },              // 밝은 회색
+const DEFAULT_CATEGORIES = [
+  { id: "blackmass", label: "블랙매스", color: "#94A3B8", code: "BM0001", lot: "CP(P)", item: "CP" },              // 밝은 회색
   { id: "ev_pack", label: "EV PACK", color: "#3B82F6", code: "PK0001" },                 // 파랑
   { id: "ev_module", label: "EV MODULE", color: "#22C55E", code: "MD0001" },             // 초록
   { id: "ess", label: "ESS", color: "#A855F7", code: "ES0001" },                         // 보라
@@ -3935,7 +3951,28 @@ const CATEGORIES = [
   { id: "mixed_magnetic", label: "혼합 자력", color: "#57534E", code: "DRM0001", lot: "DR자력(P)", mix: true },  // 진회색
   { id: "condensate", label: "응축액", color: "#0EA5E9", code: "CD0001", lot: "CD" },                 // 하늘 (열분해 산출물)
 ];
-const categoryById = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
+// 품목은 이제 기준정보에서 등록·수정할 수 있어요. 저장된 목록이 오면 여기를 갈아끼웁니다.
+// (화면 곳곳이 이 두 이름을 그대로 읽으니, 값만 바꿔주면 전부 따라옵니다.)
+let CATEGORIES = DEFAULT_CATEGORIES.map((c) => ({ ...c }));
+let categoryById = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
+function setCategories(list) {
+  CATEGORIES = list;
+  categoryById = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
+}
+// 저장된 품목 목록을 화면이 쓰는 모양으로 다듬어요. 한 번도 등록한 적이 없으면 기본 목록을 씁니다.
+function normalizeCategories(raw, configured) {
+  const list = Array.isArray(raw) ? raw : (raw && typeof raw === "object" ? Object.values(raw) : []);
+  const clean = list.filter((x) => x && typeof x === "object" && x.id && x.label).map((x) => ({
+    id: String(x.id), label: String(x.label),
+    code: String(x.code || "").trim(),
+    lot: String(x.lot || "").trim(),
+    item: String(x.item || "").trim(),          // 현장에서 부르는 품목명 (블랙매스 → CP)
+    color: String(x.color || "#94A3B8"),
+    mix: !!x.mix,                                // 여러 업체 것을 섞어 배출하는 품목
+  }));
+  if (clean.length > 0) return clean;
+  return configured ? [] : DEFAULT_CATEGORIES.map((c) => ({ ...c }));
+}
 
 // 기본 거래처 / 기본 품목 — 설정에서 자유롭게 추가·삭제할 수 있어요.
 // code = 업체 LOT 약칭. 생산 Lot 번호의 맨 앞에 붙고, 새 로트를 넣을 때 입고 Lot 번호에도 먼저 찍혀요.
@@ -3952,7 +3989,7 @@ const DEFAULT_VENDORS = [
 ];
 const VENDORS = DEFAULT_VENDORS; // 샘플 데이터 생성용
 
-const DEFAULT_MASTER = { configured: true, vendors: DEFAULT_VENDORS };
+const DEFAULT_MASTER = { configured: true, vendors: DEFAULT_VENDORS, categories: DEFAULT_CATEGORIES };
 const DEFAULT_SETTINGS = {
   title: "리사이클링팀 · 재고관리",
   subtitle: "입고부터 출하까지 — 생산실적으로 재고가 함께 움직이는 Lot 단위 공정 관리",
@@ -4513,13 +4550,15 @@ const FLOW_PROCESSES = PROCESSES.filter((p) => !p.standalone);
 const processByKey = Object.fromEntries(PROCESSES.map((p) => [p.key, p]));
 const outputKindByKey = Object.fromEntries(OUTPUT_KINDS.map((k) => [k.key, k]));
 // 카테고리를 고르면 품목명이 현장에서 부르는 이름으로 자동으로 채워져요.
-// (여기 없는 카테고리는 카테고리 이름을 그대로 써요.)
-const CATEGORY_ITEM_NAME = { blackmass: "CP" };
+// (품목에 "기본 품목명"을 적어두지 않았으면 카테고리 이름을 그대로 써요.)
 // Cu-chip과 Al-chip은 투입 Lot을 따라가지 않아요. 다른 것들과 섞어 모아뒀다가
 // 일정 무게가 차면 배출하니, 거래처를 "혼합"으로 두고 따로 고를 수 있게 합니다.
 const MIXED_VENDOR = "혼합";
 const MIXED_KINDS = ["cu", "al"];
-const autoItemName = (catId) => CATEGORY_ITEM_NAME[catId] || (categoryById[catId] ? categoryById[catId].label : "");
+const autoItemName = (catId) => {
+  const c = categoryById[catId];
+  return (c && (c.item || c.label)) || "";
+};
 
 // ---------- 생산 Lot 번호 체계 ----------
 // 기준표(Lot Code)대로 "업체-변화값-품목-YYMMDD-연번"으로 붙여요.
@@ -4708,7 +4747,12 @@ function normalizeMaster(raw) {
   // 거래처가 하나도 없을 때: "저장한 적 있음" 표시가 있으면 사용자가 다 지운 것이니 빈 채로 두고,
   // 표시가 없으면 아직 한 번도 설정한 적 없는 새 저장소이니 기본 거래처를 넣어줘요.
   const useDefaults = vendors.length === 0 && !(m && m.configured);
-  return { configured: true, vendors: useDefaults ? DEFAULT_VENDORS.map((v) => ({ ...v })) : vendors };
+  // 품목 목록도 같은 규칙이에요. 화면 곳곳이 읽는 등록부를 여기서 바로 갈아끼웁니다.
+  const categories = normalizeCategories(m && m.categories, !!(m && m.catConfigured));
+  setCategories(categories);
+  return { configured: true, catConfigured: true,
+    vendors: useDefaults ? DEFAULT_VENDORS.map((v) => ({ ...v })) : vendors,
+    categories };
 }
 // 옛 "생산투입완료(consumed)" 단계로 저장된 로트는 closed 표시로 바꿔요 — 화면에서는 똑같이 재고에서 빠져요.
 function normalizeLots(raw) {
@@ -6482,6 +6526,9 @@ function InventorySystem() {
   const [settings, setSettingsState] = useState(() => LIVE_DATA.settings);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [master, setMaster] = useState(() => LIVE_DATA.master); // 거래처 · 품목코드 등록 정보
+  // 화면 곳곳(품목 선택, Lot 번호 체번, 품목명 자동 채움)이 읽는 품목 등록부를 지금 값으로 맞춰둬요.
+  // 등록·수정한 내용이 저장을 기다리지 않고 바로 반영됩니다.
+  if (master && Array.isArray(master.categories) && master.categories.length > 0) setCategories(master.categories);
   const [mes, setMes] = useState(() => LIVE_DATA.mes); // 생산관리(계획·교대·설비) 설정
   const [runs, setRuns] = useState(() => LIVE_DATA.runs); // 생산실적 (투입↔산출 Lot 연결 포함)
   const [downs, setDowns] = useState(() => LIVE_DATA.downs); // 비가동 기록 (설비 · 유형 · 분)
@@ -7876,6 +7923,39 @@ function MasterModal({ master, lots, onSave, onClose }) {
   const [vLoc, setVLoc] = useState("");
   const [vCode, setVCode] = useState("");
   const [error, setError] = useState("");
+  // 품목(카테고리) 등록 칸
+  const cats = master.categories || CATEGORIES;
+  const [cLabel, setCLabel] = useState("");
+  const [cCode, setCCode] = useState("");
+  const [cLot, setCLot] = useState("");
+  const [cItem, setCItem] = useState("");
+  const [cErr, setCErr] = useState("");
+  const [delCat, setDelCat] = useState(null);
+  const catUsed = (id) => (lots || []).filter((l) => l.categoryId === id).length;
+  const CAT_COLORS = ["#94A3B8", "#3B82F6", "#22C55E", "#A855F7", "#F59E0B", "#06B6D4",
+    "#EC4899", "#F97316", "#FB7185", "#EF4444", "#84CC16", "#A16207", "#14B8A6", "#57534E", "#0EA5E9"];
+
+  const addCat = () => {
+    const label = cLabel.trim();
+    if (!label) { setCErr("품목(카테고리) 이름을 입력해주세요."); return; }
+    if (cats.some((c) => c.label === label)) { setCErr("이미 등록된 품목이에요."); return; }
+    const code = cCode.trim();
+    if (code && cats.some((c) => c.code === code)) { setCErr(`품목코드 "${code}"는 이미 쓰고 있어요.`); return; }
+    setCErr("");
+    const id = `cat-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`;
+    const color = CAT_COLORS[cats.length % CAT_COLORS.length];
+    onSave({ ...master, catConfigured: true,
+      categories: [...cats, { id, label, code, lot: cLot.trim(), item: cItem.trim(), color, mix: false }] },
+      `품목 "${label}"을(를) 등록했어요.`);
+    setCLabel(""); setCCode(""); setCLot(""); setCItem("");
+  };
+  const patchCat = (id, patch) => onSave({ ...master, catConfigured: true,
+    categories: cats.map((c) => (c.id === id ? { ...c, ...patch } : c)) }, "");
+  const removeCat = (c) => {
+    onSave({ ...master, catConfigured: true, categories: cats.filter((x) => x.id !== c.id) },
+      `품목 "${c.label}"을(를) 삭제했어요.`);
+    setDelCat(null);
+  };
 
   const addVendor = () => {
     const name = vName.trim();
@@ -7898,9 +7978,9 @@ function MasterModal({ master, lots, onSave, onClose }) {
 
   return html`
     <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onClose)}>
-      <div className="ivs-modal" onClick=${(e) => e.stopPropagation()}>
+      <div className="ivs-modal ivs-modal-lg" onClick=${(e) => e.stopPropagation()}>
         <div className="ivs-modal-head">
-          <h3>거래처 등록 관리</h3>
+          <h3>거래처 · 품목 등록 관리</h3>
           <button className="ivs-icon-btn" onClick=${onClose}><${X} size=${16} /></button>
         </div>
         <div className="ivs-modal-body">
@@ -7938,29 +8018,72 @@ function MasterModal({ master, lots, onSave, onClose }) {
           ${error ? html`<p className="ivs-move-diff loss" style=${{ marginTop: 10 }}>${error}</p>` : null}
 
           <div className="ivs-settings-divider" style=${{ margin: "16px 0 12px" }} />
-          <div className="ivs-card-label" style=${{ marginBottom: 10 }}>카테고리 · 품목코드 · Lot 코드 (고정)</div>
+          <div className="ivs-card-label" style=${{ marginBottom: 10 }}>품목 등록 관리 — 카테고리 · 품목코드 · Lot 코드</div>
+          <div className="ivs-master-form">
+            <input className="ivs-input" placeholder="품목(카테고리) 이름" value=${cLabel}
+              onChange=${(e) => setCLabel(e.target.value)} onKeyDown=${(e) => e.key === "Enter" && addCat()} />
+            <input className="ivs-input ivs-mono" placeholder="품목코드 (예: BM0001)" value=${cCode}
+              onChange=${(e) => setCCode(e.target.value)} onKeyDown=${(e) => e.key === "Enter" && addCat()} />
+            <input className="ivs-input ivs-mono" placeholder="Lot 코드 (예: CP(P))" value=${cLot}
+              onChange=${(e) => setCLot(e.target.value)} onKeyDown=${(e) => e.key === "Enter" && addCat()} />
+            <input className="ivs-input" placeholder="기본 품목명 (예: CP)" value=${cItem}
+              onChange=${(e) => setCItem(e.target.value)} onKeyDown=${(e) => e.key === "Enter" && addCat()} />
+            <button className="ivs-btn ivs-btn-primary" onClick=${addCat}><${Plus} size=${13} /> 등록</button>
+          </div>
+          <div className="ivs-catgrid-head">
+            <span>품목</span><span>품목코드</span><span>Lot 코드</span><span>기본 품목명</span>
+            <span className="ivs-center">혼합</span><span></span>
+          </div>
           <div className="ivs-master-list">
-            ${CATEGORIES.map((c) => html`
-              <div className="ivs-master-row" key=${c.id}>
-                <div><span className="ivs-badge" style=${{ "--c": c.color }}>${c.label}</span></div>
-                <div className="ivs-master-act">
-                  <span className="ivs-dim ivs-mono">${c.code}</span>
-                  ${c.lot ? html`<strong className="ivs-mono">${c.lot}</strong>` : html`<span className="ivs-dim">-</span>`}
+            ${cats.length === 0 ? html`<div className="ivs-prod-empty">등록된 품목이 없어요.</div>` : cats.map((c) => html`
+              <div className="ivs-catgrid" key=${c.id}>
+                <div className="ivs-catgrid-name">
+                  <span className="ivs-badge-dot" style=${{ background: c.color }} />
+                  <input className="ivs-input ivs-input-cell" defaultValue=${c.label}
+                    onBlur=${(e) => { const v = e.target.value.trim(); if (v && v !== c.label) patchCat(c.id, { label: v }); }} />
+                </div>
+                <input className="ivs-input ivs-input-cell ivs-mono" defaultValue=${c.code || ""} placeholder="품목코드"
+                  onBlur=${(e) => { const v = e.target.value.trim(); if (v !== (c.code || "")) patchCat(c.id, { code: v }); }} />
+                <input className="ivs-input ivs-input-cell ivs-mono" defaultValue=${c.lot || ""} placeholder="Lot 코드"
+                  onBlur=${(e) => { const v = e.target.value.trim(); if (v !== (c.lot || "")) patchCat(c.id, { lot: v }); }} />
+                <input className="ivs-input ivs-input-cell" defaultValue=${c.item || ""} placeholder=${c.label}
+                  onBlur=${(e) => { const v = e.target.value.trim(); if (v !== (c.item || "")) patchCat(c.id, { item: v }); }} />
+                <label className="ivs-catgrid-mix" title="여러 업체 것을 섞어 배출하는 품목 — Lot 번호에 업체·변화값을 붙이지 않아요">
+                  <input type="checkbox" checked=${!!c.mix} onChange=${(e) => patchCat(c.id, { mix: e.target.checked })} />
+                </label>
+                <div className="ivs-catgrid-act">
+                  ${catUsed(c.id) > 0 ? html`<span className="ivs-dim">${catUsed(c.id)}건</span>` : null}
+                  <button className="ivs-icon-btn ivs-menu-danger" title="삭제"
+                    onClick=${() => setDelCat(c)}><${Trash2} size=${13} /></button>
                 </div>
               </div>
             `)}
           </div>
+          ${cErr ? html`<p className="ivs-move-diff loss" style=${{ marginTop: 10 }}>${cErr}</p>` : null}
           <p className="ivs-dash-note" style=${{ marginTop: 10, marginBottom: 0 }}>
-            품목코드는 카테고리마다 하나로 고정돼요. 로트를 추가할 때 카테고리를 고르면 자동으로 입력됩니다.
-            오른쪽 굵은 글씨가 생산 Lot 번호에 들어가는 <b>Lot 코드</b>입니다 ((P)는 열분해 Pyrolysis).
-            혼합 Cu·Al chip처럼 여러 업체 것을 섞어 배출하는 품목은 업체·변화값 없이${" "}
+            칸을 고치고 다른 곳을 누르면 바로 저장돼요. <b>품목코드</b>는 화면과 엑셀에 쓰는 코드이고,
+            <b>Lot 코드</b>는 생산 Lot 번호에 들어가는 자리예요 ((P)는 열분해 Pyrolysis).
+            <b>기본 품목명</b>은 로트를 추가할 때 품목명 칸에 저절로 채워지는 이름입니다 (비우면 품목 이름을 그대로 써요).
+            <b>혼합</b>에 체크하면 여러 업체 것을 섞어 배출하는 품목이라, Lot 번호가 업체·변화값 없이${" "}
             <b className="ivs-mono">DRCC-260916-1</b>처럼 붙어요.
-            거래처를 삭제해도 이미 등록된 로트 데이터는 그대로 남고, 앞으로 선택지에서만 빠져요.
+            거래처나 품목을 삭제해도 이미 등록된 로트 데이터는 그대로 남고, 앞으로 선택지에서만 빠져요.
           </p>
         </div>
         <div className="ivs-modal-foot">
           <button className="ivs-btn ivs-btn-primary" onClick=${onClose}>닫기</button>
         </div>
+        ${delCat ? html`
+          <${ConfirmModal}
+            icon=${html`<${AlertTriangle} size=${18} />`}
+            title=${`품목 "${delCat.label}"을(를) 지울까요?`}
+            body=${catUsed(delCat.id) > 0
+              ? `이 품목으로 등록된 로트 ${catUsed(delCat.id).toLocaleString("ko-KR")}건은 그대로 남아요. 앞으로 새로 고를 때만 목록에서 빠집니다.`
+              : "앞으로 로트를 추가할 때 목록에서 빠집니다."}
+            confirmLabel="삭제"
+            danger=${true}
+            onCancel=${() => setDelCat(null)}
+            onConfirm=${() => removeCat(delCat)}
+          />` : null}
       </div>
     </div>
   `;

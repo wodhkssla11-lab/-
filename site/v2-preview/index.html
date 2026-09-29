@@ -130,7 +130,7 @@
   .ivs-kpis.cols-2 { grid-template-columns: repeat(2, 1fr); }
   .ivs-kpis.cols-5 { grid-template-columns: repeat(5, 1fr); }
   .ivs-kpi-bm { color: var(--accent); font-weight: 600; }
-  .ivs-kpis.cols-5 { grid-template-columns: repeat(5, 1fr); }
+  .ivs-kpis.cols-6 { grid-template-columns: repeat(6, 1fr); }
   .ivs-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
     padding: 15px 16px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; }
   .ivs-kpi.accent::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--accent); }
@@ -820,6 +820,59 @@
 
   /* ---------- 가동율 현황 ---------- */
   .ivs-kpi.warn { border-color: color-mix(in srgb, var(--warn, #F59E0B) 32%, var(--border)); }
+  /* ---------- 공정 Flow (설비 21) ---------- */
+  .ivs-eqflow-group + .ivs-eqflow-group { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--border); }
+  .ivs-eqflow-label { font-size: 11.5px; font-weight: 600; color: var(--text-faint); margin-bottom: 9px; }
+  .ivs-eqflow { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 12px 18px; }
+  .ivs-eqnode { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 10px 8px 9px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border);
+    border-top: 3px solid var(--c); color: var(--text); font: inherit; cursor: pointer; text-align: center;
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease; }
+  .ivs-eqnode:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); border-color: var(--c); }
+  .ivs-eqnode:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ivs-eqnode.hot { background: color-mix(in srgb, var(--c) 9%, var(--surface-2)); }
+  /* 다음 설비로 가는 화살표 — 줄 끝에서는 다음 줄 첫 칸으로 이어집니다 */
+  .ivs-eqnode:not(.last)::after { content: "›"; position: absolute; right: -14px; top: 38px;
+    font-size: 17px; color: var(--text-faint); pointer-events: none; }
+  .ivs-eqnode-no { position: absolute; left: 8px; top: 6px; font-size: 10.5px; font-weight: 700;
+    color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .ivs-eqnode-img { color: var(--c); height: 44px; display: flex; align-items: center; margin-top: 2px; }
+  .ivs-eqnode-name { font-size: 12.5px; font-weight: 650; line-height: 1.25; min-height: 16px; }
+  .ivs-eqnode-util { font-size: 19px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .ivs-eqnode-util em { font-style: normal; font-size: 11px; margin-left: 1px; opacity: .8; }
+  .ivs-eqnode-bar { width: 100%; height: 4px; border-radius: 99px; background: var(--border); overflow: hidden; }
+  .ivs-eqnode-bar i { display: block; height: 100%; background: var(--c); border-radius: 99px; }
+  .ivs-eqnode-dt { font-size: 11px; color: var(--text-dim); line-height: 1.35; }
+  .ivs-eqnode-dt b { color: var(--text); }
+  .ivs-eqnode-ex { font-size: 10px; color: var(--text-faint); }
+  .ivs-rework { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-dim);
+    padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
+  .ivs-rework.on { color: #D97706; border-color: #D97706; background: color-mix(in srgb, #F59E0B 10%, transparent); }
+  .ivs-inline-field { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); }
+  .ivs-inline-field .ivs-select { min-width: 150px; }
+  .ivs-warnbar.ivs-warnbar-rework { border-color: #D97706; color: #B45309; background: color-mix(in srgb, #F59E0B 10%, transparent); }
+  .ivs-proctab-rework { border-style: dashed; }
+  .ivs-clickable { cursor: pointer; }
+  .ivs-clickable:hover { background: var(--surface-2); }
+
+  /* ---------- 비가동 — 설비 필터 · 코드 설명 ---------- */
+  .ivs-eqfilter { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 14px;
+    padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+  .ivs-eqfilter-label { font-size: 12px; font-weight: 650; color: var(--text-dim); }
+  .ivs-eqfilter .ivs-select { min-width: 250px; }
+  .ivs-eqfilter-on { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-dim); }
+  .ivs-eqfilter-on b { color: var(--text); }
+  .ivs-eqfilter-on svg { color: var(--accent); }
+  .ivs-dtcode { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px;
+    padding: 10px 12px; border-radius: 9px; background: var(--surface-2); border: 1px solid var(--border); font-size: 12.5px; }
+  .ivs-dtcode-code { font-family: var(--mono, ui-monospace, monospace); font-weight: 700; color: var(--c);
+    padding: 2px 8px; border-radius: 6px; border: 1px solid var(--c); }
+  .ivs-dtcode-desc { color: var(--text); flex: 1 1 260px; min-width: 0; }
+  .ivs-dtcode-eq { flex-basis: 100%; font-size: 11.5px; color: var(--text-faint); }
+  .ivs-dtcode-eq.warn { color: #D97706; }
+  .ivs-dtcode-parts { margin-top: 8px; font-size: 11.5px; line-height: 1.55; color: var(--text-faint); }
+  .ivs-dtcode-parts b { color: var(--text-dim); }
+
   .ivs-flow { display: flex; align-items: stretch; gap: 4px; overflow-x: auto; padding-bottom: 6px; }
   .ivs-flow-arrow { display: flex; align-items: center; color: var(--text-faint); font-size: 14px; flex: 0 0 auto; }
   .ivs-flow-node { flex: 1 1 0; min-width: 104px; padding: 11px 10px 10px; border-radius: 10px;
@@ -1157,6 +1210,7 @@
   /* ---------- 반응형 ---------- */
   @media (max-width: 1100px) {
     .ivs-kpis, .ivs-kpis.cols-5 { grid-template-columns: repeat(2, 1fr); }
+    .ivs-kpis.cols-6 { grid-template-columns: repeat(3, 1fr); }
     .ivs-chart-split { grid-template-columns: 1fr; gap: 22px; }
     .ivs-half-grid { grid-template-columns: 1fr; }
     .ivs-aggbar-row { grid-template-columns: minmax(100px, 1fr) 1fr 118px; }
@@ -1165,7 +1219,7 @@
   }
   @media (max-width: 680px) {
     .ivs-layout-sidebar .ivs-shell, .ivs-layout-tabs .ivs-shell { padding: 16px 14px 32px; }
-    .ivs-kpis, .ivs-kpis.cols-3, .ivs-kpis.cols-5 { grid-template-columns: 1fr; }
+    .ivs-kpis, .ivs-kpis.cols-3, .ivs-kpis.cols-5, .ivs-kpis.cols-6 { grid-template-columns: 1fr; }
     .ivs-form-grid { grid-template-columns: 1fr; }
     .ivs-breakdown-row, .ivs-rank-row, .ivs-aggbar-row { grid-template-columns: 1fr auto; }
     .ivs-breakdown-track, .ivs-rank-bar-track, .ivs-aggbar-track { display: none; }
@@ -4125,7 +4179,7 @@ const SEED_RUNS = [
     inputs: ["s15"],
     outputs: [["s19", "DRBM0001", "전기차 셀", "mixed_powder", "bm", "DRBM0001-260907-1", "usable", 1190],
               ["s20", "DRCC0001", "혼합 Cu-chip", "mixed_cu_chip", "cu", "DRCC0001-260907-1", "usable", 190],
-              ["s21", "DRAC0001", "혼합 Al-chip", "mixed_al_chip", "al", "DRAC0001-260907-1", "usable", 140]] },
+              ["s21", "DRAC0001", "혼합 Al-chip", "mixed_al_chip", "al", "DRAC0001-260907-1", "usable", 140]] , rework: true },
   { id: "r3", off: -4, shift: "day", workers: 4, process: "calcine",
     inputs: ["s14"],
     outputs: [["s22", "BM0001", "블랙매스(포항)", "blackmass", "bm", "DRBM0001-260906-1", "usable", 2980]] },
@@ -4203,21 +4257,25 @@ function moveSeedData() {
 }
 
 // 비가동 샘플 — 보고서 파레토가 어떻게 보이는지 확인하려면 정지 기록이 있어야 해요.
+// [날짜오프셋, 교대, 설비, 코드, 정지(분), 비고] — 코드표의 상세 코드로 적어요.
 const SEED_DOWNS = [
-  [-1, "day",   "EQ02", "설비고장", "기계",      "커터 파손",        95, "1차 파쇄기 커터 2매 교체"],
-  [-2, "night", "EQ02", "설비고장", "기계",      "베어링 손상",      70, "구동부 베어링 교체"],
-  [-3, "day",   "EQ03", "설비고장", "전기/제어", "센서 오류",        45, "온도센서 재교정"],
-  [-2, "day",   "EQ06", "공정이상", "막힘",      "스크린 막힘 조치", 55, "타공망 청소"],
-  [-4, "day",   "EQ06", "공정이상", "막힘",      "슈트 막힘 조치",   30, ""],
-  [-5, "night", "EQ01", "물류/자재", "원료",     "원료 대기",        40, "입고 지연"],
-  [-3, "night", "EQ09", "준비/교체", "소모품 교체", "톤백 교체",     25, ""],
-  [-6, "day",   "EQ04", "계획정지", "예방정비(PM)", "오일 교환",     35, "월 정기"],
+  [-1, "day",   "EQ05", "20-04-01", 95, "셔레더 칼날 2매 파손 교체"],
+  [-2, "night", "EQ05", "20-01-01", 70, "구동부 베어링 교체"],
+  [-3, "day",   "EQ08", "20-02-02", 45, "열전대 재교정"],
+  [-2, "day",   "EQ13", "20-04-02", 55, "타공망 파손 교체"],
+  [-4, "day",   "EQ07", "20-04-04", 30, "스크류 컨베어 이물 끼임"],
+  [-5, "night", "EQ02", "60-01-01", 40, "톤백 입고 지연"],
+  [-3, "night", "EQ08", "30-01-02", 80, "승온 · 질소 퍼징"],
+  [-6, "day",   "EQ11", "10-02-01", 35, "월 정기 PM"],
+  [-4, "night", "EQ11", "70-01-03", 60, "입도 이탈 재분쇄"],
+  [-1, "night", "EQ19", "30-02-02", 25, "덕트 분진 제거"],
 ];
 function downSeedData() {
-  return SEED_DOWNS.map((r, i) => ({
-    id: `dt-seed-${i}`, date: dayOffset(r[0]), shift: r[1], eqId: r[2],
-    major: r[3], minor: r[4], detail: r[5], min: r[6], note: r[7] || "",
-  }));
+  return SEED_DOWNS.map((r, i) => {
+    const d = DT_BY_CODE[r[3]] || {};
+    return { id: `dt-seed-${i}`, date: dayOffset(r[0]), shift: r[1], eqId: r[2], code: r[3],
+      major: d.major, minor: d.minor, detail: d.name, min: r[4], note: r[5] || "" };
+  });
 }
 
 // 생산실적 원장 샘플
@@ -4235,7 +4293,8 @@ function runSeedData() {
       id: `run-seed-${run.id}`, date, shift: run.shift,
       crew: shiftCrews(date, DEFAULT_MES.shiftAnchor)[run.shift] || "A",
       workers: run.workers, process: run.process, processLabel: proc.label, route: proc.route,
-      vendor: run.inputs.length ? get(run.inputs[0]).vendor : "", note: "",
+      vendor: run.inputs.length ? get(run.inputs[0]).vendor : "", note: run.rework ? "입도 이탈 재파쇄" : "",
+      rework: !!run.rework,
       inputs, inputKg: inputs.reduce((a, x) => a + x.qtyKg, 0),
       outputs: run.outputs.map((o) => {
         const l = get(o[0]);
@@ -4476,61 +4535,218 @@ const DOW_KR = ["일", "월", "화", "수", "목", "금", "토"];
 const dowOf = (dateStr) => DOW_KR[new Date(`${dateStr}T00:00:00`).getDay()];
 const CREW_COLOR = { A: "#3B82F6", B: "#A855F7", C: "#22C55E" };
 
-// 설비 9종 — 투입 호퍼에서 톤백 충진까지, 원료가 실제로 지나가는 순서 그대로예요.
-// 가동율 현황의 흐름도가 이 순서대로 그려집니다.
+// ---------- 설비 · 비가동 코드 ----------
+// 「설비 비가동 관리 코드표」(2026.09.17 수정본) 그대로예요. 설비 21 · 대분류 9 · 소분류 18 · 상세 50.
+// 비가동이 생기면 설비 1개 + 상세 코드 1개를 골라 기록합니다. 순서는 표에 적힌 공정 순서입니다.
+// icon 은 가동율 화면의 공정 Flow 에 그리는 간단한 그림 종류예요.
 const EQUIPMENT = [
-  { id: "EQ01", name: "투입 호퍼 / 피더", short: "투입" },
-  { id: "EQ02", name: "1차 파쇄기 (Shredder)", short: "1차 파쇄" },
-  { id: "EQ03", name: "열처리로 (Rotary Kiln)", short: "열처리로" },
-  { id: "EQ04", name: "2차 파쇄기 (Granulator)", short: "2차 파쇄" },
-  { id: "EQ05", name: "자력 선별기 (Magnet)", short: "자력선별" },
-  { id: "EQ06", name: "진동 선별기 (타공망)", short: "진동선별" },
-  { id: "EQ07", name: "풍력 선별기 (Zig-zag)", short: "풍력선별" },
-  { id: "EQ08", name: "집진 설비 (Dust Collector)", short: "집진" },
-  { id: "EQ09", name: "포장 / 톤백 충진", short: "포장" },
+  { id: "EQ01", name: "팩 해체설비", short: "팩 해체", icon: "robot",
+    parts: "CS-001A/B, RB-010/011 (해체로봇), CV-012, BC-013, DC-001, DM-002 (팩방전기), DM-003 (모듈방전기)" },
+  { id: "EQ02", name: "분말투입설비", short: "분말투입", icon: "hopper",
+    parts: "HC-100, BD-100, DR-100, CH-100, VB-100, RV-101, DC-101, SC-101A (폐톤백압착기), UH-100 (언로딩호퍼)" },
+  { id: "EQ03", name: "펀칭기", short: "펀칭기", icon: "punch", parts: "PM-111" },
+  { id: "EQ04", name: "해쇄기/선별기 (원형)", short: "해쇄·선별", icon: "sieve", parts: "GB-103, VS-103" },
+  { id: "EQ05", name: "파쇄설비", short: "파쇄", icon: "shredder",
+    parts: "SR-115A/B (2축 셔레더 45kW×2), SG-115A/B" },
+  { id: "EQ06", name: "산소치환장치", short: "산소치환", icon: "gas", parts: "FH-2130A, SG-2130A/B/C" },
+  { id: "EQ07", name: "이송 컨베어", short: "컨베어", icon: "conveyor",
+    parts: "스크류 SC-101B/104/301/302/304/306/307/309 · 스크래퍼 SPC-102/116/117/300 · 버킷 BKC-104, BC-310A/B/C · 벨트 BC-110/113/305 · 에이프런 APC-112/114 · 롤러 RC-110 (무동력)" },
+  { id: "EQ08", name: "건조로 (열분해로)", short: "건조로", icon: "kiln",
+    parts: "DR-2000 (히터 540kW), DR-2000A/B/C (노내 스크래퍼), SPD-2110, TS-2100" },
+  { id: "EQ09", name: "냉각로", short: "냉각로", icon: "cooler",
+    parts: "C-2200/2210/2220 (무기물 냉각기), SG-2200/2220, M-2230A/B (워터헤더)" },
+  { id: "EQ10", name: "응축기", short: "응축기", icon: "condenser",
+    parts: "C-2300A~E (응축기), OT-2310, P-2320, M-2330A/B (워터헤더), WT-408 (응축오일 저장탱크 30㎥)" },
+  { id: "EQ11", name: "1차 분쇄설비", short: "1차 분쇄", icon: "mill", parts: "HM-303 (해머밀 55kW), WC-303 (칠러)" },
+  { id: "EQ12", name: "2차 분쇄설비", short: "2차 분쇄", icon: "mill",
+    parts: "ACM-307 (에어분급밀 45kW), HP-307 (정량호퍼), WC-307" },
+  { id: "EQ13", name: "1차 선별기 (사각)", short: "1차 선별", icon: "screen", parts: "VS-302A/B (진동체)" },
+  { id: "EQ14", name: "2차 집진/선별기 (원형)", short: "2차 집진·선별", icon: "cyclone", parts: "BL·CY·RV-303, VS-304 (진동체)" },
+  { id: "EQ15", name: "자력선별기", short: "자력선별", icon: "magnet", parts: "MS-305 (자력선별), SB-305, BC-305" },
+  { id: "EQ16", name: "3차 집진/선별기 (원형)", short: "3차 집진·선별", icon: "cyclone", parts: "BL·CY·RV-308, VS-309 (진동체)" },
+  { id: "EQ17", name: "비중선별기", short: "비중선별", icon: "gravity",
+    parts: "GS-310A/B (비중선별 #1,2 송풍기 3.7kW×2), SG-310A/B/C" },
+  { id: "EQ18", name: "집진/사일로", short: "집진·사일로", icon: "silo",
+    parts: "SIL-311 (제품 사일로), MF-311 (믹싱팬), BL·CY·RV-302, BL·CY·RV-304, BL·CY·RV-309, RV-311, PS-311 (계량), VIB-311 (바이브레이터)" },
+  { id: "EQ19", name: "환경설비", short: "환경설비", icon: "scrubber",
+    parts: "SB-401 (스크러버), MW-403 (75kW), HE-405, TB-402/406, ACT-407, DC-409 · TF-409 (37kW), TK-400 (챔버탱크), WP-401 · WT-401 (폐수펌프 · 폐수탱크), CY-404 · RV-404, RV-409 (집진기 로타리밸브), CT-2400, P-2420A/B/C, M-2410A/B (워터헤더)" },
+  { id: "EQ20", name: "질소발생기", short: "질소발생", icon: "tank",
+    parts: "AC-500 (75kW), NG-500 (질소), DR-500, NTK-500 (질소저장탱크), TK-500 (공기저장탱크)" },
+  { id: "EQ21", name: "유틸리티설비", short: "유틸리티", icon: "compressor",
+    parts: "AC-501A/B, DR-501, EG-502, TK-501 (공기저장탱크)" },
 ];
 const equipById = Object.fromEntries(EQUIPMENT.map((e) => [e.id, e]));
 const eqName = (id) => (equipById[id] || {}).name || (id || "-");
 const eqShort = (id) => (equipById[id] || {}).short || (id || "-");
 
-// 비가동 유형 — 대분류 / 소분류 / 상세 3단으로 골라요.
-// 상세까지 정해두면 나중에 "무엇 때문에 얼마나 섰는지"를 바로 집계할 수 있어요.
+// 비가동 코드 — 대분류 · 소분류 · 상세 3단. 상세 하나가 코드 하나예요 (예: 20-01-01).
+// rule 은 가동률에 어떻게 들어가는지: plan = 부하시간에서 제외(계획정지), time = 시간가동률, quality = 양품률.
+// eqs 는 주로 생기는 설비, desc 는 설명·판정기준이에요.
+const D = (code, name, plan, rule, eqs, desc) => ({ code, name, plan, rule, eqs, desc });
 const DT_TREE = [
-  { major: "설비고장", color: "#EF4444", minors: [
-    { name: "기계", details: ["베어링 손상", "체인/스프라켓 파손", "감속기 이상", "커플링 파손", "커터 파손"] },
-    { name: "전기/제어", details: ["인버터 트립", "센서 오류", "PLC 이상", "모터 과열", "배선 단선"] },
-    { name: "유압/공압", details: ["실린더 누유", "컴프레서 이상", "솔밸브 고착", "에어 누설"] },
+  { code: "10", major: "계획정지", color: "#3B82F6", minors: [
+    { code: "10-01", name: "휴무 · 비조업", details: [
+      D("10-01-01", "휴무일 · 비조업", "계획", "plan", "전 설비", "조업하지 않는 날. 가동률 계산의 분모에서 빠집니다."),
+      D("10-01-02", "생산계획 미배정", "계획", "plan", "전 설비", "물량 미배정. 원료가 없어서 못 도는 것은 60-01-01"),
+    ] },
+    { code: "10-02", name: "계획보전 · 법정검사", details: [
+      D("10-02-01", "계획보전 (PM)", "계획", "plan", "전 설비", "보전계획서에 사전 등록된 작업만 해당"),
+      D("10-02-02", "대정비 (오버홀)", "계획", "plan", "전 설비", "연 1회 전 라인 정지 정비"),
+      D("10-02-03", "법정검사 · 안전교육", "계획", "plan", "전 설비", "전기 · 소방 검사, 대기 자가측정, 정기 안전교육"),
+    ] },
   ] },
-  { major: "계획정지", color: "#3B82F6", minors: [
-    { name: "정기 Overhaul", details: ["연간 OH", "반기 OH", "분기 정비"] },
-    { name: "예방정비(PM)", details: ["구리스 주입", "오일 교환", "벨트 장력 조정", "볼트 체결점검", "마모부 점검"] },
-    { name: "청소", details: ["설비 내부 청소", "집진기 청소", "라인 주변 청소", "덕트 청소"] },
+  { code: "20", major: "설비고장", color: "#EF4444", minors: [
+    { code: "20-01", name: "기계", details: [
+      D("20-01-01", "베어링 · 축 손상", "비계획", "time", "전 설비", "이음 · 발열 · 진동 동반. 교체 후 급유주기 재검토"),
+      D("20-01-02", "체인 · 스프라켓 파손", "비계획", "time", "EQ07 · EQ02 · EQ03 · EQ05", "체인 신율 2% 초과 시 교체. 스프라켓 동시 점검"),
+      D("20-01-03", "감속기 · 구동부 이상", "비계획", "time", "전 설비", "기어 파손, 커플링 손상, 누유 · 윤활 불량 포함"),
+      D("20-01-04", "벨트 · 스크류 마모 · 손상", "비계획", "time", "EQ07", "벨트 사행 · 절손, 스크류 날 · 스크래퍼 마모"),
+    ] },
+    { code: "20-02", name: "전기 · 제어", details: [
+      D("20-02-01", "모터 · 인버터 트립", "비계획", "time", "전 설비", "과전류 · 과열 · 서멀 트립. 트립 코드를 반드시 기록"),
+      D("20-02-02", "센서 · 스위치 이상", "비계획", "time", "전 설비", "열전대, 압력 · 차압, 근접 · 리밋, O2 분석계"),
+      D("20-02-03", "PLC · 제어반 이상", "비계획", "time", "전 설비", "제어 프로그램 · 통신 · 터치패널"),
+      D("20-02-04", "전원 · 배선 이상", "비계획", "time", "전 설비", "단선 · 단락 · 접점 불량. 외부 정전은 90-01-01"),
+    ] },
+    { code: "20-03", name: "유공압 · 배관", details: [
+      D("20-03-01", "실린더 · 밸브 작동 불량", "비계획", "time", "EQ05 · EQ06 · EQ08 · EQ09", "슬라이드게이트 · 도어 구동부, 솔레노이드 밸브"),
+      D("20-03-02", "공압 압력 저하", "비계획", "time", "전 설비", "배관 누기 · 콤프레샤 이상. 0.5MPa 미만 시 인터록 동작"),
+      D("20-03-03", "누수 · 누설", "비계획", "time", "EQ08 · EQ09 · EQ10 · EQ19", "냉각수 · 배가스 · 질소 누설"),
+    ] },
+    { code: "20-04", name: "소모품 파손", details: [
+      D("20-04-01", "칼날 · 해머 파손", "비계획", "time", "EQ03 · EQ04 · EQ05 · EQ11 · EQ12", "★ 주기 전 파손. 주기 도래 교체는 40-02-01"),
+      D("20-04-02", "스크린 · 타공망 파손", "비계획", "time", "EQ04 · EQ11 · EQ13 · EQ14 · EQ16", "★ 주기 전 파손. 주기 도래 교체는 40-02-02"),
+      D("20-04-03", "필터 · 활성탄 파손 · 막힘", "비계획", "time", "EQ19 · EQ01 · EQ02", "★ 주기 전 파손. 주기 도래 교체는 40-02-03"),
+      D("20-04-04", "이물 끼임 (재밍)", "비계획", "time", "EQ05 · EQ07 · EQ11 · EQ12", "과부하 정지. 반복되면 투입 전 선별을 강화"),
+    ] },
   ] },
-  { major: "준비/교체", color: "#A855F7", minors: [
-    { name: "소모품 교체", details: ["타공망 교체", "커터/블레이드 교체", "스크린 메쉬 교체", "필터백 교체", "벨트 교체"] },
-    { name: "품목 전환", details: ["원료 품목 교체", "잔류물 퍼지", "설비 셋업 변경"] },
+  { code: "30", major: "작업준비", color: "#A855F7", minors: [
+    { code: "30-01", name: "기동 · 정지", details: [
+      D("30-01-01", "기동 준비", "비계획", "time", "전 설비", "전원 투입, 기동조건 확인, 공회전 시운전"),
+      D("30-01-02", "승온 · 퍼징 대기", "비계획", "time", "EQ08", "550℃ 승온 + 질소 퍼징 O2 3% 도달까지. 최대 소요 항목"),
+      D("30-01-03", "강온 · 정지 작업", "비계획", "time", "EQ08", "냉각 대기, 잔류물 배출, 잔압 제거"),
+    ] },
+    { code: "30-02", name: "청소", details: [
+      D("30-02-01", "설비 청소", "비계획", "time", "전 설비", "내부 잔류물 제거"),
+      D("30-02-02", "덕트 · 집진 청소", "비계획", "time", "EQ18 · EQ19", "분진 퇴적 제거"),
+    ] },
   ] },
-  { major: "공정이상", color: "#F59E0B", minors: [
-    { name: "막힘", details: ["슈트 막힘 조치", "스크린 막힘 조치", "덕트 막힘 조치", "호퍼 브릿지 해소"] },
-    { name: "과부하", details: ["과부하 트립", "이물질 유입 제거", "과투입 조정"] },
-    { name: "온도/압력 이상", details: ["열처리 온도 이상", "차압 상승", "냉각 불량"] },
+  { code: "40", major: "제품교체", color: "#F97316", minors: [
+    { code: "40-01", name: "품종 전환", details: [
+      D("40-01-01", "투입 품종 전환", "비계획", "time", "EQ01 · EQ02 · EQ03 · EQ05 · EQ06", "PACK ↔ CELL ↔ 분말 투입 전환"),
+      D("40-01-02", "조성 변경 · 세정", "비계획", "time", "전 설비", "NCM ↔ LFP 등 변경. 이종 혼입 방지 세정 포함"),
+    ] },
+    { code: "40-02", name: "소모품 정기교체", details: [
+      D("40-02-01", "칼날 · 해머 정기교체", "계획", "time", "EQ03 · EQ04 · EQ05 · EQ11 · EQ12", "★ 주기 도래 교체. 파손은 20-04-01"),
+      D("40-02-02", "스크린 · 타공망 정기교체", "계획", "time", "EQ04 · EQ11 · EQ13 · EQ14 · EQ16", "★ 주기 도래 교체. 파손은 20-04-02"),
+      D("40-02-03", "필터 · 활성탄 정기교체", "계획", "time", "EQ19 · EQ01 · EQ02", "★ 주기 도래 교체. 파손은 20-04-03"),
+    ] },
   ] },
-  { major: "물류/자재", color: "#14B8A6", minors: [
-    { name: "원료", details: ["원료 대기", "원료 계량 지연", "입고 지연"] },
-    { name: "제품", details: ["톤백 교체", "제품 배출 대기", "지게차 대기"] },
+  { code: "50", major: "설비점검", color: "#06B6D4", minors: [
+    { code: "50-01", name: "점검", details: [
+      D("50-01-01", "일상점검", "비계획", "time", "전 설비", "시업 전 점검, 교대 인수인계 점검"),
+      D("50-01-02", "정기점검", "비계획", "time", "전 설비", "주간 · 월간 점검. 계획서 등록분은 10-02-01"),
+      D("50-01-03", "계측 · 진단", "비계획", "time", "전 설비", "진동 · 온도 진단, 절연저항, 유분석"),
+    ] },
   ] },
-  { major: "안전/환경", color: "#EC4899", minors: [
-    { name: "안전", details: ["안전점검", "발열/발화 조치", "소방점검", "작업 중지"] },
-    { name: "환경", details: ["스크러버 이상", "배기 이상", "폐수 처리 지연"] },
+  { code: "60", major: "물류 / 자재", color: "#14B8A6", minors: [
+    { code: "60-01", name: "원료 · 자재", details: [
+      D("60-01-01", "원료 미입고 · 대기", "비계획", "time", "EQ01 · EQ02", "입고 지연, 방전 대기, 톤백 공급 지연"),
+      D("60-01-02", "부자재 · 예비품 결품", "비계획", "time", "전 설비", "칼날 · 필터 등 예비품 미확보"),
+      D("60-01-03", "유틸리티 공급 부족", "비계획", "time", "EQ20 · EQ21", "질소 · 공업용수 부족. 설비 자체 고장은 20번대"),
+    ] },
+    { code: "60-02", name: "제품 · 운반", details: [
+      D("60-02-01", "제품 적체", "비계획", "time", "EQ18", "사일로 만적, 출하 지연"),
+      D("60-02-02", "운반 · 계량 대기", "비계획", "time", "전 설비", "지게차 · 크레인 · 계량 순번 대기"),
+    ] },
   ] },
-  { major: "기타", color: "#64748B", minors: [
-    { name: "인적", details: ["작업자 교육", "인원 부족", "교대 인수인계 지연"] },
-    { name: "유틸리티", details: ["정전", "단수", "에어/스팀 공급 중단"] },
+  { code: "70", major: "품질이상", color: "#F59E0B", minors: [
+    { code: "70-01", name: "품질", details: [
+      D("70-01-01", "규격 이탈", "비계획", "quality", "EQ08 · EQ11 · EQ12 · EQ13~EQ17", "수분 · 입도 · 금속분 함량 이탈"),
+      D("70-01-02", "이물 · 이종 혼입", "비계획", "quality", "전 설비", "혼입 경로 추적 필수"),
+      D("70-01-03", "재작업", "비계획", "quality", "EQ05 · EQ08 · EQ11 · EQ12", "재파쇄 · 재선별 · 재건조"),
+    ] },
+  ] },
+  { code: "80", major: "환경 / 안전", color: "#EC4899", minors: [
+    { code: "80-01", name: "환경", details: [
+      D("80-01-01", "배출기준 초과 · 환경설비 이상", "비계획", "time", "EQ19", "즉시 정지 · 원인 조치 · 기록 보존"),
+      D("80-01-02", "폐수 · 약품 이상", "비계획", "time", "EQ19", "스크러버 pH, 폐수탱크 만수위"),
+    ] },
+    { code: "80-02", name: "안전", details: [
+      D("80-02-01", "화재 · 발연 · 가스경보", "비계획", "time", "EQ01 · EQ03 · EQ05 · EQ08", "배터리 열폭주 위험. 최우선 정지 · 재기동 승인 필요"),
+      D("80-02-02", "비상정지 · 인터록 작동", "비계획", "time", "전 설비", "작동 원인을 반드시 기록"),
+      D("80-02-03", "사고 · 안전조치", "비계획", "time", "전 설비", "산업재해 · 아차사고 조치"),
+    ] },
+  ] },
+  { code: "90", major: "외부요인", color: "#64748B", minors: [
+    { code: "90-01", name: "정전 · 유틸", details: [
+      D("90-01-01", "정전 · 순간전압강하", "비계획", "time", "전 설비", "비상발전기 200kW 기동 (비상부하 86kW). 발생 시각 기록"),
+      D("90-01-02", "단수 · 외부 유틸 중단", "비계획", "time", "전 설비", "공급사 통보 내용 기록"),
+    ] },
+    { code: "90-02", name: "외부 지원", details: [
+      D("90-02-01", "협력사 A/S 대기", "비계획", "time", "전 설비", "대기시간과 실제 작업시간을 나누어 기록"),
+      D("90-02-02", "기상 · 재해", "비계획", "time", "전 설비", "폭우 · 폭설 · 지진 등"),
+    ] },
   ] },
 ];
+// 코드 하나로 대분류 · 소분류 · 상세를 모두 찾아요.
+const DT_BY_CODE = {};
+DT_TREE.forEach((t) => t.minors.forEach((m) => m.details.forEach((d) => {
+  DT_BY_CODE[d.code] = { ...d, major: t.major, minor: m.name, color: t.color };
+})));
 const dtMajorColor = (m) => (DT_TREE.find((x) => x.major === m) || {}).color || "#64748B";
 const dtMinors = (major) => (DT_TREE.find((x) => x.major === major) || { minors: [] }).minors;
 const dtDetails = (major, minor) => (dtMinors(major).find((x) => x.name === minor) || { details: [] }).details;
+
+// 코드표를 받기 전에 저장된 비가동은 설비 번호와 대분류가 지금과 달라요 (옛 EQ01~EQ09).
+// 저장된 기록은 그대로 두고, 화면에 보일 때만 지금 체계로 옮겨 읽습니다. code 가 있으면 새 기록이에요.
+const OLD_EQ_MAP = { EQ01: "EQ02", EQ02: "EQ05", EQ03: "EQ08", EQ04: "EQ11", EQ05: "EQ15",
+  EQ06: "EQ13", EQ07: "EQ17", EQ08: "EQ18", EQ09: "EQ18" };
+const OLD_MAJOR_MAP = { "설비고장": "설비고장", "계획정지": "계획정지", "준비/교체": "제품교체",
+  "공정이상": "설비고장", "물류/자재": "물류 / 자재", "안전/환경": "환경 / 안전", "기타": "외부요인" };
+function normDown(r) {
+  if (!r || typeof r !== "object") return r;
+  if (r.code && DT_BY_CODE[r.code]) {
+    const d = DT_BY_CODE[r.code];
+    return { ...r, major: d.major, minor: d.minor, detail: d.name, rule: d.rule };
+  }
+  const major = OLD_MAJOR_MAP[r.major] || r.major || "외부요인";
+  return { ...r, eqId: OLD_EQ_MAP[r.eqId] || r.eqId, major,
+    rule: major === "계획정지" ? "plan" : "time", legacy: true };
+}
+// ---------- 설비 그림 ----------
+// 공정 Flow 에 넣는 간단한 선 그림이에요 (48×48). 색은 글자색을 따라가서 상태 색을 그대로 입습니다.
+const EQ_GLYPH = {
+  robot: '<rect x="7" y="38" width="15" height="4" rx="1"/><path d="M14.5 38V28"/><circle cx="14.5" cy="25.5" r="2.5"/><path d="M16.5 24 25 16.5"/><circle cx="26.5" cy="15" r="2"/><path d="m28 13.5 5-4M28 16.5l5 4"/><rect x="30" y="27" width="12" height="11" rx="1.5" fill="currentColor" fill-opacity=".14"/><path d="M33 27v-2M39 27v-2M34 32.5h6"/>',
+  hopper: '<path d="M7 9h34l-10 17H17z" fill="currentColor" fill-opacity=".14"/><path d="M20 26v6h8v-6"/><circle cx="24" cy="36.5" r="1.2" fill="currentColor"/><circle cx="21.5" cy="40.5" r="1.2" fill="currentColor"/><circle cx="26.5" cy="40.5" r="1.2" fill="currentColor"/><path d="M12 9V6M36 9V6"/>',
+  punch: '<path d="M9 41V7h30v34"/><rect x="18" y="11" width="12" height="10" rx="1" fill="currentColor" fill-opacity=".14"/><path d="M22 21h4v6h-4z"/><rect x="12" y="33" width="24" height="4" rx="1"/><path d="M15 31.5h18"/><path d="M24 7v4"/>',
+  sieve: '<ellipse cx="24" cy="15" rx="15" ry="5" fill="currentColor" fill-opacity=".14"/><path d="M13 15h22" stroke-dasharray="2 2.5"/><path d="M9 15l3 14M39 15l-3 14"/><ellipse cx="24" cy="29" rx="12" ry="4"/><path d="M15 33l-2 3 3 2-2 3M33 33l2 3-3 2 2 3"/><path d="M24 33v7"/>',
+  shredder: '<path d="M14 5h20l-4 8H18z"/><rect x="7" y="13" width="34" height="20" rx="3" fill="currentColor" fill-opacity=".1"/><circle cx="18" cy="23" r="6"/><circle cx="30" cy="23" r="6"/><path d="M18 17v-2M18 29v2M12 23h-2M26.5 18.5l-1.4-1.4M30 17v-2M30 29v2M36 23h2M21.5 18.5l1.4-1.4"/><path d="M20 37l4 4 4-4M24 33v8"/>',
+  gas: '<rect x="15" y="12" width="18" height="24" rx="3" fill="currentColor" fill-opacity=".12"/><path d="M4 18h9m-3-3 3 3-3 3M35 30h9m-3-3 3 3-3 3"/><text x="8.5" y="30" font-size="7.5" font-weight="700" fill="currentColor" stroke="none" text-anchor="middle">N₂</text><text x="39.5" y="21" font-size="7.5" font-weight="700" fill="currentColor" stroke="none" text-anchor="middle">O₂</text><circle cx="21" cy="21" r="1.5"/><circle cx="27" cy="26" r="2"/><circle cx="22" cy="30" r="1.2"/>',
+  conveyor: '<path d="M8 27h32M8 34h32"/><circle cx="10" cy="30.5" r="3.5"/><circle cx="38" cy="30.5" r="3.5"/><circle cx="24" cy="30.5" r="2"/><rect x="12" y="19" width="7" height="7" rx="1" fill="currentColor" fill-opacity=".18"/><rect x="24" y="20" width="8" height="6" rx="1" fill="currentColor" fill-opacity=".18"/><path d="M14 38l-2 4M34 38l2 4"/><path d="M36 14l4 4-4 4" /><path d="M28 18h12"/>',
+  kiln: '<rect x="5" y="12" width="36" height="15" rx="7.5" fill="currentColor" fill-opacity=".12"/><path d="M15 12v15M31 12v15"/><path d="M11 27v4M35 27v4M8 31h30"/><path d="M22 44c-3.2-2.8-1.4-6.2 1.8-8.4-.2 3 3.4 4 3.2 7.2A3.3 3.3 0 0 1 22 44z" fill="currentColor" fill-opacity=".35"/><path d="M41 19h3"/>',
+  cooler: '<rect x="5" y="11" width="38" height="17" rx="8.5" fill="currentColor" fill-opacity=".1"/><path d="M24 13.5v12M18.8 16.5l10.4 6M18.8 22.5l10.4-6"/><path d="M9 33h30"/><path d="M14 33v3M24 33v3M34 33v3"/><path d="M14 40.5a1.5 1.5 0 0 0 3 0c0-1-1.5-2.8-1.5-2.8S14 39.5 14 40.5zM31 40.5a1.5 1.5 0 0 0 3 0c0-1-1.5-2.8-1.5-2.8S31 39.5 31 40.5z" fill="currentColor"/>',
+  condenser: '<rect x="7" y="6" width="17" height="30" rx="3" fill="currentColor" fill-opacity=".1"/><path d="M11 11l9 4-9 4 9 4-9 4 9 4"/><path d="M24 30h6v-2"/><rect x="30" y="28" width="12" height="13" rx="2"/><path d="M30 35h12"/><path d="M34 21.5a2 2 0 0 0 4 0c0-1.4-2-3.7-2-3.7s-2 2.3-2 3.7z" fill="currentColor"/>',
+  mill: '<path d="M20 4h8v6h-8z"/><circle cx="24" cy="24" r="13" fill="currentColor" fill-opacity=".1"/><circle cx="24" cy="24" r="3"/><path d="M24 21v-8M27 24h8M24 27v8M21 24h-8"/><path d="M22 13h4M35 22v4M22 35h4M13 22v4"/><path d="M20 38l4 5 4-5"/>',
+  screen: '<path d="M6 14l36 10v6L6 20z" fill="currentColor" fill-opacity=".12"/><path d="M8 17.5l32 9" stroke-dasharray="2 2.5"/><path d="M12 22l-2 3 3 2-2 3M36 29l2 3-3 2 2 3"/><path d="M6 40h36"/><path d="M20 26v5M26 28v5" stroke-dasharray="1.5 2"/><path d="M42 27h3"/>',
+  cyclone: '<path d="M8 8h16v9l-5 14h-6l-5-14z" fill="currentColor" fill-opacity=".12"/><path d="M16 8V3M2 11h6M13 31v5h6v-5"/><path d="M11 17h10" stroke-dasharray="2 2"/><ellipse cx="36" cy="26" rx="8" ry="3"/><path d="M28 26l2 10h12l2-10" /><path d="M31 26h10" stroke-dasharray="1.6 2"/><path d="M24 12h4v10"/>',
+  magnet: '<path d="M13 8v14a11 11 0 0 0 22 0V8" stroke-width="2.4"/><path d="M13 8h7v6h-7zM28 8h7v6h-7z" fill="currentColor" fill-opacity=".28"/><path d="M20 22a4 4 0 0 0 8 0" /><circle cx="18" cy="40" r="1.3" fill="currentColor"/><circle cx="24" cy="37.5" r="1.3" fill="currentColor"/><circle cx="30" cy="40" r="1.3" fill="currentColor"/><path d="M6 44h36"/>',
+  gravity: '<path d="M5 26l38-9" stroke-width="2.6"/><path d="M5 26l38-9v4L5 30z" fill="currentColor" fill-opacity=".12"/><path d="M14 40v-7m-2.5 2.5L14 33l2.5 2.5M24 38v-7m-2.5 2.5L24 31l2.5 2.5M34 36v-7m-2.5 2.5L34 29l2.5 2.5"/><circle cx="12" cy="20" r="1.4" fill="currentColor"/><circle cx="30" cy="14" r="2.2"/><circle cx="36" cy="12.5" r="2.2"/>',
+  silo: '<path d="M11 5h16v24l-8 8-8-8z" fill="currentColor" fill-opacity=".12"/><path d="M11 12h16"/><path d="M17 37v5h4v-5"/><rect x="32" y="8" width="11" height="18" rx="1.5"/><path d="M35 8v18M38 8v18M41 8v18"/><path d="M34 26l3.5 5 3.5-5"/><path d="M27 12h5"/>',
+  scrubber: '<rect x="8" y="12" width="14" height="28" rx="2" fill="currentColor" fill-opacity=".12"/><path d="M8 20h14M8 28h14" stroke-dasharray="2 2"/><rect x="28" y="6" width="7" height="34" rx="1"/><path d="M22 34h6"/><path d="M31.5 6c-2-2 2-3 0-5M36 4c-1.5-1.5 1.5-2.5 0-4" /><path d="M5 44h36"/>',
+  tank: '<rect x="18" y="5" width="16" height="33" rx="8" fill="currentColor" fill-opacity=".12"/><text x="26" y="25" font-size="8.5" font-weight="700" fill="currentColor" stroke="none" text-anchor="middle">N₂</text><path d="M21 38v4M31 38v4M16 42h20"/><rect x="4" y="28" width="10" height="10" rx="1.5"/><path d="M14 33h4"/><circle cx="9" cy="33" r="2.2"/>',
+  compressor: '<rect x="5" y="24" width="28" height="13" rx="6.5" fill="currentColor" fill-opacity=".12"/><rect x="9" y="12" width="15" height="10" rx="1.5"/><circle cx="34" cy="17" r="5.5"/><path d="M34 11.5v11M28.5 17h11"/><path d="M11 37v4M27 37v4"/><circle cx="40" cy="31" r="3"/><path d="M40 31l1.6-1.6"/>',
+};
+function EqGlyph({ icon, size = 40 }) {
+  return html`<svg xmlns="http://www.w3.org/2000/svg" width=${size} height=${size} viewBox="0 0 48 48" fill="none"
+    stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+    className="ivs-eqglyph" dangerouslySetInnerHTML=${{ __html: EQ_GLYPH[icon] || EQ_GLYPH.compressor }}></svg>`;
+}
+
+// 비가동 한 건이 가동률에 어떻게 들어가는지
+const dtRuleOf = (r) => (r && r.rule) || (r && r.code && DT_BY_CODE[r.code] ? DT_BY_CODE[r.code].rule
+  : (r && r.major === "계획정지" ? "plan" : r && r.major === "품질이상" ? "quality" : "time"));
+const DT_RULE_LABEL = { plan: "부하시간 제외", time: "시간가동률", quality: "양품률" };
 
 // 가동율 판정 색 — 목표 이상이면 초록, 10%p 이내면 노랑, 그 아래는 빨강.
 const utilColor = (pct, target) =>
@@ -5785,7 +6001,7 @@ function dailyReportHtml({ date, runs, lots, moves, downs, settings, mes }) {
       const rr = Number(r.inputKg) > 0 ? `${((oKg / Number(r.inputKg)) * 100).toFixed(1)}%` : "-";
       return [
         [esc(SHIFT_LABEL[r.shift] || r.shift || "-"), "c"], [esc(r.crew || "-"), "c"],
-        [esc(r.processLabel || r.process || "-"), ""],
+        [`${esc(r.processLabel || r.process || "-")}${r.rework ? " <b>(재작업)</b>" : ""}`, ""],
         [`<span class="mono">${(r.inputs || []).map((x) => esc(x.lotNo)).join("<br>") || "-"}</span>`, ""],
         [kg(r.inputKg), "n"],
         [`<span class="mono">${o.map((x) => esc(x.lotNo)).join("<br>") || "-"}</span>`, ""],
@@ -5812,10 +6028,11 @@ function dailyReportHtml({ date, runs, lots, moves, downs, settings, mes }) {
   }, "이 날 공정이동 기록이 없습니다.");
 
   const dtRows = rows(dayDowns, {
-    head: [["설비", ""], ["대분류", ""], ["소분류", ""], ["상세", ""], ["정지(분)", "n"], ["비고", ""]],
-    row: (x) => [[esc(eqShort(x.eqId)), ""], [esc(x.major || "-"), ""], [esc(x.minor || "-"), ""],
+    head: [["설비", ""], ["코드", "c"], ["대분류", ""], ["소분류", ""], ["상세", ""], ["정지(분)", "n"], ["비고", ""]],
+    row: (x) => [[`${esc(x.eqId || "")} ${esc(eqShort(x.eqId))}`, ""], [`<span class="mono">${esc(x.code || "-")}</span>`, "c"],
+      [esc(x.major || "-"), ""], [esc(x.minor || "-"), ""],
       [esc(x.detail || "-"), ""], [kg(x.min), "n"], [esc(x.note || ""), ""]],
-    foot: () => [[`합계 ${dayDowns.length}건`, ""], ["", ""], ["", ""], ["", ""], [kg(dtMin), "n"], ["", ""]],
+    foot: () => [[`합계 ${dayDowns.length}건`, ""], ["", ""], ["", ""], ["", ""], ["", ""], [kg(dtMin), "n"], ["", ""]],
   }, "이 날 비가동 기록이 없습니다.");
 
   return `
@@ -6541,6 +6758,7 @@ function InventorySystem() {
     tollingOnly: false, stage: "all", category: "all",
   });
   const [usage, setUsage] = useState(() => (LIVE_DATA && LIVE_DATA.usage) || {});
+  const [downEq, setDownEq] = useState(null); // 가동율 화면에서 눌러 들어온 설비 — 비가동 현황이 이 설비만 봐요
   // 보관함에서 꺼내 본 연도들 — 화면에만 얹히고 저장에는 끼지 않아요.
   const [archOpen, setArchOpen] = useState(() => ({})); // { "2025": {lots, moves, runs, downs} }
   const [sort, setSort] = useState({ key: "receivedDate", dir: "desc" });
@@ -6954,6 +7172,8 @@ function InventorySystem() {
       id: runId, date, shift: draft.shift, crew: draft.crew, workers: Number(draft.workers) || 0,
       process: proc.key, processLabel: proc.label, route: proc.route, vendor,
       note: draft.note || "",
+      // 재작업 — 이미 거친 공정을 다시 태운 투입이에요 (재파쇄 · 재선별 · 재건조). 양품율 계산에 들어갑니다.
+      rework: !!draft.rework,
       inputs: inputLots.map((l) => ({ lotId: l.id, lotNo: l.lotNo, code: l.code, name: l.name, stage: l.stage, qtyKg: Number(l.qtyKg) || 0 })),
       inputKg,
       outputs: created.map((o) => ({
@@ -7046,7 +7266,8 @@ function InventorySystem() {
   }, [archOpen]);
   const movesAll = useMemo(() => archRows("moves", moves), [archRows, moves]);
   const runsAll = useMemo(() => archRows("runs", runs), [archRows, runs]);
-  const downsAll = useMemo(() => archRows("downs", downs), [archRows, downs]);
+  // 비가동은 화면에 보일 때 지금 코드표 체계로 맞춰 읽어요 (옛 설비 번호 · 대분류도 여기서 옮겨집니다).
+  const downsAll = useMemo(() => archRows("downs", downs).map(normDown), [archRows, downs]);
   const lotsAll = useMemo(() => archRows("lots", lots), [archRows, lots]);
   // Lot 추적용 색인 — 닫힌 로트도 들어있어야 출하대기 Lot에서 원입고 Lot까지 거슬러 갈 수 있어요.
   const lotsById = useMemo(() => new Map(lotsAll.map((l) => [l.id, l])), [lotsAll]);
@@ -7669,8 +7890,10 @@ function InventorySystem() {
             usage=${usage} onToast=${showToast} archOpen=${archOpen} onArchOpen=${setArchOpen}
             counts=${{ lots: lots.length, moves: moves.length, runs: runs.length, downs: downs.length }} />`
         : activeTab === "report" ? html`<${ReportTab} mes=${mes} runs=${runsAll} downs=${downsAll} lots=${openLots} settings=${settings} />`
-        : activeTab === "util" ? html`<${UtilTab} mes=${mes} runs=${runsAll} downs=${downsAll} />`
+        : activeTab === "util" ? html`<${UtilTab} mes=${mes} runs=${runsAll} downs=${downsAll}
+            onOpenDown=${(eqId) => { setDownEq(eqId); setActiveTab("down"); }} />`
         : activeTab === "down" ? html`<${DownTab} mes=${mes} runs=${runsAll} downs=${downsAll} canEdit=${canEdit}
+            focusEq=${downEq} onFocusEq=${setDownEq}
             onSave=${handleSaveDown} onDelete=${handleDeleteDown} />`
         : html`<div className="ivs-comingsoon">이 탭은 다음 단계에서 만들어요.</div>`}
 
@@ -8887,19 +9110,31 @@ function dayRecord(dateStr, mes, runs, downs) {
     out: { bm: outOf(rs, "bm"), cu: outOf(rs, "cu"), al: outOf(rs, "al"), cd: outOf(rs, "cd") },
     planKg: plan.totalKg,
     planMin: Math.round((plan.dayHours + plan.nightHours) * 60),
-    dtMin: sum(ds, "min"),
+    dtMin: sum(ds, "min"),                                              // 기록된 정지 전부 (화면 표시용)
     dtCount: ds.length,
+    // 코드표 「가동률 산출 · 규칙」 대로 셋으로 나눠요.
+    planStopMin: sum(ds.filter((r) => dtRuleOf(r) === "plan"), "min"),  // 대분류 10 — 부하시간에서 제외
+    lossMin: sum(ds.filter((r) => dtRuleOf(r) === "time"), "min"),      // 대분류 20~90 — 시간가동률
+    qualMin: sum(ds.filter((r) => dtRuleOf(r) === "quality"), "min"),   // 대분류 70 — 양품률 쪽
+    // 재작업 — 생산실적에서 "재작업"으로 넣은 투입량. 양품율 = 100 − 재작업율 로 씁니다.
+    reworkKg: sum(rs.filter((r) => r.rework), "inputKg"),
   };
   rec.outKg = rec.out.bm + rec.out.cu + rec.out.al + rec.out.cd;
-  rec.runMin = Math.max(0, rec.planMin - rec.dtMin);
+  rec.loadMin = Math.max(0, rec.planMin - rec.planStopMin);  // 부하시간 = 계획 − 계획정지
+  rec.runMin = Math.max(0, rec.loadMin - rec.lossMin);       // 가동시간 = 부하시간 − 비계획정지
   rec.capKg = (capa * rec.runMin) / 60;            // 그 시간 동안 낼 수 있었던 최대 처리량
-  rec.utilTime = rec.planMin > 0 ? (rec.runMin / rec.planMin) * 100 : null;
+  rec.utilTime = rec.loadMin > 0 ? (rec.runMin / rec.loadMin) * 100 : null;
   rec.utilPerf = rec.capKg > 0 ? (rec.inputKg / rec.capKg) * 100 : null;
-  rec.utilAll = rec.utilTime != null && rec.utilPerf != null ? (rec.utilTime * rec.utilPerf) / 100 : null;
+  rec.reworkRate = rec.inputKg > 0 ? (rec.reworkKg / rec.inputKg) * 100 : null;
+  rec.utilQual = rec.reworkRate == null ? null : Math.max(0, 100 - rec.reworkRate);
+  rec.utilAll = oee(rec.utilTime, rec.utilPerf, rec.utilQual);
   rec.achieve = rec.planKg > 0 ? (rec.inputKg / rec.planKg) * 100 : null;
   rec.perCap = rec.workers > 0 ? rec.inputKg / rec.workers : null;
   return rec;
 }
+
+// 종합효율(OEE) = 시간가동율 × 성능가동율 × 양품율. 투입이 없어 양품율을 모르는 날은 100으로 봐요.
+const oee = (t, p, q) => (t == null || p == null ? null : (t * p * (q == null ? 100 : q)) / 10000);
 
 // 여러 날을 하나로 합쳐요. capa가 달마다 다를 수 있어서, 성능가동율은
 // "낼 수 있었던 최대 처리량(capKg)"을 날짜별로 더한 뒤에 한 번에 나눠요.
@@ -8907,18 +9142,22 @@ function rollupDays(list, label) {
   const a = {
     label: label || "", days: list.length, from: list[0]?.date || "", to: list[list.length - 1]?.date || "",
     inputKg: 0, inDayKg: 0, inNightKg: 0, planKg: 0, planMin: 0, runMin: 0, dtMin: 0, dtCount: 0,
+    loadMin: 0, planStopMin: 0, lossMin: 0, qualMin: 0, reworkKg: 0,
     capKg: 0, workers: 0, shifts: 0, outKg: 0, out: { bm: 0, cu: 0, al: 0, cd: 0 }, opDays: 0, actDays: 0,
   };
   list.forEach((r) => {
-    ["inputKg", "inDayKg", "inNightKg", "planKg", "planMin", "runMin", "dtMin", "dtCount", "capKg", "workers", "shifts", "outKg"]
+    ["inputKg", "inDayKg", "inNightKg", "planKg", "planMin", "runMin", "dtMin", "dtCount", "capKg", "workers", "shifts", "outKg",
+      "loadMin", "planStopMin", "lossMin", "qualMin", "reworkKg"]
       .forEach((k) => { a[k] += r[k] || 0; });
     ["bm", "cu", "al", "cd"].forEach((k) => { a.out[k] += r.out[k] || 0; });
     if (r.planKg > 0) a.opDays++;
     if (r.inputKg > 0) a.actDays++;
   });
-  a.utilTime = a.planMin > 0 ? (a.runMin / a.planMin) * 100 : null;
+  a.utilTime = a.loadMin > 0 ? (a.runMin / a.loadMin) * 100 : null;
   a.utilPerf = a.capKg > 0 ? (a.inputKg / a.capKg) * 100 : null;
-  a.utilAll = a.utilTime != null && a.utilPerf != null ? (a.utilTime * a.utilPerf) / 100 : null;
+  a.reworkRate = a.inputKg > 0 ? (a.reworkKg / a.inputKg) * 100 : null;
+  a.utilQual = a.reworkRate == null ? null : Math.max(0, 100 - a.reworkRate);
+  a.utilAll = oee(a.utilTime, a.utilPerf, a.utilQual);
   a.achieve = a.planKg > 0 ? (a.inputKg / a.planKg) * 100 : null;
   a.perCap = a.workers > 0 ? a.inputKg / a.workers : null;
   a.rate = { bm: null, cu: null, al: null, cd: null };
@@ -8960,9 +9199,11 @@ function equipStats(from, to, mes, runs, downs) {
   return EQUIPMENT.map((e) => {
     const rows = inRange.filter((r) => r.eqId === e.id);
     const min = rows.reduce((a, b) => a + (Number(b.min) || 0), 0);
+    // 가동율에는 비계획 정지만 들어가요. 계획정지는 분모(부하시간)에서, 품질이상은 양품률에서 따로 봅니다.
+    const loss = rows.filter((r) => dtRuleOf(r) === "time").reduce((a, b) => a + (Number(b.min) || 0), 0);
     return {
-      ...e, min, count: rows.length,
-      util: tot.planMin > 0 ? Math.max(0, ((tot.planMin - min) / tot.planMin) * 100) : null,
+      ...e, min, loss, count: rows.length,
+      util: tot.loadMin > 0 ? Math.max(0, ((tot.loadMin - loss) / tot.loadMin) * 100) : null,
       mttr: rows.length > 0 ? min / rows.length : null, // 건당 평균 정지시간
     };
   });
@@ -9023,7 +9264,7 @@ function PeriodBar({ p, right }) {
 }
 
 // ---------- 가동율 현황 ----------
-function UtilTab({ mes, runs, downs }) {
+function UtilTab({ mes, runs, downs, onOpenDown }) {
   const p = usePeriod("month");
   const target = Number(mes.targetUtil) || 90;
   const recs = useMemo(() => recordsFor(p.from, p.to, mes, runs, downs), [p.from, p.to, mes, runs, downs]);
@@ -9056,13 +9297,16 @@ function UtilTab({ mes, runs, downs }) {
     <div>
       <${PeriodBar} p=${p} right=${html`<span className="ivs-chip neutral">목표 가동율 ${target}%</span>`} />
 
-      <div className="ivs-kpis cols-5">
-        <${KpiUtil} label="종합가동율" v=${tot.utilAll} prev=${dPt(tot.utilAll, cmp.utilAll)}
-          hint=${`시간 × 성능 · 목표 ${target}%`} />
+      <div className="ivs-kpis cols-6">
+        <${KpiUtil} label="종합가동율 (OEE)" v=${tot.utilAll} prev=${dPt(tot.utilAll, cmp.utilAll)}
+          hint=${`시간 × 성능 × 양품 · 목표 ${target}%`} />
         <${KpiUtil} label="시간가동율" v=${tot.utilTime} prev=${dPt(tot.utilTime, cmp.utilTime)}
-          hint=${`계획 ${fmtMin(tot.planMin)} 중 ${fmtMin(tot.runMin)} 가동`} />
+          hint=${`부하 ${fmtMin(tot.loadMin)} 중 ${fmtMin(tot.runMin)} 가동${tot.planStopMin > 0 ? ` · 계획정지 ${fmtMin(tot.planStopMin)} 제외` : ""}`} />
         <${KpiUtil} label="성능가동율" v=${tot.utilPerf} prev=${dPt(tot.utilPerf, cmp.utilPerf)}
           hint=${`가동 중 낼 수 있던 양 ${fmtTon(tot.capKg)} 톤 기준`} />
+        <${KpiUtil} label="양품율" v=${tot.utilQual} prev=${dPt(tot.utilQual, cmp.utilQual)}
+          hint=${tot.reworkRate == null ? "투입이 없어요"
+            : `재작업율 ${tot.reworkRate.toFixed(1)}% · 재작업 투입 ${fmtTon(tot.reworkKg)} / 투입 ${fmtTon(tot.inputKg)} 톤`} />
         <${SummaryCard} label="비가동 시간" value=${fmtMin(tot.dtMin)}
           icon=${html`<${Icon} name="alert-triangle" size=${13} />`}
           sub=${`${tot.dtCount}건 · ${worst ? `최다 ${worst.short}` : "기록 없음"}`} />
@@ -9073,34 +9317,43 @@ function UtilTab({ mes, runs, downs }) {
 
       <div className="ivs-card">
         <div className="ivs-card-head-row">
-          <h2 className="ivs-section-title">설비별 가동 흐름</h2>
+          <h2 className="ivs-section-title">공정 Flow 및 설비별 가동율</h2>
           <span className="ivs-section-hint">
-            원료가 지나가는 순서 · 큰 숫자는 가동율, 아래 막대와 색은 전체 정지시간 중 그 설비가 차지하는 몫이에요
+            코드표 순서 EQ01 → EQ21 · 큰 숫자는 설비 가동율, 막대는 전체 정지시간 중 그 설비 몫이에요 · 설비를 누르면 비가동 상세로 가요
           </span>
         </div>
-        <div className="ivs-flow">
-          ${eqs.map((e, i) => {
-            // 정지시간이 가장 긴 설비를 100으로 놓고 비교해요 — 가동율은 어느 설비나 99%대라
-            // 그 숫자만으로는 어디가 라인을 붙잡는지 눈에 안 들어와서요.
-            const share = tot.dtMin > 0 ? (e.min / tot.dtMin) * 100 : 0;
-            const rel = worst && worst.min > 0 ? (e.min / worst.min) * 100 : 0;
-            const c = e.min === 0 ? "#22C55E" : share >= 30 ? "#EF4444" : share >= 12 ? "#F59E0B" : "#64748B";
-            return html`
-              <${Fragment} key=${e.id}>
-                ${i > 0 ? html`<div className="ivs-flow-arrow">→</div>` : null}
-                <div className=${`ivs-flow-node ${e.min > 0 && share >= 30 ? "hot" : ""}`} style=${{ "--c": c }} title=${e.name}>
-                  <div className="ivs-flow-name">${e.short}</div>
-                  <div className="ivs-flow-util" style=${{ color: utilColor(e.util, target) }}>
-                    ${e.util == null ? "-" : e.util.toFixed(1)}<em>%</em>
-                  </div>
-                  <div className="ivs-flow-bar"><i style=${{ width: `${Math.max(e.min > 0 ? 4 : 0, rel)}%` }} /></div>
-                  <div className="ivs-flow-dt">
-                    ${e.min > 0 ? html`<b>${fmtMin(e.min)}</b> · ${e.count}건<br />전체 정지의 ${share.toFixed(0)}%` : "정지 없음"}
-                  </div>
-                </div>
-              <//>`;
-          })}
-        </div>
+        ${[["line", "생산 라인", eqs.filter((e) => Number(e.id.slice(2)) <= 18)],
+           ["util", "지원 설비 — 라인 전체에 걸려 있어요", eqs.filter((e) => Number(e.id.slice(2)) > 18)]].map(([key, label, list]) => html`
+          <div key=${key} className="ivs-eqflow-group">
+            <div className="ivs-eqflow-label">${label}</div>
+            <div className="ivs-eqflow">
+              ${list.map((e, i) => {
+                // 정지시간이 가장 긴 설비를 100으로 놓고 비교해요 — 가동율은 어느 설비나 99%대라
+                // 그 숫자만으로는 어디가 라인을 붙잡는지 눈에 안 들어와서요.
+                const share = tot.dtMin > 0 ? (e.min / tot.dtMin) * 100 : 0;
+                const rel = worst && worst.min > 0 ? (e.min / worst.min) * 100 : 0;
+                const c = e.min === 0 ? "#22C55E" : share >= 30 ? "#EF4444" : share >= 12 ? "#F59E0B" : "#64748B";
+                const last = i === list.length - 1;
+                return html`
+                  <button key=${e.id} type="button"
+                    className=${`ivs-eqnode ${e.min > 0 && share >= 30 ? "hot" : ""} ${last ? "last" : ""}`}
+                    style=${{ "--c": c }} title=${`${e.id} ${e.name}\n${e.parts}\n\n누르면 비가동 현황에서 이 설비만 봐요`}
+                    onClick=${() => onOpenDown && onOpenDown(e.id)}>
+                    <span className="ivs-eqnode-no">${e.id.slice(2)}</span>
+                    <span className="ivs-eqnode-img"><${EqGlyph} icon=${e.icon} size=${42} /></span>
+                    <span className="ivs-eqnode-name">${e.short}</span>
+                    <span className="ivs-eqnode-util" style=${{ color: utilColor(e.util, target) }}>
+                      ${e.util == null ? "-" : e.util.toFixed(1)}<em>%</em>
+                    </span>
+                    <span className="ivs-eqnode-bar"><i style=${{ width: `${Math.max(e.min > 0 ? 4 : 0, rel)}%` }} /></span>
+                    <span className="ivs-eqnode-dt">
+                      ${e.min > 0 ? html`<b>${fmtMin(e.min)}</b> · ${e.count}건` : "정지 없음"}
+                      ${e.min > e.loss ? html`<br /><span className="ivs-eqnode-ex">계획·품질 ${fmtMin(e.min - e.loss)} 제외</span>` : null}
+                    </span>
+                  </button>`;
+              })}
+            </div>
+          </div>`)}
       </div>
 
       <div className="ivs-chart-split">
@@ -9113,7 +9366,8 @@ function UtilTab({ mes, runs, downs }) {
             ? html`<div className="ivs-prod-empty center">이 기간에 기록된 비가동이 없어요.</div>`
             : html`<div className="ivs-rank-list">
                 ${[...eqs].sort((a, b) => b.min - a.min).filter((e) => e.min > 0).map((e) => html`
-                  <div className="ivs-rank-row" key=${e.id}>
+                  <div className="ivs-rank-row ivs-clickable" key=${e.id} title="누르면 비가동 현황에서 이 설비만 봐요"
+                    onClick=${() => onOpenDown && onOpenDown(e.id)}>
                     <div className="ivs-rank-left">
                       <span className="ivs-rank-dot" style=${{ background: utilColor(e.util, target) }}></span>
                       <span className="ivs-rank-label" title=${e.name}>${e.short} <span className="ivs-dim">${e.name.replace(e.short, "").trim() || e.name}</span></span>
@@ -9226,24 +9480,35 @@ function UtilTrend({ rows, target }) {
 }
 
 // ---------- 비가동 현황 ----------
-function DownTab({ mes, runs, downs, canEdit, onSave, onDelete }) {
+function DownTab({ mes, runs, downs, canEdit, onSave, onDelete, focusEq, onFocusEq }) {
   const p = usePeriod("month");
   const today = new Date().toISOString().slice(0, 10);
+  // 설비고장 › 기계 › 베어링 · 축 손상 (20-01-01) 을 기본으로 잡아둬요 — 가장 자주 쓰는 갈래예요.
+  const firstCode = "20-01-01";
   const [form, setForm] = useState(() => ({
-    date: today, shift: "day", eqId: EQUIPMENT[0].id,
-    major: DT_TREE[0].major, minor: DT_TREE[0].minors[0].name, detail: DT_TREE[0].minors[0].details[0],
+    date: today, shift: "day", eqId: focusEq || EQUIPMENT[0].id,
+    major: DT_BY_CODE[firstCode].major, minor: DT_BY_CODE[firstCode].minor, code: firstCode,
     min: "", note: "",
   }));
   const [tab, setTab] = useState("major"); // 파레토를 어느 단계로 볼지
+  const eqFilter = focusEq || "";
+  const histRef = useRef(null);
+  // 가동율 화면에서 설비를 눌러 들어왔으면, 등록 칸의 설비도 그걸로 맞추고 이력으로 바로 내려가요.
+  useEffect(() => {
+    if (!focusEq) return;
+    setForm((f) => ({ ...f, eqId: focusEq }));
+    setTimeout(() => histRef.current && histRef.current.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+  }, [focusEq]);
 
-  const rows = useMemo(() => downs.filter((r) => r.date >= p.from && r.date <= p.to), [downs, p.from, p.to]);
+  const rowsAll = useMemo(() => downs.filter((r) => r.date >= p.from && r.date <= p.to), [downs, p.from, p.to]);
+  const rows = useMemo(() => (eqFilter ? rowsAll.filter((r) => r.eqId === eqFilter) : rowsAll), [rowsAll, eqFilter]);
   const recs = useMemo(() => recordsFor(p.from, p.to, mes, runs, downs), [p.from, p.to, mes, runs, downs]);
   const tot = useMemo(() => rollupDays(recs), [recs]);
   const totMin = rows.reduce((a, r) => a + (Number(r.min) || 0), 0);
 
   const byMajor = useMemo(() => groupDowns(rows, (r) => r.major), [rows]);
   const byMinor = useMemo(() => groupDowns(rows, (r) => `${r.major} · ${r.minor}`), [rows]);
-  const byDetail = useMemo(() => groupDowns(rows, (r) => r.detail), [rows]);
+  const byDetail = useMemo(() => groupDowns(rows, (r) => (r.code ? `${r.code} ${r.detail}` : r.detail)), [rows]);
   const byEq = useMemo(() => groupDowns(rows, (r) => r.eqId), [rows]);
   const pareto = tab === "major" ? byMajor : tab === "minor" ? byMinor : byDetail;
 
@@ -9268,27 +9533,51 @@ function DownTab({ mes, runs, downs, canEdit, onSave, onDelete }) {
       if (k === "major") {
         const mi = dtMinors(v)[0];
         next.minor = mi ? mi.name : "";
-        next.detail = mi && mi.details[0] ? mi.details[0] : "";
+        next.code = mi && mi.details[0] ? mi.details[0].code : "";
       }
       if (k === "minor") {
         const d = dtDetails(next.major, v)[0];
-        next.detail = d || "";
+        next.code = d ? d.code : "";
       }
       return next;
     });
   };
+  const picked = DT_BY_CODE[form.code] || null;
+  const eqPicked = equipById[form.eqId] || null;
+  // 이 코드가 주로 생기는 설비에 지금 고른 설비가 들어 있는지 — 다르면 한 번 더 보라고 알려줘요.
+  const eqMatch = !picked || /전 설비/.test(picked.eqs) || String(picked.eqs).includes(form.eqId)
+    || (/EQ13~EQ17/.test(picked.eqs) && ["EQ13", "EQ14", "EQ15", "EQ16", "EQ17"].includes(form.eqId));
 
   const minNum = Number(form.min);
-  const canSubmit = canEdit && form.date && form.eqId && Number.isFinite(minNum) && minNum > 0;
+  const canSubmit = canEdit && form.date && form.eqId && picked && Number.isFinite(minNum) && minNum > 0;
   const submit = () => {
     if (!canSubmit) return;
-    onSave({ ...form, min: minNum });
+    onSave({ date: form.date, shift: form.shift, eqId: form.eqId, code: picked.code,
+      major: picked.major, minor: picked.minor, detail: picked.name, min: minNum, note: form.note });
     setForm((f) => ({ ...f, min: "", note: "" }));
   };
 
   return html`
     <div>
       <${PeriodBar} p=${p} />
+
+      <div className="ivs-eqfilter">
+        <span className="ivs-eqfilter-label">설비</span>
+        <select className="ivs-select" value=${eqFilter} onChange=${(e) => onFocusEq && onFocusEq(e.target.value || null)}>
+          <option value="">전체 설비 (${rowsAll.length}건)</option>
+          ${EQUIPMENT.map((e) => {
+            const n = rowsAll.filter((r) => r.eqId === e.id).length;
+            return html`<option key=${e.id} value=${e.id}>${e.id} · ${e.name}${n ? ` (${n}건)` : ""}</option>`;
+          })}
+        </select>
+        ${eqFilter ? html`
+          <span className="ivs-eqfilter-on">
+            <${EqGlyph} icon=${(equipById[eqFilter] || {}).icon} size=${18} />
+            <b>${eqName(eqFilter)}</b> 만 보는 중 — 아래 파레토 · 구성비 · 이력이 모두 이 설비 기준이에요
+          </span>
+          <button className="ivs-btn ivs-btn-sm" onClick=${() => onFocusEq && onFocusEq(null)}>전체 보기</button>
+        ` : html`<span className="ivs-section-hint">가동율 현황의 공정 Flow 에서 설비를 누르면 여기로 바로 들어와요</span>`}
+      </div>
 
       <div className="ivs-kpis">
         <${SummaryCard} label="총 비가동" value=${fmtMin(totMin)} accent=${true}
@@ -9320,30 +9609,41 @@ function DownTab({ mes, runs, downs, canEdit, onSave, onDelete }) {
             <//>
             <${Field} label="설비">
               <select value=${form.eqId} onChange=${setF("eqId")}>
-                ${EQUIPMENT.map((e) => html`<option key=${e.id} value=${e.id}>${e.name}</option>`)}
+                ${EQUIPMENT.map((e) => html`<option key=${e.id} value=${e.id}>${e.id} · ${e.name}</option>`)}
               </select>
             <//>
             <${Field} label="정지시간 (분)"><input type="number" value=${form.min} onChange=${setF("min")} placeholder="예: 45" /><//>
             <${Field} label="대분류">
               <select value=${form.major} onChange=${setF("major")}>
-                ${DT_TREE.map((t) => html`<option key=${t.major} value=${t.major}>${t.major}</option>`)}
+                ${DT_TREE.map((t) => html`<option key=${t.major} value=${t.major}>${t.code} · ${t.major}</option>`)}
               </select>
             <//>
             <${Field} label="소분류">
               <select value=${form.minor} onChange=${setF("minor")}>
-                ${dtMinors(form.major).map((m) => html`<option key=${m.name} value=${m.name}>${m.name}</option>`)}
+                ${dtMinors(form.major).map((m) => html`<option key=${m.name} value=${m.name}>${m.code} · ${m.name}</option>`)}
               </select>
             <//>
-            <${Field} label="상세">
-              <select value=${form.detail} onChange=${setF("detail")}>
-                ${dtDetails(form.major, form.minor).map((d) => html`<option key=${d} value=${d}>${d}</option>`)}
+            <${Field} label="상세 (비가동 코드)">
+              <select value=${form.code} onChange=${setF("code")}>
+                ${dtDetails(form.major, form.minor).map((d) => html`<option key=${d.code} value=${d.code}>${d.code} · ${d.name}</option>`)}
               </select>
             <//>
-            <${Field} label="비고 (선택)"><input value=${form.note} onChange=${setF("note")} /><//>
+            <${Field} label="비고 (현상 · 조치 내용)"><input value=${form.note} onChange=${setF("note")} /><//>
           </div>
+          ${picked ? html`
+            <div className="ivs-dtcode">
+              <span className="ivs-dtcode-code" style=${{ "--c": picked.color }}>${picked.code}</span>
+              <span className=${`ivs-chip ${picked.plan === "계획" ? "" : "neutral"}`}>${picked.plan}</span>
+              <span className="ivs-chip neutral">가동률 반영 · ${DT_RULE_LABEL[picked.rule]}</span>
+              <span className="ivs-dtcode-desc">${picked.desc}</span>
+              <span className=${`ivs-dtcode-eq ${eqMatch ? "" : "warn"}`}>
+                주 발생 설비 ${picked.eqs}${eqMatch ? "" : ` — 지금 고른 ${eqPicked ? eqPicked.short : form.eqId}는 여기 없어요. 맞는지 한 번 더 봐주세요.`}
+              </span>
+            </div>` : null}
+          ${eqPicked ? html`<div className="ivs-dtcode-parts"><b>${eqPicked.id} ${eqPicked.name}</b> 포함 기기 — ${eqPicked.parts}</div>` : null}
           <div className="ivs-bulkbar" style=${{ marginTop: 14 }}>
             <span className="ivs-bulk-sum">
-              ${form.major} › ${form.minor} › ${form.detail} · ${eqShort(form.eqId)}
+              ${form.major} › ${form.minor} › ${picked ? `${picked.code} ${picked.name}` : "-"} · ${eqShort(form.eqId)}
               ${minNum > 0 ? html` — <b>${fmtMin(minNum)}</b> 정지` : ""}
             </span>
             <span className="ivs-spacer"></span>
@@ -9408,31 +9708,37 @@ function DownTab({ mes, runs, downs, canEdit, onSave, onDelete }) {
             </div>`}
       </div>
 
-      <div className="ivs-card">
+      <div className="ivs-card" ref=${histRef}>
         <div className="ivs-card-head-row">
-          <h2 className="ivs-section-title">비가동 이력 (${rows.length}건)</h2>
+          <h2 className="ivs-section-title">비가동 이력 (${rows.length}건)${eqFilter ? ` · ${eqName(eqFilter)}` : ""}</h2>
           <button className="ivs-btn ivs-btn-sm" disabled=${rows.length === 0} onClick=${() => {
-            const out = [["일자", "교대", "설비", "대분류", "소분류", "상세", "정지시간(분)", "비고"]];
+            const out = [["일자", "교대", "설비코드", "설비", "비가동코드", "대분류", "소분류", "상세", "계획/비계획", "가동률 반영", "정지시간(분)", "비고"]];
             [...rows].sort((a, b) => a.date.localeCompare(b.date))
-              .forEach((r) => out.push([r.date, r.shift === "night" ? "야간" : "주간", eqName(r.eqId), r.major, r.minor, r.detail, Number(r.min) || 0, r.note || ""]));
-            out.push(["합계", "", "", "", "", "", totMin, ""]);
-            downloadXlsx(`비가동_${p.from}_${p.to}.xlsx`, "비가동", out, [12, 8, 22, 12, 14, 18, 12, 24]);
+              .forEach((r) => {
+                const d = DT_BY_CODE[r.code] || {};
+                out.push([r.date, r.shift === "night" ? "야간" : "주간", r.eqId, eqName(r.eqId), r.code || "",
+                  r.major, r.minor, r.detail, d.plan || "", DT_RULE_LABEL[dtRuleOf(r)] || "", Number(r.min) || 0, r.note || ""]);
+              });
+            out.push(["합계", "", "", "", "", "", "", "", "", "", totMin, ""]);
+            downloadXlsx(`비가동_${eqFilter ? `${eqFilter}_` : ""}${p.from}_${p.to}.xlsx`, "비가동", out,
+              [12, 8, 9, 22, 11, 12, 16, 22, 10, 12, 12, 26]);
           }}><${Icon} name="download" size=${13} /> 엑셀 내려받기</button>
         </div>
         <div className="ivs-table-wrap">
           <table className="ivs-table">
             <thead><tr>
-              <th>일자</th><th>교대</th><th>설비</th><th>대분류</th><th>소분류</th><th>상세</th>
+              <th>일자</th><th>교대</th><th>설비</th><th>코드</th><th>대분류</th><th>소분류</th><th>상세</th>
               <th className="ivs-right">정지시간</th><th>비고</th>${canEdit ? html`<th></th>` : null}
             </tr></thead>
             <tbody>
               ${rows.length === 0
-                ? html`<tr><td colSpan=${canEdit ? 9 : 8} className="ivs-prod-empty center">이 기간에 기록된 비가동이 없어요.</td></tr>`
+                ? html`<tr><td colSpan=${canEdit ? 10 : 9} className="ivs-prod-empty center">이 기간에 기록된 비가동이 없어요.</td></tr>`
                 : [...rows].sort((a, b) => b.date.localeCompare(a.date)).map((r) => html`
                   <tr key=${r.id}>
                     <td className="ivs-mono">${r.date}</td>
                     <td><span className="ivs-prod-tag">${r.shift === "night" ? "야간" : "주간"}</span></td>
-                    <td>${eqName(r.eqId)}</td>
+                    <td title=${(equipById[r.eqId] || {}).parts || ""}><span className="ivs-dim ivs-mono">${r.eqId}</span> ${eqShort(r.eqId)}</td>
+                    <td className="ivs-mono">${r.code || html`<span className="ivs-dim" title="코드표 이전에 기록된 비가동">-</span>`}</td>
                     <td><span className="ivs-chip" style=${{ color: dtMajorColor(r.major), borderColor: dtMajorColor(r.major) }}>${r.major}</span></td>
                     <td className="ivs-dim">${r.minor}</td>
                     <td>${r.detail}</td>
@@ -9486,43 +9792,51 @@ function josa(word, pair) {
   return (ch - 0xAC00) % 28 > 0 ? withBatchim : without;
 }
 
-// 현장 용어 → 경영진 용어
+// 현장 용어 → 경영진 용어 (비가동 코드표 대분류 9개)
 const EXEC_TERM = {
+  "계획정지": "계획 정비 · 비조업에 따른 계획 정지",
   "설비고장": "설비 결함으로 인한 가동 중단",
-  "계획정지": "계획 정비에 따른 계획 정지",
-  "준비/교체": "소모품 교체 및 셋업 전환",
-  "공정이상": "공정 이상에 따른 비계획 정지",
-  "물류/자재": "원부자재 수급 지연",
-  "안전/환경": "안전·환경 점검에 따른 정지",
-  "기타": "기타 운영 요인",
+  "작업준비": "기동 · 승온 · 청소 등 작업 준비",
+  "제품교체": "품종 전환 및 소모품 정기교체",
+  "설비점검": "일상 · 정기 점검 및 진단",
+  "물류 / 자재": "원부자재 수급 및 운반 지연",
+  "품질이상": "품질 이탈에 따른 재작업",
+  "환경 / 안전": "안전 · 환경 이상에 따른 정지",
+  "외부요인": "정전 · 외부 지원 등 외부 요인",
 };
 const execTerm = (k) => EXEC_TERM[k] || k;
 
 // 비가동 유형별 아이콘과 대응 방향
 const DT_META = {
-  "설비고장": { icon: "gear", color: "EF4444",
-    cause: "예방정비 주기 초과 및 소모성 부품 열화",
-    action: ["점검 주기 단축 및 고장 이력 기반 점검항목 보강", "베어링·커터 등 소모성 예비품 상시 재고 확보", "30분 초과 정지 건 원인분석서 의무화"] },
   "계획정지": { icon: "cycle", color: "3B82F6",
-    cause: "정기 OH 및 예방정비 일정 집행",
+    cause: "보전계획서 등록 정비 및 비조업 일정 집행",
     action: ["저부하 구간으로 정비 일정 재배치", "정지 중 병행작업 묶음 편성으로 총 정지시간 단축"] },
-  "준비/교체": { icon: "box", color: "A855F7",
-    cause: "소모품 교체 표준시간 미설정",
-    action: ["타공망·커터 교체 표준시간 설정 및 실적 관리", "예비 소모품 라인사이드 상시 배치"] },
-  "공정이상": { icon: "bolt", color: "F59E0B",
-    cause: "투입물 이물 혼입 및 차압 상승",
-    action: ["투입 전 이물 선별 강화", "슈트·덕트 차압 상시 감시 체계 도입"] },
-  "물류/자재": { icon: "truck", color: "14B8A6",
-    cause: "원료 입고 및 제품 배출 대기",
-    action: ["원료 선입고 전환 및 계량 동선 개선", "톤백·지게차 사전 배치"] },
-  "안전/환경": { icon: "warn", color: "EC4899",
-    cause: "정기 안전점검 및 환경설비 이상",
-    action: ["안전점검 일정 조업계획 사전 반영", "스크러버·배기 정기점검 주기화"] },
-  "기타": { icon: "dot", color: "64748B",
-    cause: "인수인계 및 유틸리티 공급 요인",
-    action: ["교대 인수인계 표준양식 도입", "정전·에어 공급 중단 대비책 점검"] },
+  "설비고장": { icon: "gear", color: "EF4444",
+    cause: "소모품 주기 전 파손 및 구동부 열화",
+    action: ["20-04 주기 전 파손 건 교체주기 재설정", "베어링 · 칼날 등 예비품 상시 재고 확보", "30분 초과 정지 건 원인분석서 의무화"] },
+  "작업준비": { icon: "cycle", color: "A855F7",
+    cause: "건조로 승온 · 퍼징 대기 및 청소 시간 과다",
+    action: ["승온 · 퍼징 표준시간 설정 및 조기 기동", "청소 주기 표준화로 비계획 청소 축소"] },
+  "제품교체": { icon: "box", color: "F97316",
+    cause: "품종 전환 · 세정 및 소모품 정기교체 시간",
+    action: ["품종별 투입 순서 묶음 편성으로 전환 횟수 축소", "칼날 · 타공망 교체 표준시간 설정 및 실적 관리"] },
+  "설비점검": { icon: "gear", color: "06B6D4",
+    cause: "일상 · 정기 점검의 라인 정지 수행",
+    action: ["가동 중 점검 가능 항목 분리", "점검 항목 체크시트 표준화로 소요시간 단축"] },
+  "물류 / 자재": { icon: "truck", color: "14B8A6",
+    cause: "원료 입고 지연 및 제품 적체 · 운반 대기",
+    action: ["원료 선입고 전환 및 방전 대기 물량 확보", "사일로 만적 전 출하 일정 조정 · 지게차 사전 배치"] },
+  "품질이상": { icon: "warn", color: "F59E0B",
+    cause: "수분 · 입도 · 금속분 규격 이탈로 인한 재작업",
+    action: ["재작업율 주간 모니터링 및 원인 공정 추적", "규격 이탈 조기 검출을 위한 공정 중 샘플링 강화"] },
+  "환경 / 안전": { icon: "warn", color: "EC4899",
+    cause: "환경설비 이상 및 안전 인터록 작동",
+    action: ["스크러버 · 폐수 정기점검 주기화", "화재 · 가스경보 대응 절차 재교육 및 재기동 승인 절차 정비"] },
+  "외부요인": { icon: "dot", color: "64748B",
+    cause: "정전 · 유틸 중단 및 협력사 A/S 대기",
+    action: ["비상발전 기동 절차 점검", "주요 설비 A/S 협력사 대응시간 약정 확보"] },
 };
-const dtMeta = (k) => DT_META[k] || DT_META["기타"];
+const dtMeta = (k) => DT_META[k] || DT_META["외부요인"];
 
 function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
   const isMonth = kind === "month";
@@ -10489,7 +10803,7 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
   const outRowsFor = (pk) => procOutputs(processByKey[pk] || FLOW_PROCESSES[0]).map((k) => mkOutRow(k.key));
   const [form, setForm] = useState(() => ({
     date: today, shift: "day", process: "crush", workers: "", note: "",
-    inputIds: [], vendor: "", categoryId: "hv_cell", cellName: "",
+    inputIds: [], vendor: "", categoryId: "hv_cell", cellName: "", rework: null,
     cellKg: "", cellLotNo: "",
     outRows: outRowsFor("crush"),
   }));
@@ -10538,7 +10852,7 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
     : (form.outRows || []).reduce((a, o) => a + (Number(o.qty) || 0), 0);
 
   // 공정을 바꾸면 산출 품목이 달라지니 행도 새로 잡아요.
-  const setProcess = (key) => { setOverride(false); setForm((f) => ({ ...f, process: key, outRows: outRowsFor(key) })); };
+  const setProcess = (key) => { setOverride(false); setForm((f) => ({ ...f, process: key, outRows: outRowsFor(key), rework: null })); };
   const setOutRow = (rid, patch) => setForm((f) => ({
     ...f, outRows: f.outRows.map((o) => (o.rid === rid ? { ...o, ...patch } : o)) }));
   // 같은 품목 줄 바로 아래에 한 줄 더 — 톤백을 여러 개 뽑았을 때 한 번에 등록하려고요.
@@ -10652,15 +10966,21 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
   const printDayLog = () => printDocument(`일 작업일보 ${logDate}`,
     dailyReportHtml({ date: logDate, runs, lots, moves, downs, settings, mes }));
 
+  // 고른 Lot 가운데 이 공정을 이미 한 번 거쳐 나온 게 있으면 재작업으로 봐요 (예: 파쇄에서 나온 Lot을 다시 파쇄).
+  const reworkHint = chosen.filter((l) => l.stage === "usable" || l.process === proc.key);
+  const reworkOn = form.rework == null ? reworkHint.length > 0 : !!form.rework;
+
   const canSubmit = chosen.length > 0 && (proc.mode === "move" || outSum > 0);
   const doSubmit = async () => {
-    await onSave({ ...form, crew });
+    await onSave({ ...form, crew, rework: reworkOn });
     setOverride(false);
     setForm((f) => ({ ...f, note: "", inputIds: [], cellKg: "", cellLotNo: "", cellName: "",
-      outRows: outRowsFor(f.process) }));
+      outRows: outRowsFor(f.process), rework: null }));
   };
   const submit = async () => {
-    if (mismatch.length > 0 && !override) { setAskMismatch(true); return; }
+    // 재작업은 원래 순서를 거스르는 게 당연하니, 출하대기에서 다시 태우는 Lot 은 확인창을 건너뛰어요.
+    const realMismatch = reworkOn ? mismatch.filter((l) => l.stage !== "usable") : mismatch;
+    if (realMismatch.length > 0 && !override) { setAskMismatch(true); return; }
     await doSubmit();
   };
   const submitCd = async () => {
@@ -10784,7 +11104,16 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
             <span className="ivs-routebar-flow">${route.flow}</span>
             <span className="ivs-routebar-hint">${proc.hint}</span>
           </div>
-          ${mismatch.length > 0 ? html`
+          ${reworkOn && chosen.some((l) => l.stage === "usable") ? html`
+            <div className="ivs-warnbar ivs-warnbar-rework">
+              <${Icon} name="rotate-ccw" size=${14} />
+              <span>
+                출하대기 Lot ${chosen.filter((l) => l.stage === "usable").length}건을 <b>${proc.label}</b>에 다시 태우는 <b>재작업</b>이에요.${" "}
+                실적에 재작업으로 남고, 가동율 현황의 양품율(100 − 재작업율)에 들어갑니다.
+              </span>
+            </div>
+          ` : null}
+          ${(reworkOn ? mismatch.filter((l) => l.stage !== "usable") : mismatch).length > 0 ? html`
             <div className="ivs-warnbar">
               <${AlertTriangle} size=${14} />
               <span>
@@ -10948,6 +11277,14 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
                 : `총 회수율 ${((outSum / inputKg) * 100).toFixed(1)}% · 공정손실 ${fmtKg(inputKg - outSum)}`}
             </span>
             <div className="ivs-spacer" />
+            <label className=${`ivs-rework ${reworkOn ? "on" : ""}`}
+              title="이미 거친 공정을 다시 태운 투입이면 체크하세요 (재파쇄 · 재선별 · 재건조). 가동율 현황의 양품율 = 100 − 재작업율 로 들어갑니다.">
+              <input type="checkbox" checked=${reworkOn}
+                onChange=${(e) => setForm({ ...form, rework: e.target.checked })} />
+              재작업 투입
+              ${form.rework == null && reworkHint.length > 0
+                ? html`<span className="ivs-dim"> · 다시 태우는 Lot ${reworkHint.length}건이라 자동으로 체크했어요</span>` : null}
+            </label>
             <button className="ivs-btn ivs-btn-primary" onClick=${submit} disabled=${!canSubmit}>
               ${proc.label} 실적 등록
             </button>
@@ -11252,11 +11589,13 @@ function MismatchConfirmModal({ proc, lots, onCancel, onConfirm }) {
 function LotPickerModal({ lots, proc, selected, onToggle, onSetSelected, onClose }) {
   const [tab, setTab] = useState(proc.key);
   const [q, setQ] = useState("");
-  const view = processByKey[tab] || proc;
+  // "rework" 탭은 이미 끝나 출하대기에 선 Lot 이에요 — 규격을 벗어나 다시 파쇄·분쇄·건조할 때 여기서 골라요.
+  const REWORK = { key: "rework", label: "재작업", from: ["usable"], to: "usable", route: proc.route };
+  const view = tab === "rework" ? REWORK : (processByKey[tab] || proc);
   const pool = useMemo(
     () => lots.filter((l) => !l.closed && view.from.includes(l.stage))
       .sort((a, b) => (a.receivedDate < b.receivedDate ? 1 : -1)),
-    [lots, view]);
+    [lots, view.key]);
   const rows = useMemo(() => {
     const w = q.trim().toLowerCase();
     if (!w) return pool;
@@ -11294,12 +11633,18 @@ function LotPickerModal({ lots, proc, selected, onToggle, onSetSelected, onClose
                 <span>${stageLabels(p.from)} · ${countAt(p)}건</span>
               </button>
             `)}
+            <button type="button" className=${`ivs-proctab ivs-proctab-rework ${tab === "rework" ? "on" : ""}`}
+              style=${{ "--c": "#D97706" }} onClick=${() => setTab("rework")}>
+              <b>재작업</b>
+              <span>출하대기 · ${lots.filter((l) => !l.closed && l.stage === "usable").length}건</span>
+            </button>
           </div>
-          <div className="ivs-routebar" style=${{ "--c": ROUTES[view.route].color, marginBottom: 12, marginTop: 0 }}>
-            <span className="ivs-routebar-tag">${ROUTES[view.route].label}</span>
-            <span className="ivs-routebar-flow">${stageLabels(view.from)} → ${getStage(view.to).label}</span>
+          <div className="ivs-routebar" style=${{ "--c": tab === "rework" ? "#D97706" : ROUTES[view.route].color, marginBottom: 12, marginTop: 0 }}>
+            <span className="ivs-routebar-tag">${tab === "rework" ? "재작업" : ROUTES[view.route].label}</span>
+            <span className="ivs-routebar-flow">${tab === "rework" ? `출하대기 → ${proc.label} 다시` : `${stageLabels(view.from)} → ${getStage(view.to).label}`}</span>
             <span className="ivs-routebar-hint">
-              ${view.key === proc.key ? "지금 고른 후속공정의 대기 Lot이에요"
+              ${tab === "rework" ? "규격을 벗어나 다시 태울 Lot을 골라요 — 실적에 재작업으로 표시되고 양품율에 들어갑니다"
+                : view.key === proc.key ? "지금 고른 후속공정의 대기 Lot이에요"
                 : `${view.label} 대기 Lot을 보고 있어요 — 골라도 후속공정은 ${proc.label} 그대로예요`}
             </span>
           </div>
@@ -13182,7 +13527,30 @@ function DashboardTab({ lots, moves, dayDelta }) {
   const liveNetKg = lots.reduce((s, l) => s + (l.qtyKg - (l.waterKg || 0)), 0);
 
   // ---------- 월마감(기준일) 스냅샷 ----------
-  const asOfDate = useMemo(() => computeAsOfDate(year, month, day), [year, month, day]);
+  // 기준일은 언제나 "고른 달의 말일"이에요. 위쪽 기간 선택과는 따로 움직입니다.
+  // 아직 끝나지 않은 이번 달은 말일이 오지 않았으니 오늘까지로 잡아요 (미래 날짜로 장부를 뽑지 않게).
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const closeMonths = useMemo(() => {
+    const dates = [...lots.map((l) => l.receivedDate), ...moves.map((m) => m.date)].filter(Boolean).sort();
+    const first = (dates[0] || todayStr).slice(0, 7);
+    const out = [];
+    let [y, m] = todayStr.slice(0, 7).split("-").map(Number);
+    for (let k = 0; k < 60; k += 1) {
+      const ym = `${y}-${pad2(m)}`;
+      out.push(ym);
+      if (ym <= first) break;
+      m -= 1; if (m === 0) { m = 12; y -= 1; }
+    }
+    return out;
+  }, [lots, moves, todayStr]);
+  // 처음엔 막 끝난 달(전월)을 잡아요 — 월마감은 보통 달이 끝난 뒤에 하니까요.
+  const [closeYm, setCloseYm] = useState(() => closeMonths[1] || closeMonths[0]);
+  const monthEnd = (ym) => {
+    const [y, m] = ym.split("-").map(Number);
+    return `${ym}-${pad2(new Date(y, m, 0).getDate())}`;
+  };
+  const closeOpen = monthEnd(closeYm) > todayStr;   // 이번 달처럼 아직 말일이 안 온 달
+  const asOfDate = closeOpen ? todayStr : monthEnd(closeYm);
   const movesByLot = useMemo(() => {
     const map = new Map();
     moves.forEach((m) => {
@@ -13350,7 +13718,15 @@ function DashboardTab({ lots, moves, dayDelta }) {
         <div className="ivs-card-head-row">
           <h2 className="ivs-section-title"><${Calendar} size=${13} style=${{ verticalAlign: -2, marginRight: 5 }} />월마감(기준일) 재고 스냅샷</h2>
           <div className="ivs-card-head-actions">
-            <span className="ivs-section-hint">기준일 ${asOfDate}</span>
+            <label className="ivs-inline-field">
+              <span>마감월</span>
+              <select className="ivs-select" value=${closeYm} onChange=${(e) => setCloseYm(e.target.value)}>
+                ${closeMonths.map((ym) => html`<option key=${ym} value=${ym}>
+                  ${ym.slice(0, 4)}년 ${Number(ym.slice(5))}월${monthEnd(ym) > todayStr ? " (진행 중)" : ""}
+                </option>`)}
+              </select>
+            </label>
+            <span className="ivs-section-hint">기준일 ${asOfDate}${closeOpen ? " · 이번 달은 아직 안 끝나서 오늘까지" : " · 말일"}</span>
             <button className="ivs-btn ivs-btn-sm" onClick=${downloadLedger} disabled=${snapshotLedger.length === 0}
               title="기준일 시점의 재공재고를 로트 단위로 정리한 장부를 엑셀 파일(.xlsx)로 내려받아요">
               <${Download} size=${13} /> 재공재고 장부 엑셀 내려받기 (${snapshotLedger.length}건)
@@ -13358,7 +13734,8 @@ function DashboardTab({ lots, moves, dayDelta }) {
           </div>
         </div>
         <p className="ivs-dash-note">
-          위에서 "일"까지 선택하면 그 날짜 기준, "일"을 비워두면 선택한 달의 말일 기준 재고를 보여줍니다 (연간 전체면 그 해 12/31 기준).
+          마감월을 고르면 <b>그 달 말일</b> 기준 재고를 보여줍니다 (예: 8월 → 8월 31일, 2월 → 2월 28·29일).
+          위쪽 기간 선택과는 따로 움직여요. 아직 끝나지 않은 이번 달은 오늘까지로 잡습니다.
           실시간 현재고와 달리, 그 시점에 실제로 얼마나 있었는지를 이동이력 기반으로 재구성한 값이에요.
         </p>
         <div className="ivs-kpis cols-3">
@@ -13367,8 +13744,8 @@ function DashboardTab({ lots, moves, dayDelta }) {
           <${SummaryCard} label="완료(출고) 합계 (기준일)" value=${fmtTon(snapshot.done)} unit="톤" />
         </div>
         <p className="ivs-dash-note">
-          기간을 바꾸면 기준일도 함께 바뀌고, "재공재고 장부 내려받기"는 그 기준일 시점의 재공재고를
-          로트 한 줄씩(단계 · 입고 Lot · 수량 · 입고일 순) 정리해서 내려줘요.
+          "재공재고 장부 내려받기"는 그 말일 시점의 재공재고를
+          로트 한 줄씩(단계 · 입고 Lot · 수량 · 입고일 순) 정리해서 내려줘요. 파일 이름에 기준일이 붙습니다.
           엑셀 파일(.xlsx)이라 더블클릭하면 바로 열리고, 한글이 깨지지 않아요.
         </p>
       </div>

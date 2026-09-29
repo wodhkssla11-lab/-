@@ -831,6 +831,8 @@
   .ivs-eqnode:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); border-color: var(--c); }
   .ivs-eqnode:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .ivs-eqnode.hot { background: color-mix(in srgb, var(--c) 9%, var(--surface-2)); }
+  .ivs-eqnode.support { border-style: dashed; border-top-style: solid; background: var(--surface); }
+  .ivs-eqflow-suplabel { margin-left: 12px; padding-left: 12px; border-left: 1px solid var(--border); font-weight: 500; }
   /* 다음 설비로 가는 화살표 — 줄 끝에서는 다음 줄 첫 칸으로 이어집니다 */
   .ivs-eqnode:not(.last)::after { content: "›"; position: absolute; right: -14px; top: 38px;
     font-size: 17px; color: var(--text-faint); pointer-events: none; }
@@ -9430,10 +9432,17 @@ function UtilTab({ mes, runs, downs, onOpenDown }) {
             기준정보 › 설비 마스터의 공정 순서 · 큰 숫자는 설비 가동율, 막대는 전체 정지시간 중 그 설비 몫이에요 · 설비를 누르면 비가동 상세로 가요
           </span>
         </div>
-        ${[["line", "생산 라인", eqs.filter((e) => !e.support)],
-           ["util", "지원 설비 — 라인 전체에 걸려 있어요", eqs.filter((e) => e.support)]].filter(([, , list]) => list.length > 0).map(([key, label, list]) => html`
-          <div key=${key} className="ivs-eqflow-group">
-            <div className="ivs-eqflow-label">${label}</div>
+        ${(() => {
+          // 생산 라인을 공정 순서대로 늘어놓고, 지원 설비는 같은 판 끝에 나란히 붙여요.
+          // 지원 설비는 라인 전체에 걸려 있어서 화살표로 잇지 않고 점선 테두리로 구분합니다.
+          const line = eqs.filter((e) => !e.support);
+          const sup = eqs.filter((e) => e.support);
+          const list = [...line, ...sup];
+          return html`
+          <div className="ivs-eqflow-group">
+            <div className="ivs-eqflow-label">
+              생산 라인 ${line.length}개 — 화살표 순서대로 흘러요${sup.length > 0 ? html`<span className="ivs-eqflow-suplabel">점선 칸은 지원 설비 ${sup.length}개 · 라인 전체에 걸려 있어요</span>` : null}
+            </div>
             <div className="ivs-eqflow">
               ${list.map((e, i) => {
                 // 정지시간이 가장 긴 설비를 100으로 놓고 비교해요 — 가동율은 어느 설비나 99%대라
@@ -9441,13 +9450,13 @@ function UtilTab({ mes, runs, downs, onOpenDown }) {
                 const share = tot.dtMin > 0 ? (e.min / tot.dtMin) * 100 : 0;
                 const rel = worst && worst.min > 0 ? (e.min / worst.min) * 100 : 0;
                 const c = e.min === 0 ? "#22C55E" : share >= 30 ? "#EF4444" : share >= 12 ? "#F59E0B" : "#64748B";
-                const last = i === list.length - 1;
+                const last = e.support || i === line.length - 1;
                 return html`
                   <button key=${e.id} type="button"
-                    className=${`ivs-eqnode ${e.min > 0 && share >= 30 ? "hot" : ""} ${last ? "last" : ""}`}
+                    className=${`ivs-eqnode ${e.min > 0 && share >= 30 ? "hot" : ""} ${last ? "last" : ""} ${e.support ? "support" : ""}`}
                     style=${{ "--c": c }} title=${`${e.id} ${e.name}\n${(e.devices || []).join(", ")}\n\n누르면 비가동 현황에서 이 설비만 봐요`}
                     onClick=${() => onOpenDown && onOpenDown(e.id)}>
-                    <span className="ivs-eqnode-no">${i + 1}<em>${e.id}</em></span>
+                    <span className="ivs-eqnode-no">${e.support ? "지원" : i + 1}<em>${e.id}</em></span>
                     <span className="ivs-eqnode-img"><${EqGlyph} icon=${e.icon} size=${42} /></span>
                     <span className="ivs-eqnode-name">${e.short}</span>
                     <span className="ivs-eqnode-util" style=${{ color: utilColor(e.util, target) }}>
@@ -9461,7 +9470,8 @@ function UtilTab({ mes, runs, downs, onOpenDown }) {
                   </button>`;
               })}
             </div>
-          </div>`)}
+          </div>`;
+        })()}
       </div>
 
       <div className="ivs-chart-split">

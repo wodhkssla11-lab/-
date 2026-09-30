@@ -230,6 +230,21 @@
   .ivs-usage-bar-h b { font-size: 16px; color: var(--text); font-variant-numeric: tabular-nums; }
   .ivs-usage-bar-sub { margin-top: 7px; font-size: 11.5px; line-height: 1.55; color: var(--text-faint); }
   .ivs-usage-bar-sub b { color: var(--text-dim); }
+  /* 저장 공간 — 네 칸으로 나눠 보기 */
+  .ivs-usage-stack { display: flex; height: 10px; border-radius: 99px; background: var(--surface-3); overflow: hidden; margin: 8px 0 6px; }
+  .ivs-usage-stack i { display: block; height: 100%; }
+  .ivs-usage-parts { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .ivs-usage-part { display: flex; align-items: flex-start; gap: 9px; font-size: 12px; }
+  .ivs-usage-part > i { flex: 0 0 auto; width: 10px; height: 10px; border-radius: 3px; margin-top: 3px; }
+  .ivs-usage-part-l { flex: 1 1 auto; color: var(--text); display: flex; flex-direction: column; gap: 1px; }
+  .ivs-usage-part-l em { font-style: normal; font-size: 11px; color: var(--text-faint); }
+  .ivs-usage-part > b { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+  .ivs-usage-forecast { margin-top: 10px; padding: 9px 12px; border-radius: 8px; background: var(--good-soft);
+    color: var(--text); font-size: 12.5px; line-height: 1.5; }
+  .ivs-usage-forecast b { color: var(--good); }
+  .ivs-usage-forecast span { display: block; font-size: 11px; color: var(--text-faint); }
+  .ivs-arch-year { padding-left: 18px; }
+  .ivs-arch-year .ivs-backup-txt b { font-size: 13px; }
   .ivs-usage-track { height: 9px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
   .ivs-usage-fill { height: 100%; border-radius: 99px; background: #16A34A; transition: width .3s ease; }
   .ivs-usage-track.warn .ivs-usage-fill { background: #D97706; }
@@ -5403,13 +5418,52 @@ function archPreview(cutoff = archCutoffYear()) {
     stayBytes: byteLen(JSON.stringify({ ...LIVE_DOC, ...stay })) };
 }
 
+// 미리보기에는 실제 보관함이 없어서, 샘플 기록을 지난 두 해로 옮겨 적은 가짜 보관함을 보여줘요.
+function previewArchive(year) {
+  const re = (d) => (d ? `${year}${String(d).slice(4)}` : d);
+  const pick = (list, fix) => Object.fromEntries(list.map((r, i) => [`${year}-${i}`, fix(r)]));
+  return {
+    savedAt: `${Number(year) + 1}-02-01T00:00:00.000Z`,
+    lots: pick(seedData(), (l) => ({ ...l, receivedDate: re(l.receivedDate), shippedDate: re(l.shippedDate), stage: "shipped", closed: true })),
+    moves: pick(moveSeedData(), (m) => ({ ...m, date: re(m.date) })),
+    runs: pick(runSeedData(), (r) => ({ ...r, date: re(r.date) })),
+    downs: pick(downSeedData(), (d) => ({ ...d, date: re(d.date) })),
+  };
+}
+function previewArchIndex() {
+  const y = new Date().getFullYear();
+  const idx = {};
+  [y - 2, y - 1].forEach((yy) => {
+    const a = previewArchive(String(yy));
+    idx[yy] = { savedAt: a.savedAt, bytes: byteLen(JSON.stringify(a)),
+      lots: Object.keys(a.lots).length, moves: Object.keys(a.moves).length,
+      runs: Object.keys(a.runs).length, downs: Object.keys(a.downs).length };
+  });
+  return idx;
+}
+// 구조를 바꾸기 직전에 한 번 떠둔 백업의 크기 — 늘지 않는 값이라 한 번 재서 이 브라우저에 적어둡니다.
+async function oldBackupBytes() {
+  if (PREVIEW_MODE) return 0;
+  const KEY = "ivs-bk1-bytes";
+  try { const v = localStorage.getItem(KEY); if (v != null) return Number(v) || 0; } catch (e) {}
+  try {
+    const res = await fetch(`${DB_BASE}${BACKUP_PATH}`);
+    const txt = res.ok ? await res.text() : "null";
+    const n = txt === "null" ? 0 : byteLen(txt);
+    try { localStorage.setItem(KEY, String(n)); } catch (e) {}
+    return n;
+  } catch (e) { return 0; }
+}
+
 async function listArchives() {
+  if (PREVIEW_MODE) return previewArchIndex();
   try {
     const idx = await fetch(`${DB_BASE}${ARCH_INDEX}`).then((r) => (r.ok ? r.json() : null));
     return idx || {};
   } catch (e) { return {}; }
 }
 async function readArchive(year) {
+  if (PREVIEW_MODE) return previewArchive(String(year));
   const res = await fetch(`${DB_BASE}${ARCH_PATH}/${year}.json`);
   if (!res.ok) throw new Error(`보관함 읽기 실패: ${res.status}`);
   return (await res.json()) || null;
@@ -5418,6 +5472,7 @@ async function readArchive(year) {
 // 정리 실행 — 연도별로 갈라 보관함에 붙이고, 장부에서는 그만큼 덜어냅니다.
 // 옮기기 전에 오늘 백업이 있는지 먼저 확인해요. 없으면 한 부 뜨고 나서 옮깁니다.
 async function runArchive(cutoff = archCutoffYear()) {
+  if (PREVIEW_MODE) throw new Error("미리보기에서는 실제 보관함을 건드리지 않아요");
   const json = { "Content-Type": "application/json" };
   const { move, stay } = splitByYear(LIVE_DOC, String(cutoff));
   const moved = archCount(move);
@@ -5442,7 +5497,7 @@ async function runArchive(cutoff = archCutoffYear()) {
     const res = await fetch(`${DB_BASE}${ARCH_PATH}/${y}.json`,
       { method: "PUT", headers: json, body: JSON.stringify(merged) });
     if (!res.ok) throw new Error(`보관 실패: ${res.status}`);
-    idx[y] = { savedAt: merged.savedAt,
+    idx[y] = { savedAt: merged.savedAt, bytes: byteLen(JSON.stringify(merged)),
       lots: Object.keys(merged.lots).length, moves: Object.keys(merged.moves).length,
       runs: Object.keys(merged.runs).length, downs: Object.keys(merged.downs).length };
   }
@@ -5546,6 +5601,7 @@ async function readSnapshot(day) {
 
 // 되돌리기 — 고른 백업을 지금 장부 자리에 통째로 씁니다.
 async function restoreDoc(doc) {
+  if (PREVIEW_MODE) throw new Error("미리보기에서는 실제 장부를 되돌리지 않아요");
   const next = rawToDoc(doc);
   next.schema = SCHEMA;
   next.usage = LIVE_DOC.usage || {}; // 계량기는 되돌리지 않아요
@@ -12834,10 +12890,41 @@ function UsageCard({ usage, counts }) {
   // 자동 백업도 같은 저장 공간을 씁니다. 부수는 목록만 읽어서 세고, 크기는 지금 장부 크기로 잡아요
   // (지난 날짜는 더 작으니 실제보다 넉넉하게 잡히는 쪽이에요).
   const [snapCount, setSnapCount] = useState(0);
-  useEffect(() => { listSnapshots().then((d) => setSnapCount(d.length)).catch(() => {}); }, []);
+  const [arch, setArch] = useState({});   // 보관함 목록 (연도별 건수 · 크기)
+  const [bk1, setBk1] = useState(0);      // 구조 변경 직전 백업 (한 번만 뜬 것)
+  useEffect(() => {
+    listSnapshots().then((d) => setSnapCount(d.length)).catch(() => {});
+    listArchives().then(setArch).catch(() => {});
+    oldBackupBytes().then(setBk1).catch(() => {});
+  }, []);
   const live = docBytes();
   const snapBytes = live * snapCount;
-  const store = live + snapBytes;
+  // 보관함 크기 — 정리할 때 재어 적어둔 값을 써요. 예전에 적어두지 않은 해는 건수로 어림잡습니다.
+  const liveRecs = COLL.reduce((a, c) => a + Object.keys(LIVE_DOC[c] || {}).length, 0);
+  const perRec = liveRecs > 0 ? live / liveRecs : 330;
+  let archGuess = false;
+  const archBytes = Object.keys(arch || {}).reduce((a, y) => {
+    const e = arch[y] || {};
+    if (e.bytes) return a + Number(e.bytes);
+    archGuess = true;
+    return a + ((e.lots || 0) + (e.moves || 0) + (e.runs || 0) + (e.downs || 0)) * perRec;
+  }, 0);
+  const store = live + snapBytes + archBytes + bk1;
+  const parts = [
+    { key: "live", label: "장부 (지금 보는 기록)", v: live, c: "#4C8DFF",
+      note: "해마다 2월에 작년치를 보관함으로 옮기니 1년치 남짓에서 더 두꺼워지지 않아요" },
+    { key: "snap", label: `자동 백업 ${snapCount}부`, v: snapBytes, c: "#A855F7",
+      note: `장부를 통째로 한 부씩 떠둔 것 · 최근 ${SNAP_KEEP}일치만 둬요 (지난 날짜는 더 작아서 실제로는 이보다 조금 적어요)` },
+    { key: "arch", label: `지난 연도 보관함 ${Object.keys(arch || {}).length}개 해`, v: archBytes, c: "#F59E0B",
+      note: archGuess ? "건수로 어림잡은 값이에요 (다음 정리 때부터 실제 크기를 재어 둡니다)" : "해마다 1년치씩 늘어나요" },
+    { key: "bk1", label: "구조 변경 직전 백업", v: bk1, c: "#94A3B8", note: "한 번만 떠둔 것이라 늘지 않아요" },
+  ];
+  // 앞으로 — 양산 기준 한 달 0.78 MB씩 기록이 쌓인다고 보고, 장부는 13개월치(1월까지 남겨두니까)에서 멈추고
+  // 자동 백업은 그 장부의 ${SNAP_KEEP}부, 보관함만 해마다 1년치씩 늘어난다고 계산해요.
+  const growthStd = 0.78 * 1024 * 1024;
+  const peakLive = Math.max(live, 13 * growthStd);
+  const fixedPeak = peakLive * (1 + SNAP_KEEP) + bk1;
+  const yearsToFull = Math.max(0, (FREE_STORE_BYTES - fixedPeak - archBytes) / (12 * growthStd));
   const down = Number(u.down) || 0;
   const up = Number(u.up) || 0;
   const used = down + up;
@@ -12894,12 +12981,31 @@ function UsageCard({ usage, counts }) {
       </div>
 
       <div className="ivs-usage-bars">
-        <${Bar} value=${storePct} label="저장 공간"
-          left=${`${size(store)} / 1 GB`} right=${`${size(FREE_STORE_BYTES - store)} 남음`}
-          sub=${html`<b>계속 쌓이는 총량이에요 — 달이 바뀌어도 줄지 않아요.</b> 지운 기록만큼만 줄어듭니다.
-            다 차면 새로 저장이 안 되고, 이미 있는 기록은 그대로 보입니다.
-            지금 장부 ${size(live)}${snapCount > 0 ? ` + 자동 백업 ${snapCount}부 약 ${size(snapBytes)}` : ""}.
-            양산 기준으로 한 달에 0.8 MB씩 늘어나니 다 차는 데 수십 년 걸립니다.`} />
+        <div className="ivs-usage-bar">
+          <div className="ivs-usage-bar-h"><span>저장 공간</span><b>${size(store)} / 1 GB</b></div>
+          <div className="ivs-usage-stack" title="장부 · 자동 백업 · 보관함 · 옛 백업">
+            ${parts.filter((x) => x.v > 0).map((x) => html`
+              <i key=${x.key} style=${{ width: `${Math.max(0.6, pct(x.v, FREE_STORE_BYTES))}%`, background: x.c }}></i>`)}
+          </div>
+          <div className="ivs-usage-bar-f"><span>${show(storePct)}% 사용</span><span>${size(FREE_STORE_BYTES - store)} 남음</span></div>
+          <div className="ivs-usage-parts">
+            ${parts.map((x) => html`
+              <div className="ivs-usage-part" key=${x.key}>
+                <i style=${{ background: x.c }}></i>
+                <span className="ivs-usage-part-l">${x.label}<em>${x.note}</em></span>
+                <b>${size(x.v)}</b>
+              </div>`)}
+          </div>
+          <div className="ivs-usage-bar-sub">
+            <b>계속 쌓이는 총량이에요 — 달이 바뀌어도, 새로고침해도 줄지 않아요.</b> 기록을 지우거나
+            오래된 자동 백업이 빠질 때만 줄어듭니다. 다 차면 새로 저장이 안 되고, 이미 있는 기록은 그대로 보입니다.
+          </div>
+          <div className="ivs-usage-forecast">
+            ${yearsToFull >= 50 ? html`이대로 가면 <b>50년이 넘도록</b> 1 GB에 닿지 않아요`
+              : html`이대로 가면 <b>약 ${Math.floor(yearsToFull)}년</b> 뒤에 1 GB에 닿아요`}
+            <span>양산 월 712톤(기록 월 0.8 MB) 기준 · 장부 최대 ${size(peakLive)} + 자동 백업 ${SNAP_KEEP}부 ${size(peakLive * SNAP_KEEP)}는 고정, 보관함만 해마다 약 ${size(12 * growthStd)}씩 늘어납니다</span>
+          </div>
+        </div>
         <${Bar} value=${monthPct} label="이번 달 통신량 (이대로 가면)"
           left=${`${size(projected)} / 10 GB`} right=${`${size(Math.max(FREE_MONTH_BYTES - projected, 0))} 남음`}
           sub=${html`<b>매달 1일에 0으로 되돌아가요.</b> 이번 달에 오간 양만 셉니다. 다 쓰면 그 달
@@ -12984,6 +13090,21 @@ function ArchiveCard({ archOpen, onArchOpen, onToast }) {
     setBusy(""); setConfirm(false);
   };
 
+  // 보관된 한 해를 파일 하나로 내 컴퓨터에 받아둬요. 이 파일은 "장부 되돌리기"용이 아니라
+  // 그 해 기록을 따로 남겨두는 용도라, kind 를 붙여 구분합니다.
+  const downloadYear = async (y) => {
+    setBusy(`dl-${y}`);
+    try {
+      const raw = await readArchive(y);
+      if (!raw) throw new Error("empty");
+      downloadFile(`DRT-보관함-${y}년.json`,
+        JSON.stringify({ kind: "archive", year: String(y), savedAt: new Date().toISOString(), data: raw }),
+        "application/json");
+      onToast && onToast(`${y}년 보관 기록을 파일로 받았어요. 안전한 곳에 보관해주세요.`, "success");
+    } catch (e) { onToast && onToast("파일로 받는 데 실패했어요.", "error"); }
+    setBusy("");
+  };
+
   const toggleYear = async (y) => {
     if (archOpen[y]) { const next = { ...archOpen }; delete next[y]; onArchOpen(next); return; }
     setBusy(`open-${y}`);
@@ -13032,17 +13153,31 @@ function ArchiveCard({ archOpen, onArchOpen, onToast }) {
             <span>
               ${index === null ? "불러오는 중이에요."
                 : years.length === 0 ? "아직 보관된 해가 없어요. 해가 바뀌고 2월이 되면 자동으로 정리됩니다."
-                : years.map((y) => `${y}년 로트 ${(index[y].lots || 0).toLocaleString("ko-KR")} · 이동 ${(index[y].moves || 0).toLocaleString("ko-KR")} · 실적 ${(index[y].runs || 0).toLocaleString("ko-KR")}`).join(" / ")}
+                : "꺼내 보기는 화면에만 얹고, 파일로 받기는 그 해 기록을 내 컴퓨터에 따로 남겨요. 받을 때 그 해 분량만큼 한 번 통신량이 듭니다."}
             </span>
           </div>
-          <div className="ivs-backup-act">
-            ${years.map((y) => html`
-              <button key=${y} className=${`ivs-btn ivs-btn-sm ${archOpen[y] ? "ivs-btn-primary" : ""}`}
-                disabled=${busy !== ""} onClick=${() => toggleYear(y)}>
-                ${busy === `open-${y}` ? "여는 중…" : archOpen[y] ? `${y}년 닫기` : `${y}년 꺼내 보기`}
-              </button>`)}
-          </div>
         </div>
+        ${years.map((y) => html`
+          <div className="ivs-backup-row ivs-arch-year" key=${y}>
+            <div className="ivs-backup-txt">
+              <b>${y}년</b>
+              <span>
+                로트 ${(index[y].lots || 0).toLocaleString("ko-KR")} · 이동 ${(index[y].moves || 0).toLocaleString("ko-KR")}
+                ${" "}· 실적 ${(index[y].runs || 0).toLocaleString("ko-KR")} · 비가동 ${(index[y].downs || 0).toLocaleString("ko-KR")}
+                ${index[y].bytes ? ` · ${size(index[y].bytes)}` : ""}
+                ${index[y].savedAt ? ` · ${String(index[y].savedAt).slice(0, 10)} 보관` : ""}
+              </span>
+            </div>
+            <div className="ivs-backup-act">
+              <button className=${`ivs-btn ivs-btn-sm ${archOpen[y] ? "ivs-btn-primary" : ""}`}
+                disabled=${busy !== ""} onClick=${() => toggleYear(y)}>
+                ${busy === `open-${y}` ? "여는 중…" : archOpen[y] ? `${y}년 닫기` : "꺼내 보기"}
+              </button>
+              <button className="ivs-btn ivs-btn-sm" disabled=${busy !== ""} onClick=${() => downloadYear(y)}>
+                <${Download} size=${13} /> ${busy === `dl-${y}` ? "받는 중…" : "파일로 받기"}
+              </button>
+            </div>
+          </div>`)}
       </div>
 
       <div className=${`ivs-usage-note ${openYears.length ? "warn" : "ok"}`}>
@@ -13103,6 +13238,11 @@ function BackupCard({ counts, onToast }) {
     if (!f) return;
     try {
       const parsed = JSON.parse(await f.text());
+      // 보관함 연도 파일은 지난해 기록만 들어 있어요 — 이걸로 되돌리면 지금 장부가 작년치로 덮여버립니다.
+      if (parsed && parsed.kind === "archive") {
+        onToast && onToast(`${parsed.year || ""}년 보관함 파일이에요. 장부 되돌리기에는 “백업 파일 받기”로 받은 파일을 골라주세요.`, "error");
+        return;
+      }
       const doc = parsed && parsed.data ? parsed.data : parsed;
       const d = rawToDoc(doc);
       const n = COLL.reduce((a, c) => a + Object.keys(d[c] || {}).length, 0);

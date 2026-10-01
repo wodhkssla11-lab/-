@@ -6210,11 +6210,14 @@ function printDocument(title, bodyHtml, hfOpt) {
   .head { display: flex; justify-content: space-between; align-items: flex-end;
     border-bottom: 2px solid #1B348F; padding-bottom: 3mm; margin-bottom: 4mm; }
   .sign { border: 1px solid #9CA3AF; border-collapse: collapse; font-size: 8.5pt; text-align: center; }
-  .sign td { border: 1px solid #9CA3AF; width: 20mm; height: 7mm; padding: 0; }
-  .sign td.h { background: #F3F4F6; height: 5mm; color: #4B5563; }
-  h2 { font-size: 11pt; margin: 5mm 0 2mm; padding-left: 2mm; border-left: 3px solid #1B348F; }
+  .sign td { border: 1px solid #9CA3AF; width: 25mm; height: 15mm; padding: 0; }
+  .sign td.h { background: #F3F4F6; height: 6mm; color: #4B5563; font-size: 9pt; }
+  h2 { font-size: 11pt; margin: 4mm 0 1.6mm; padding-left: 2mm; border-left: 3px solid #1B348F; break-after: avoid; page-break-after: avoid; }
+  .sec { break-inside: avoid; page-break-inside: avoid; }
+  table.run { table-layout: fixed; font-size: 8.5pt; }
+  table.run th { white-space: normal; }
   table.t { width: 100%; border-collapse: collapse; font-size: 9pt; }
-  table.t th, table.t td { border: 1px solid #D1D5DB; padding: 1.6mm 2mm; text-align: left; vertical-align: top; }
+  table.t th, table.t td { border: 1px solid #D1D5DB; padding: 1.2mm 1.8mm; text-align: left; vertical-align: top; }
   table.t th { background: #F3F4F6; font-weight: 600; color: #374151; white-space: nowrap; }
   table.t td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
   table.t td.c { text-align: center; white-space: nowrap; }
@@ -6231,7 +6234,8 @@ function printDocument(title, bodyHtml, hfOpt) {
   table.t tr.grp td { background: #EEF2FA; color: #1F2937; font-size: 8.5pt; padding: 1.3mm 2mm; }
   table.t th.io, table.t td.io { border-left: 2px solid #1B348F; }
   table.t th.in { background: #F3F4F6; } table.t th.out { background: #EEF2FA; }
-  .lot { display: block; color: #9CA3AF; font-size: 7.5pt; font-family: "Consolas", "D2Coding", monospace; }
+  .lot { display: block; color: #6B7280; font-size: 7.5pt; font-family: "Consolas", "D2Coding", monospace; }
+  .cnt { display: inline-block; padding: 0 1.3mm; border-radius: 1mm; background: #EEF2FA; color: #1B348F; font-size: 7.5pt; font-weight: 700; }
 </style></head><body>${bodyHtml}</body></html>`;
   const f = document.createElement("iframe");
   f.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
@@ -6246,6 +6250,47 @@ function printDocument(title, bodyHtml, hfOpt) {
 const lotNetKg = (l) => (Number(l && l.qtyKg) || 0) - (Number(l && l.waterKg) || 0) - (Number(l && l.excludeKg) || 0);
 const esc = (v) => String(v == null ? "" : v)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+// ---------- 인쇄용 Lot 묶기 ----------
+// 분말처럼 톤백이 하루 수십 개씩 들어가면 Lot 번호만으로 종이가 넘쳐요. 같은 품목 · 거래처 · 날짜로
+// 이어진 번호는 "SD-BASF-CP(P)-260930-1~20" 처럼 한 줄로 접고, 중간에 빠진 번호는 "1~6, 8~18" 로 남겨요.
+const lotSeqOf = (no) => {
+  const m = /^(.*)-(\d+)$/.exec(String(no || ""));
+  return m ? { prefix: m[1], seq: Number(m[2]) } : { prefix: String(no || ""), seq: null };
+};
+function compressLotNos(nos) {
+  const by = new Map();
+  (nos || []).forEach((no) => {
+    const { prefix, seq } = lotSeqOf(no);
+    if (!by.has(prefix)) by.set(prefix, { seqs: [], plain: false });
+    if (seq == null) by.get(prefix).plain = true; else by.get(prefix).seqs.push(seq);
+  });
+  const out = [];
+  by.forEach((v, prefix) => {
+    if (v.plain) out.push(prefix);
+    const seqs = Array.from(new Set(v.seqs)).sort((a, b) => a - b);
+    if (seqs.length === 0) return;
+    const ranges = [];
+    seqs.forEach((n) => {
+      const last = ranges[ranges.length - 1];
+      if (last && n === last[1] + 1) last[1] = n; else ranges.push([n, n]);
+    });
+    out.push(`${prefix}-${ranges.map(([a, b]) => (a === b ? `${a}` : `${a}~${b}`)).join(", ")}`);
+  });
+  return out;
+}
+// 목록을 keyOf 로 묶어요 (처음 나온 순서를 지켜요). 묶음마다 Lot 번호 · 건수 · 무게 합계를 들고 있어요.
+function groupLots(list, keyOf, lotNoOf, kgOf) {
+  const m = new Map();
+  (list || []).forEach((x) => {
+    const k = keyOf(x);
+    if (!m.has(k)) m.set(k, { first: x, items: [] });
+    m.get(k).items.push(x);
+  });
+  return Array.from(m.values()).map((g) => ({ ...g, count: g.items.length,
+    nos: compressLotNos(g.items.map(lotNoOf)), kg: g.items.reduce((a, x) => a + (Number(kgOf(x)) || 0), 0) }));
+}
+const lotCell = (g) => `<span class="mono">${g.nos.map(esc).join("<br>")}</span>${g.count > 1 ? ` <span class="cnt">${g.count}개</span>` : ""}`;
 
 // ---------- 일일 제조일보 ----------
 // 고른 날짜 하루치를 A4 한 장으로 묶어요 — 생산실적, 신규 입고, 공정이동, 비가동, 확인란.
@@ -6284,11 +6329,17 @@ function dailyReportHtml({ date, runs, lots, moves, downs, settings, mes }) {
     const c = categoryById[l.categoryId] || categoryById[x.categoryId];
     return { vendor: l.vendor || x.vendor || "", cat: (c && c.label) || x.name || x.code || "-" };
   };
-  const side = (x, stageKey) => {
-    if (!x) return [["", "io0"], ["", ""], ["", ""], ["", "n"]];
+  // 같은 단계 · 거래처 · 품목 · 번호 앞부분끼리 묶어서 한 줄로 적어요.
+  const groupSide = (list) => groupLots(list, (x) => {
     const m = catOf(x);
-    return [[esc(getStage(stageKey || x.stage).label), ""], [esc(m.vendor || "-"), ""],
-      [`${esc(m.cat)}<span class="lot">${esc(x.lotNo || "")}</span>`, ""], [kg(x.qtyKg), "n"]];
+    return [x.stage, m.vendor, m.cat, lotSeqOf(x.lotNo).prefix].join("|");
+  }, (x) => x.lotNo, (x) => x.qtyKg);
+  const side = (g) => {
+    if (!g) return [["", ""], ["", ""], ["", ""], ["", "n"]];
+    const m = catOf(g.first);
+    return [[esc(getStage(g.first.stage).label), ""], [esc(m.vendor || "-"), ""],
+      [`${esc(m.cat)}${g.count > 1 ? ` <span class="cnt">${g.count}개</span>` : ""}<span class="lot">${g.nos.map(esc).join("<br>")}</span>`, ""],
+      [kg(g.kg), "n"]];
   };
   const runBody = dayRuns.map((r) => {
     const proc = processByKey[r.process] || {};
@@ -6300,9 +6351,10 @@ function dailyReportHtml({ date, runs, lots, moves, downs, settings, mes }) {
     const head = `<tr class="grp"><td colspan="8">${esc(SHIFT_LABEL[r.shift] || r.shift || "-")} · ${esc(r.crew || "-")}조 · `
       + `<b>${esc(r.processLabel || proc.label || r.process || "-")}</b>${r.rework ? " <b>(재작업)</b>" : ""}`
       + `${r.workers ? ` · 인원 ${esc(r.workers)}명` : ""}${rr}${r.note ? ` · ${esc(r.note)}` : ""}</td></tr>`;
-    const n = Math.max(ins.length, outs.length, 1);
+    const gi = groupSide(ins), go = groupSide(outs);
+    const n = Math.max(gi.length, go.length, 1);
     const body = Array.from({ length: n }, (_, i) => {
-      const cells = [...side(ins[i]), ...side(outs[i])];
+      const cells = [...side(gi[i]), ...side(go[i])];
       return `<tr>${cells.map((c, k) => `<td class="${[c[1], k === 4 ? "io" : ""].filter(Boolean).join(" ")}">${c[0]}</td>`).join("")}</tr>`;
     }).join("");
     return head + body;
@@ -6310,26 +6362,35 @@ function dailyReportHtml({ date, runs, lots, moves, downs, settings, mes }) {
   const outAll = dayRuns.reduce((a, r) => a + ((r.outputs || []).length > 0
     ? (r.outputs || []).reduce((b, o) => b + (Number(o.qtyKg) || 0), 0) : (Number(r.inputKg) || 0)), 0);
   const runRows = dayRuns.length === 0 ? `<div class="empty">이 날 등록된 생산실적이 없습니다.</div>`
-    : `<table class="t"><thead><tr>`
-      + `<th class="in">투입 공정</th><th class="in">투입 거래처</th><th class="in">투입 품목</th><th class="in n">투입 중량(Kg)</th>`
-      + `<th class="out io">배출 공정</th><th class="out">배출 거래처</th><th class="out">배출 품목</th><th class="out n">배출 중량(Kg)</th>`
+    : `<table class="t run"><colgroup>${[10, 12, 19, 9, 10, 12, 19, 9].map((w) => `<col style="width:${w}%">`).join("")}</colgroup><thead><tr>`
+      + `<th class="in">투입 공정</th><th class="in">투입 거래처</th><th class="in">투입 품목 · Lot</th><th class="in n">투입 중량<br>(Kg)</th>`
+      + `<th class="out io">배출 공정</th><th class="out">배출 거래처</th><th class="out">배출 품목 · Lot</th><th class="out n">배출 중량<br>(Kg)</th>`
       + `</tr></thead><tbody>${runBody}</tbody>`
       + `<tfoot><tr><td colspan="3">합계 ${dayRuns.length}건</td><td class="n">${kg(inKg)}</td>`
       + `<td class="io" colspan="3"></td><td class="n">${kg(outAll)}</td></tr></tfoot></table>`;
 
-  const inRows = rows(dayIn, {
+  const inGroups = groupLots(dayIn, (l) => [l.code, l.name, l.vendor, l.shipLoc, lotSeqOf(l.lotNo).prefix].join("|"),
+    (l) => l.lotNo, (l) => l.qtyKg);
+  const inRows = rows(inGroups, {
     head: [["Lot 번호", ""], ["품목코드", ""], ["품목명", ""], ["거래처", ""], ["출고지", ""], ["중량(Kg)", "n"]],
-    row: (l) => [[`<span class="mono">${esc(l.lotNo)}</span>`, ""], [esc(l.code), ""], [esc(l.name), ""],
-      [esc(l.vendor || "-"), ""], [esc(l.shipLoc || "-"), ""], [kg(l.qtyKg), "n"]],
+    row: (g) => [[lotCell(g), ""], [esc(g.first.code), ""], [esc(g.first.name), ""],
+      [esc(g.first.vendor || "-"), ""], [esc(g.first.shipLoc || "-"), ""], [kg(g.kg), "n"]],
     foot: () => [[`합계 ${dayIn.length}건`, ""], ["", ""], ["", ""], ["", ""], ["", ""],
       [kg(dayIn.reduce((a, l) => a + (Number(l.qtyKg) || 0), 0)), "n"]],
   }, "이 날 등록된 신규 입고가 없습니다.");
 
-  const moveRows = rows(dayMoves, {
+  const mvGroups = groupLots(dayMoves, (m) => [m.code, m.fromStage, m.toStage, lotSeqOf(m.lotNo).prefix].join("|"),
+    (m) => m.lotNo, (m) => m.inputQty);
+  const mvSum = (g, k) => g.items.reduce((a, x) => a + (Number(x[k]) || 0), 0);
+  const moveRows = rows(mvGroups, {
     head: [["Lot 번호", ""], ["품목", ""], ["이전 공정", "c"], ["다음 공정", "c"], ["투입(Kg)", "n"], ["산출(Kg)", "n"], ["손실(Kg)", "n"]],
-    row: (m) => [[`<span class="mono">${esc(m.lotNo)}</span>`, ""], [esc(m.name || m.code || "-"), ""],
-      [esc(getStage(m.fromStage).label), "c"], [esc(getStage(m.toStage).label), "c"],
-      [kg(m.inputQty), "n"], [kg(m.outputQty), "n"], [kg(m.lossQty), "n"]],
+    row: (g) => [[lotCell(g), ""], [esc(g.first.name || g.first.code || "-"), ""],
+      [esc(getStage(g.first.fromStage).label), "c"], [esc(getStage(g.first.toStage).label), "c"],
+      [kg(mvSum(g, "inputQty")), "n"], [kg(mvSum(g, "outputQty")), "n"], [kg(mvSum(g, "lossQty")), "n"]],
+    foot: () => [[`합계 ${dayMoves.length}건`, ""], ["", ""], ["", ""], ["", ""],
+      [kg(dayMoves.reduce((a, m) => a + (Number(m.inputQty) || 0), 0)), "n"],
+      [kg(dayMoves.reduce((a, m) => a + (Number(m.outputQty) || 0), 0)), "n"],
+      [kg(dayMoves.reduce((a, m) => a + (Number(m.lossQty) || 0), 0)), "n"]],
   }, "이 날 공정이동 기록이 없습니다.");
 
   const dtRows = rows(dayDowns, {
@@ -6355,9 +6416,9 @@ function dailyReportHtml({ date, runs, lots, moves, downs, settings, mes }) {
   <div class="kpi"><span>비가동</span><b>${Math.floor(dtMin / 60)}시간 ${dtMin % 60}분</b></div>
 </div>
 <h2>생산실적 (${dayRuns.length}건)</h2>${runRows}
-<h2>신규 입고 (${dayIn.length}건)</h2>${inRows}
-<h2>공정이동 (${dayMoves.length}건)</h2>${moveRows}
-<h2>비가동 (${dayDowns.length}건)</h2>${dtRows}`;
+<div class="sec"><h2>신규 입고 (${dayIn.length}건)</h2>${inRows}</div>
+<div class="sec"><h2>공정이동 (${dayMoves.length}건)</h2>${moveRows}</div>
+<div class="sec"><h2>비가동 (${dayDowns.length}건)</h2>${dtRows}</div>`;
 }
 
 // ---------- 일일 생산이력 현황 ----------
@@ -6374,17 +6435,24 @@ function productionDayHtml({ date, lots, moves, settings }) {
     : `<table class="t"><thead><tr>${head.map((h) => `<th${h[1] ? ` class="${h[1]}"` : ""}>${esc(h[0])}</th>`).join("")}</tr></thead>`
       + `<tbody>${list.map((x) => `<tr>${row(x).map((c) => `<td${c[1] ? ` class="${c[1]}"` : ""}>${c[0]}</td>`).join("")}</tr>`).join("")}</tbody>`
       + `<tfoot><tr>${foot.map((c) => `<td${c[1] ? ` class="${c[1]}"` : ""}>${c[0]}</td>`).join("")}</tr></tfoot></table>`);
-  const inT = table(dayIn,
+  const inGroups = groupLots(dayIn, (l) => [l.code, l.name, l.vendor, !!l.carriedOver, lotSeqOf(l.lotNo).prefix].join("|"),
+    (l) => l.lotNo, (l) => lotNetKg(l));
+  const gsum = (g, f) => g.items.reduce((a, x) => a + (Number(f(x)) || 0), 0);
+  const inT = table(inGroups,
     [["Lot 번호", ""], ["품목코드", ""], ["품목명", ""], ["거래처", ""], ["물중량", "n"], ["제외중량", "n"], ["총 중량(Kg)", "n"]],
-    (l) => [[`<span class="mono">${esc(l.lotNo)}</span>${l.carriedOver ? " (이월)" : ""}`, ""], [esc(l.code), ""], [esc(l.name), ""],
-      [esc(l.vendor || "-"), ""], [l.waterKg ? kg(l.waterKg) : "-", "n"], [l.excludeKg ? kg(l.excludeKg) : "-", "n"], [kg(lotNetKg(l)), "n"]],
+    (g) => [[`${lotCell(g)}${g.first.carriedOver ? " (이월)" : ""}`, ""], [esc(g.first.code), ""], [esc(g.first.name), ""],
+      [esc(g.first.vendor || "-"), ""], [gsum(g, (l) => l.waterKg) ? kg(gsum(g, (l) => l.waterKg)) : "-", "n"],
+      [gsum(g, (l) => l.excludeKg) ? kg(gsum(g, (l) => l.excludeKg)) : "-", "n"], [kg(g.kg), "n"]],
     [[`합계 ${dayIn.length}건`, ""], ["", ""], ["", ""], ["", ""], ["", "n"], ["", "n"], [kg(dayIn.reduce((a, l) => a + lotNetKg(l), 0)), "n"]],
     "이 날 등록된 신규 입고가 없습니다.");
-  const mvT = table(dayMoves,
+  const mvGroups = groupLots(dayMoves, (m) => [m.code, m.fromStage, m.toStage, lotSeqOf(m.lotNo).prefix].join("|"),
+    (m) => m.lotNo, (m) => m.inputQty);
+  const mvT = table(mvGroups,
     [["Lot 번호", ""], ["품목", ""], ["이전 공정", "c"], ["다음 공정", "c"], ["투입(Kg)", "n"], ["배출(Kg)", "n"], ["손실(Kg)", "n"], ["혼합증가(Kg)", "n"]],
-    (m) => [[`<span class="mono">${esc(m.lotNo)}</span>`, ""], [esc(m.code || m.name || "-"), ""],
-      [esc(getStage(m.fromStage).label), "c"], [esc(getStage(m.toStage).label), "c"],
-      [kg(m.inputQty), "n"], [kg(m.outputQty), "n"], [m.lossQty > 0 ? kg(m.lossQty) : "-", "n"], [m.mixQty > 0 ? kg(m.mixQty) : "-", "n"]],
+    (g) => [[lotCell(g), ""], [esc(g.first.code || g.first.name || "-"), ""],
+      [esc(getStage(g.first.fromStage).label), "c"], [esc(getStage(g.first.toStage).label), "c"],
+      [kg(gsum(g, (m) => m.inputQty)), "n"], [kg(gsum(g, (m) => m.outputQty)), "n"],
+      [gsum(g, (m) => m.lossQty) > 0 ? kg(gsum(g, (m) => m.lossQty)) : "-", "n"], [gsum(g, (m) => m.mixQty) > 0 ? kg(gsum(g, (m) => m.mixQty)) : "-", "n"]],
     [[`합계 ${dayMoves.length}건`, ""], ["", ""], ["", ""], ["", ""], [kg(sum(dayMoves, "inputQty")), "n"], [kg(sum(dayMoves, "outputQty")), "n"],
       [kg(sum(dayMoves, "lossQty")), "n"], [kg(sum(dayMoves, "mixQty")), "n"]],
     "이 날 등록된 공정이동이 없습니다.");
@@ -6402,8 +6470,8 @@ function productionDayHtml({ date, lots, moves, settings }) {
   <div class="kpi"><span>공정손실</span><b>${ton(sum(dayMoves, "lossQty"))} 톤</b></div>
   <div class="kpi"><span>혼합증가</span><b>${ton(sum(dayMoves, "mixQty"))} 톤</b></div>
 </div>
-<h2>신규 입고 (${dayIn.length}건)</h2>${inT}
-<h2>공정이동 (${dayMoves.length}건)</h2>${mvT}`;
+<div class="sec"><h2>신규 입고 (${dayIn.length}건)</h2>${inT}</div>
+<div class="sec"><h2>공정이동 (${dayMoves.length}건)</h2>${mvT}</div>`;
 }
 
 // 머리글 · 바닥글 고치기 — 두 인쇄(일일 제조일보 · 일일 생산이력 현황)가 같이 씁니다.
@@ -7299,7 +7367,7 @@ function InventorySystem() {
   const handleSaveForm = async (values) => {
     const qtyKg = Number(values.qtyKg);
     if (!values.code || !values.lotNo || !qtyKg) {
-      showToast("품목코드 · 입고 Lot · 수량은 필수예요.", "error");
+      showToast("품목코드 · 입고 Lot · 중량은 필수예요.", "error");
       return;
     }
     const payload = {
@@ -8185,7 +8253,7 @@ function InventorySystem() {
                     <td><span className="ivs-badge" style=${{ "--c": stage.color }}>${stage.label}</span></td>
                     <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.waterKg)}</td>
                     <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.excludeKg)}</td>
-                    <td className="ivs-mono ivs-right" title=${(Number(l.waterKg) || 0) + (Number(l.excludeKg) || 0) > 0 ? `수량 ${fmtKg(l.qtyKg)} − 물중량 − 제외중량` : ""}>${fmtKg(lotNetKg(l))}</td>
+                    <td className="ivs-mono ivs-right" title=${(Number(l.waterKg) || 0) + (Number(l.excludeKg) || 0) > 0 ? `중량 ${fmtKg(l.qtyKg)} − 물중량 − 제외중량` : ""}>${fmtKg(lotNetKg(l))}</td>
                     <td className="ivs-mono">${l.receivedDate}</td>
                     <td className="ivs-mono">${shipDateOf(l) || html`<span className="ivs-dim">-</span>`}</td>
                     <td className="ivs-dim ivs-hide-sm">${l.lastMove ?? "-"}</td>
@@ -8559,12 +8627,12 @@ function LotFormModal({ mode, initial, master, onCancel, onSave, onOpenMaster })
             </select>
           <//>
           <${Field} label="입고일"><input type="date" className="ivs-input" value=${v.receivedDate} onChange=${set("receivedDate")} /><//>
-          <${Field} label="수량(Kg) *"><input type="number" className="ivs-input" value=${v.qtyKg} onChange=${set("qtyKg")} /><//>
+          <${Field} label="중량(Kg) *"><input type="number" className="ivs-input" value=${v.qtyKg} onChange=${set("qtyKg")} /><//>
           <${Field} label="물중량(Kg)"><input type="number" className="ivs-input" value=${v.waterKg} onChange=${set("waterKg")} /><//>
           <${Field} label="제외중량(Kg)"><input type="number" className="ivs-input" value=${v.excludeKg} onChange=${set("excludeKg")} /><//>
           <div className="ivs-netkg">
             총 중량 <b>${fmtKg(lotNetKg(v))}</b>
-            <span>= 수량 − 물중량 − 제외중량 · 재고현황의 “총 중량” 칸에 이 값이 나와요</span>
+            <span>= 중량 − 물중량 − 제외중량 · 재고현황의 “총 중량” 칸에 이 값이 나와요</span>
           </div>
           <div className="ivs-form-checks">
             <label className="ivs-checkbox-label"><input type="checkbox" checked=${v.tolling} onChange=${set("tolling")} /> 톨링품</label>

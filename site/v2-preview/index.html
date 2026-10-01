@@ -257,6 +257,25 @@
   .ivs-usage-forecast b { color: var(--good); }
   .ivs-usage-forecast span { display: block; font-size: 11px; color: var(--text-faint); }
   .ivs-arch-select { min-width: 150px !important; }
+  /* 인쇄 머리글 · 바닥글 */
+  .ivs-hf-tokens { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 12px; }
+  .ivs-hf-tokens > span { font-size: 11.5px; color: var(--text-faint); margin-right: 4px; }
+  .ivs-hf-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 12px; }
+  .ivs-hf-paper { margin-top: 14px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: #111827;
+    padding: 10px 16px; font-size: 11px; box-shadow: var(--shadow-sm); }
+  .ivs-hf-line { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; color: #6B7280; min-height: 16px; }
+  .ivs-hf-line span:nth-child(2) { text-align: center; } .ivs-hf-line span:nth-child(3) { text-align: right; }
+  .ivs-hf-body { margin: 10px 0; padding: 22px 0; border-top: 1px dashed #D1D5DB; border-bottom: 1px dashed #D1D5DB;
+    text-align: center; color: #9CA3AF; font-size: 12px; }
+  .ivs-hf-warn { display: flex; gap: 8px; align-items: flex-start; margin-top: 12px; padding: 9px 12px; border-radius: 8px;
+    background: var(--accent-soft); color: var(--accent); font-size: 12px; line-height: 1.5; }
+  .ivs-hf-warn span { color: var(--text-dim); } .ivs-hf-warn b { color: var(--text); }
+  .ivs-hf-warn svg { flex: 0 0 auto; margin-top: 2px; }
+  @media (max-width: 640px) { .ivs-hf-grid { grid-template-columns: 1fr; } }
+  .ivs-netkg { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 12.5px;
+    padding: 8px 12px; border-radius: 8px; background: var(--surface-2); border: 1px dashed var(--border); }
+  .ivs-netkg b { font-size: 15px; font-variant-numeric: tabular-nums; }
+  .ivs-netkg span { font-size: 11.5px; color: var(--text-faint); }
   /* 데이터 잔량 — 두 칸을 나란히, 숫자는 한 줄씩 */
   .ivs-usage2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .ivs-usage2-panel { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
@@ -4237,7 +4256,7 @@ const PAGE_SUB = {
   tolling: "톨링품으로 체크한 로트만 모아보기",
   plan: "3조 2교대 · 월별 capa 기준 생산계획",
   act: "일자 · 교대조별 투입과 회수 실적",
-  production: "공정이동 이력과 일일 작업일보",
+  production: "공정이동 이력과 일일 생산이력 현황",
   util: "설비별 시간가동율 · 성능가동율",
   down: "비가동 유형별 집계와 Pareto",
   dashboard: "기간별 재고 · 입고 집계",
@@ -4374,7 +4393,7 @@ function moveSeedData() {
 // 비가동 샘플 — 보고서 파레토가 어떻게 보이는지 확인하려면 정지 기록이 있어야 해요.
 // [날짜오프셋, 교대, 설비, 코드, 정지(분), 비고, 기기번호] — 코드표의 상세 코드로 적어요.
 const SEED_DOWNS = [
-  [-1, "day",   "EQ05", "20-04-01", 95, "셔레더 칼날 2매 파손 교체", "SR-115A"],
+  [-1, "day",   "EQ05", "20-04-01", 95, "슈레더 칼날 2매 파손 교체", "SR-115A"],
   [-2, "night", "EQ05", "20-01-01", 70, "구동부 베어링 교체"],
   [-3, "day",   "EQ08", "20-02-02", 45, "열전대 재교정", "TS-2100"],
   [-2, "day",   "EQ09", "20-04-02", 55, "타공망 파손 교체"],
@@ -4662,7 +4681,7 @@ const DEFAULT_EQUIPMENT = [
   { id: "EQ02", name: "분말투입설비", short: "분말투입", icon: "hopper", devices: ["HC-100", "BD-100", "DR-100", "CH-100", "VB-100", "RV-101", "DC-101", "SC-101A (폐톤백압착기)", "UH-100 (언로딩호퍼)"] },
   { id: "EQ03", name: "펀칭기", short: "펀칭기", icon: "punch", devices: ["PM-111"] },
   { id: "EQ04", name: "해쇄기/선별기 (원형)", short: "해쇄·선별", icon: "sieve", devices: ["GB-103", "VS-103"] },
-  { id: "EQ05", name: "파쇄설비", short: "파쇄", icon: "shredder", devices: ["SR-115A (2축 셔레더 45kW)", "SR-115B (2축 셔레더 45kW)", "SG-115A", "SG-115B"] },
+  { id: "EQ05", name: "파쇄기", short: "파쇄기", icon: "shredder", devices: ["SR-115A (2축 슈레더 45kW)", "SR-115B (2축 슈레더 45kW)", "SG-115A", "SG-115B"] },
   { id: "EQ06", name: "산소치환장치", short: "산소치환", icon: "gas", devices: ["FH-2130A", "SG-2130A", "SG-2130B", "SG-2130C"] },
   { id: "EQ07", name: "이송 컨베어", short: "컨베어", icon: "conveyor", devices: [
     "SC-101B (스크류)", "SC-104 (스크류)", "SC-301 (스크류)", "SC-302 (스크류)", "SC-304 (스크류)", "SC-306 (스크류)", "SC-307 (스크류)", "SC-309 (스크류)",
@@ -4675,10 +4694,10 @@ const DEFAULT_EQUIPMENT = [
     "C-2300A (응축기)", "C-2300B (응축기)", "C-2300C (응축기)", "C-2300D (응축기)", "C-2300E (응축기)", "OT-2310", "P-2320",
     "M-2330A (워터헤더)", "M-2330B (워터헤더)", "WT-408 (응축오일 저장탱크 30㎥)"] },
   { id: "EQ09", name: "1차 선별기 (사각)", short: "1차 선별", icon: "screen", devices: ["VS-302A (진동체)", "VS-302B (진동체)"] },
-  { id: "EQ10", name: "1차 분쇄설비", short: "1차 분쇄", icon: "mill", devices: ["HM-303 (해머밀 55kW)", "WC-303 (칠러)"] },
+  { id: "EQ10", name: "1차 분쇄기 (해머밀)", short: "1차 분쇄기", icon: "mill", devices: ["HM-303 (해머밀 55kW)", "WC-303 (칠러)"] },
   { id: "EQ11", name: "2차 집진/선별기 (원형)", short: "2차 집진·선별", icon: "cyclone", devices: ["BL-303 (블로워)", "CY-303 (사이클론)", "RV-303 (로타리밸브)", "VS-304 (진동체)"] },
   { id: "EQ12", name: "자력선별기", short: "자력선별", icon: "magnet", devices: ["MS-305 (자력선별)", "SB-305", "BC-305"] },
-  { id: "EQ13", name: "2차 분쇄설비", short: "2차 분쇄", icon: "mill", devices: ["ACM-307 (에어분급밀 45kW)", "HP-307 (정량호퍼)", "WC-307"] },
+  { id: "EQ13", name: "2차 분쇄기 (에어밀)", short: "2차 분쇄기", icon: "mill", devices: ["ACM-307 (에어분급밀 45kW)", "HP-307 (정량호퍼)", "WC-307"] },
   { id: "EQ14", name: "3차 집진/선별기 (원형)", short: "3차 집진·선별", icon: "cyclone", devices: ["BL-308 (블로워)", "CY-308 (사이클론)", "RV-308 (로타리밸브)", "VS-309 (진동체)"] },
   { id: "EQ15", name: "비중선별기", short: "비중선별", icon: "gravity", devices: ["GS-310A (비중선별 #1 · 송풍기 3.7kW)", "GS-310B (비중선별 #2 · 송풍기 3.7kW)", "SG-310A", "SG-310B", "SG-310C"] },
   { id: "EQ16", name: "집진/사일로", short: "집진·사일로", icon: "silo", devices: [
@@ -4707,6 +4726,13 @@ function splitDevices(text) {
   if (cur.trim()) out.push(cur.trim());
   return out;
 }
+// 이미 저장해 둔 설비 마스터에 옛 이름이 그대로 있으면 새 이름으로 바꿔 읽어요 (고쳐 쓴 이름은 건드리지 않아요).
+const EQ_RENAME = {
+  EQ05: { "파쇄설비": "파쇄기", "파쇄": "파쇄기" },
+  EQ10: { "1차 분쇄설비": "1차 분쇄기 (해머밀)", "1차 분쇄": "1차 분쇄기" },
+  EQ13: { "2차 분쇄설비": "2차 분쇄기 (에어밀)", "2차 분쇄": "2차 분쇄기" },
+};
+const eqRename = (id, v) => ((EQ_RENAME[id] || {})[v] || v);
 // Firebase 는 배열을 {0:…, 1:…} 로 돌려줄 때가 있어서 둘 다 받아요.
 const asArr = (v) => (Array.isArray(v) ? v : v && typeof v === "object" ? Object.values(v) : []);
 function normalizeEquipment(raw) {
@@ -4714,9 +4740,10 @@ function normalizeEquipment(raw) {
   if (list.length === 0) return DEFAULT_EQUIPMENT.map((e) => ({ ...e, support: !!e.support, devices: [...e.devices] }));
   const seen = new Set();
   return list.filter((e) => e && e.id && !seen.has(e.id) && seen.add(e.id)).map((e) => ({
-    id: String(e.id), name: String(e.name || e.id), short: String(e.short || e.name || e.id),
+    id: String(e.id), name: eqRename(e.id, String(e.name || e.id)), short: eqRename(e.id, String(e.short || e.name || e.id)),
     icon: EQ_ICON_KEYS.includes(e.icon) ? e.icon : "compressor", support: !!e.support,
-    devices: typeof e.devices === "string" ? splitDevices(e.devices) : asArr(e.devices).map(String).filter(Boolean),
+    devices: (typeof e.devices === "string" ? splitDevices(e.devices) : asArr(e.devices).map(String).filter(Boolean))
+      .map((d) => d.replace(/셔레더/g, "슈레더")),
   }));
 }
 // 기준정보에서 고친 설비 마스터가 화면 전체에 바로 먹도록, 목록은 바꿔 끼울 수 있게 둡니다.
@@ -4760,6 +4787,7 @@ const DT_TREE = [
       D("20-02-02", "센서 · 스위치 이상", "비계획", "time", "전 설비", "열전대, 압력 · 차압, 근접 · 리밋, O2 분석계"),
       D("20-02-03", "PLC · 제어반 이상", "비계획", "time", "전 설비", "제어 프로그램 · 통신 · 터치패널"),
       D("20-02-04", "전원 · 배선 이상", "비계획", "time", "전 설비", "단선 · 단락 · 접점 불량. 외부 정전은 90-01-01"),
+      D("20-02-05", "히터 이상", "비계획", "time", "EQ08", "히터 단선 · 출력 저하 · 히터 트립으로 승온이 안 되는 경우. 트립 코드와 노내 온도를 함께 기록"),
     ] },
     { code: "20-03", name: "유공압 · 배관", details: [
       D("20-03-01", "실린더 · 밸브 작동 불량", "비계획", "time", "EQ05 · EQ06 · EQ08", "슬라이드게이트 · 도어 구동부, 솔레노이드 밸브"),
@@ -4903,7 +4931,7 @@ const EQ_GLYPH = {
   compressor: '<rect x="5" y="24" width="28" height="13" rx="6.5" fill="currentColor" fill-opacity=".12"/><rect x="9" y="12" width="15" height="10" rx="1.5"/><circle cx="34" cy="17" r="5.5"/><path d="M34 11.5v11M28.5 17h11"/><path d="M11 37v4M27 37v4"/><circle cx="40" cy="31" r="3"/><path d="M40 31l1.6-1.6"/>',
 };
 const EQ_ICON_KEYS = Object.keys(EQ_GLYPH);
-const EQ_ICON_LABEL = { robot: "로봇", hopper: "호퍼", punch: "프레스", sieve: "원형 선별", shredder: "셔레더", gas: "가스 치환",
+const EQ_ICON_LABEL = { robot: "로봇", hopper: "호퍼", punch: "프레스", sieve: "원형 선별", shredder: "슈레더", gas: "가스 치환",
   conveyor: "컨베어", kiln: "로 (爐)", cooler: "냉각기", condenser: "응축기", mill: "분쇄기", screen: "사각 선별",
   cyclone: "사이클론", magnet: "자력", gravity: "비중", silo: "사일로", scrubber: "스크러버", tank: "탱크", compressor: "콤프레샤" };
 function EqGlyph({ icon, size = 40 }) {
@@ -6131,10 +6159,49 @@ function downloadXlsx(filename, sheetName, rows, widths) {
 // ---------- 인쇄 ----------
 // 화면 CSS와 섞이면 A4에 엉뚱하게 나와서, 완성된 문서를 숨은 틀(iframe)에 그려 그것만 인쇄해요.
 // 새 창이 아니라 iframe이라 팝업 차단에 걸리지 않고, "PDF로 저장"도 그대로 됩니다.
-function printDocument(title, bodyHtml) {
+// ---------- 인쇄 머리글 · 바닥글 ----------
+// 브라우저가 찍는 머리글(날짜 · 제목)과 바닥글(주소 · 쪽)은 웹페이지에서 고칠 수 없어서,
+// 우리 문서가 직접 종이 여백에 찍어요. 칸은 위 · 아래 각각 왼쪽 · 가운데 · 오른쪽 세 칸입니다.
+// {문서} {날짜} {출력} {담당} 은 글자로 바꾸고, {쪽} {전체쪽} 은 인쇄할 때 쪽 번호로 채워집니다.
+const DEFAULT_PRINT_HF = { hl: "DRT · 생산시스템", hc: "", hr: "{문서} · {날짜}",
+  fl: "{담당}", fc: "출력 {출력}", fr: "{쪽} / {전체쪽}" };
+const PRINT_HF_KEYS = [["hl", "머리글 왼쪽"], ["hc", "머리글 가운데"], ["hr", "머리글 오른쪽"],
+  ["fl", "바닥글 왼쪽"], ["fc", "바닥글 가운데"], ["fr", "바닥글 오른쪽"]];
+const PRINT_TOKENS = [["{문서}", "문서 이름"], ["{날짜}", "일보 날짜"], ["{출력}", "출력 일시"],
+  ["{담당}", "담당자"], ["{쪽}", "쪽 번호"], ["{전체쪽}", "전체 쪽수"]];
+const printHF = (settings) => ({ ...DEFAULT_PRINT_HF, ...((settings && settings.printHF) || {}) });
+// 글자 칸 하나를 CSS content 값으로 — 쪽 번호만 counter() 로 남기고 나머지는 글자로 바꿔요.
+function hfContent(text, vars) {
+  const parts = String(text || "").split(/(\{쪽\}|\{전체쪽\})/).filter((x) => x !== "");
+  if (parts.length === 0) return null;
+  const q = (x) => `"${x.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[\r\n]+/g, " ")}"`;
+  return parts.map((x) => (x === "{쪽}" ? "counter(page)" : x === "{전체쪽}" ? "counter(pages)"
+    : q(x.replace(/\{(문서|날짜|출력|담당)\}/g, (m, k) => vars[k] ?? "")))).join(" ");
+}
+// 미리보기 화면에 보여줄 글자 — 쪽 번호는 1 / 1 로 채워요.
+const hfPreview = (text, vars) => String(text || "")
+  .replace(/\{쪽\}/g, "1").replace(/\{전체쪽\}/g, "1")
+  .replace(/\{(문서|날짜|출력|담당)\}/g, (m, k) => vars[k] ?? "");
+function hfPageCss(hf, vars) {
+  const box = { hl: "top-left", hc: "top-center", hr: "top-right", fl: "bottom-left", fc: "bottom-center", fr: "bottom-right" };
+  return Object.keys(box).map((k) => {
+    const c = hfContent(hf[k], vars);
+    return c ? `@${box[k]} { content: ${c}; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; font-size: 8pt; color: #6B7280;`
+      + ` vertical-align: ${k[0] === "h" ? "bottom" : "top"}; padding: ${k[0] === "h" ? "0 0 3mm" : "3mm 0 0"}; }` : "";
+  }).join("\n    ");
+}
+const nowStamp = () => {
+  const d = new Date();
+  const p2 = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+};
+
+function printDocument(title, bodyHtml, hfOpt) {
+  const pageBoxes = hfOpt ? hfPageCss(hfOpt.hf, hfOpt.vars) : "";
   const doc = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(title)}</title>
 <style>
-  @page { size: A4; margin: 12mm 12mm 14mm; }
+  @page { size: A4; margin: 16mm 12mm 16mm;
+    ${pageBoxes} }
   * { box-sizing: border-box; }
   body { margin: 0; font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", sans-serif;
     font-size: 10.5pt; color: #111827; line-height: 1.5; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -6161,6 +6228,10 @@ function printDocument(title, bodyHtml) {
   .foot { margin-top: 6mm; padding-top: 2mm; border-top: 1px solid #D1D5DB; color: #9CA3AF; font-size: 8pt;
     display: flex; justify-content: space-between; }
   tr, .kpis { break-inside: avoid; page-break-inside: avoid; }
+  table.t tr.grp td { background: #EEF2FA; color: #1F2937; font-size: 8.5pt; padding: 1.3mm 2mm; }
+  table.t th.io, table.t td.io { border-left: 2px solid #1B348F; }
+  table.t th.in { background: #F3F4F6; } table.t th.out { background: #EEF2FA; }
+  .lot { display: block; color: #9CA3AF; font-size: 7.5pt; font-family: "Consolas", "D2Coding", monospace; }
 </style></head><body>${bodyHtml}</body></html>`;
   const f = document.createElement("iframe");
   f.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
@@ -6171,10 +6242,12 @@ function printDocument(title, bodyHtml) {
   };
   f.srcdoc = doc;
 }
+// 총 중량 — 들어온 수량에서 물중량과 제외중량을 뺀 무게예요.
+const lotNetKg = (l) => (Number(l && l.qtyKg) || 0) - (Number(l && l.waterKg) || 0) - (Number(l && l.excludeKg) || 0);
 const esc = (v) => String(v == null ? "" : v)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-// ---------- 일 작업일보 ----------
+// ---------- 일일 제조일보 ----------
 // 고른 날짜 하루치를 A4 한 장으로 묶어요 — 생산실적, 신규 입고, 공정이동, 비가동, 확인란.
 function dailyReportHtml({ date, runs, lots, moves, downs, settings, mes }) {
   const kg = (v) => `${Math.round(Number(v) || 0).toLocaleString("ko-KR")}`;
@@ -6204,24 +6277,45 @@ function dailyReportHtml({ date, runs, lots, moves, downs, settings, mes }) {
       + (cols.foot ? `<tfoot><tr>${cols.foot().map((c) => `<td${c[1] ? ` class="${c[1]}"` : ""}>${c[0]}</td>`).join("")}</tr></tfoot>` : "")
       + `</table>`);
 
-  const runRows = rows(dayRuns, {
-    head: [["교대", "c"], ["조", "c"], ["공정", ""], ["투입 Lot", ""], ["투입(Kg)", "n"], ["산출 Lot", ""], ["산출(Kg)", "n"], ["회수율", "n"], ["인원", "n"]],
-    row: (r) => {
-      const o = (r.outputs || []);
-      const oKg = o.reduce((a, x) => a + (Number(x.qtyKg) || 0), 0);
-      const rr = Number(r.inputKg) > 0 ? `${((oKg / Number(r.inputKg)) * 100).toFixed(1)}%` : "-";
-      return [
-        [esc(SHIFT_LABEL[r.shift] || r.shift || "-"), "c"], [esc(r.crew || "-"), "c"],
-        [`${esc(r.processLabel || r.process || "-")}${r.rework ? " <b>(재작업)</b>" : ""}`, ""],
-        [`<span class="mono">${(r.inputs || []).map((x) => esc(x.lotNo)).join("<br>") || "-"}</span>`, ""],
-        [kg(r.inputKg), "n"],
-        [`<span class="mono">${o.map((x) => esc(x.lotNo)).join("<br>") || "-"}</span>`, ""],
-        [kg(oKg), "n"], [rr, "n"], [r.workers ? `${r.workers}명` : "-", "n"],
-      ];
-    },
-    foot: () => [["합계", "c"], ["", ""], [`${dayRuns.length}건`, ""], ["", ""], [kg(inKg), "n"], ["", ""], [kg(outKg), "n"],
-      [madeIn > 0 ? `${rate}%` : "-", "n"], ["", ""]],
-  }, "이 날 등록된 생산실적이 없습니다.");
+  // 생산실적 — 실적 한 건마다 머리 줄(교대 · 조 · 공정)을 두고, 그 아래에 투입 Lot과 배출 Lot을 나란히 적어요.
+  const lotsById = new Map((lots || []).map((l) => [l.id, l]));
+  const catOf = (x) => {
+    const l = lotsById.get(x.lotId) || {};
+    const c = categoryById[l.categoryId] || categoryById[x.categoryId];
+    return { vendor: l.vendor || x.vendor || "", cat: (c && c.label) || x.name || x.code || "-" };
+  };
+  const side = (x, stageKey) => {
+    if (!x) return [["", "io0"], ["", ""], ["", ""], ["", "n"]];
+    const m = catOf(x);
+    return [[esc(getStage(stageKey || x.stage).label), ""], [esc(m.vendor || "-"), ""],
+      [`${esc(m.cat)}<span class="lot">${esc(x.lotNo || "")}</span>`, ""], [kg(x.qtyKg), "n"]];
+  };
+  const runBody = dayRuns.map((r) => {
+    const proc = processByKey[r.process] || {};
+    const ins = r.inputs || [];
+    // 단계만 옮기는 공정(전기방전 · 해체)은 따로 나오는 Lot이 없어요 — 넣은 Lot이 그대로 다음 단계로 갑니다.
+    const outs = (r.outputs || []).length > 0 ? r.outputs : (proc.to ? ins.map((x) => ({ ...x, stage: proc.to })) : []);
+    const oKg = (r.outputs || []).reduce((a, x) => a + (Number(x.qtyKg) || 0), 0);
+    const rr = Number(r.inputKg) > 0 && (r.outputs || []).length > 0 ? ` · 회수율 ${((oKg / Number(r.inputKg)) * 100).toFixed(1)}%` : "";
+    const head = `<tr class="grp"><td colspan="8">${esc(SHIFT_LABEL[r.shift] || r.shift || "-")} · ${esc(r.crew || "-")}조 · `
+      + `<b>${esc(r.processLabel || proc.label || r.process || "-")}</b>${r.rework ? " <b>(재작업)</b>" : ""}`
+      + `${r.workers ? ` · 인원 ${esc(r.workers)}명` : ""}${rr}${r.note ? ` · ${esc(r.note)}` : ""}</td></tr>`;
+    const n = Math.max(ins.length, outs.length, 1);
+    const body = Array.from({ length: n }, (_, i) => {
+      const cells = [...side(ins[i]), ...side(outs[i])];
+      return `<tr>${cells.map((c, k) => `<td class="${[c[1], k === 4 ? "io" : ""].filter(Boolean).join(" ")}">${c[0]}</td>`).join("")}</tr>`;
+    }).join("");
+    return head + body;
+  }).join("");
+  const outAll = dayRuns.reduce((a, r) => a + ((r.outputs || []).length > 0
+    ? (r.outputs || []).reduce((b, o) => b + (Number(o.qtyKg) || 0), 0) : (Number(r.inputKg) || 0)), 0);
+  const runRows = dayRuns.length === 0 ? `<div class="empty">이 날 등록된 생산실적이 없습니다.</div>`
+    : `<table class="t"><thead><tr>`
+      + `<th class="in">투입 공정</th><th class="in">투입 거래처</th><th class="in">투입 품목</th><th class="in n">투입 중량(Kg)</th>`
+      + `<th class="out io">배출 공정</th><th class="out">배출 거래처</th><th class="out">배출 품목</th><th class="out n">배출 중량(Kg)</th>`
+      + `</tr></thead><tbody>${runBody}</tbody>`
+      + `<tfoot><tr><td colspan="3">합계 ${dayRuns.length}건</td><td class="n">${kg(inKg)}</td>`
+      + `<td class="io" colspan="3"></td><td class="n">${kg(outAll)}</td></tr></tfoot></table>`;
 
   const inRows = rows(dayIn, {
     head: [["Lot 번호", ""], ["품목코드", ""], ["품목명", ""], ["거래처", ""], ["출고지", ""], ["중량(Kg)", "n"]],
@@ -6249,7 +6343,7 @@ function dailyReportHtml({ date, runs, lots, moves, downs, settings, mes }) {
   return `
 <div class="head">
   <div>
-    <h1>일 작업일보</h1>
+    <h1>일일 제조일보</h1>
     <p class="sub">${esc(settings && settings.title || "리사이클링팀")} · ${esc(date)} (${wd}) · 근무조 ${esc(crews)}</p>
   </div>
   <table class="sign"><tr><td class="h">작성</td><td class="h">검토</td><td class="h">승인</td></tr><tr><td></td><td></td><td></td></tr></table>
@@ -6263,8 +6357,102 @@ function dailyReportHtml({ date, runs, lots, moves, downs, settings, mes }) {
 <h2>생산실적 (${dayRuns.length}건)</h2>${runRows}
 <h2>신규 입고 (${dayIn.length}건)</h2>${inRows}
 <h2>공정이동 (${dayMoves.length}건)</h2>${moveRows}
-<h2>비가동 (${dayDowns.length}건)</h2>${dtRows}
-<div class="foot"><span>${esc(settings && settings.manager || "")}</span><span>출력 ${esc(now)}</span></div>`;
+<h2>비가동 (${dayDowns.length}건)</h2>${dtRows}`;
+}
+
+// ---------- 일일 생산이력 현황 ----------
+// 생산이력 화면의 하루치(신규 입고 · 공정이동)를 인쇄용으로 묶어요. 화면 메뉴나 버튼은 들어가지 않습니다.
+function productionDayHtml({ date, lots, moves, settings }) {
+  const kg = (v) => `${(Number(v) || 0).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}`;
+  const ton = (v) => ((Number(v) || 0) / 1000).toFixed(2);
+  const dayIn = (lots || []).filter((l) => l.receivedDate === date).sort((a, b) => (a.lotNo > b.lotNo ? 1 : -1));
+  const dayMoves = (moves || []).filter((m) => m.date === date);
+  const sum = (list, k) => list.reduce((a, x) => a + (Number(x[k]) || 0), 0);
+  const d = new Date(`${date}T00:00:00`);
+  const wd = ["일", "월", "화", "수", "목", "금", "토"][d.getDay()];
+  const table = (list, head, row, foot, empty) => (list.length === 0 ? `<div class="empty">${esc(empty)}</div>`
+    : `<table class="t"><thead><tr>${head.map((h) => `<th${h[1] ? ` class="${h[1]}"` : ""}>${esc(h[0])}</th>`).join("")}</tr></thead>`
+      + `<tbody>${list.map((x) => `<tr>${row(x).map((c) => `<td${c[1] ? ` class="${c[1]}"` : ""}>${c[0]}</td>`).join("")}</tr>`).join("")}</tbody>`
+      + `<tfoot><tr>${foot.map((c) => `<td${c[1] ? ` class="${c[1]}"` : ""}>${c[0]}</td>`).join("")}</tr></tfoot></table>`);
+  const inT = table(dayIn,
+    [["Lot 번호", ""], ["품목코드", ""], ["품목명", ""], ["거래처", ""], ["물중량", "n"], ["제외중량", "n"], ["총 중량(Kg)", "n"]],
+    (l) => [[`<span class="mono">${esc(l.lotNo)}</span>${l.carriedOver ? " (이월)" : ""}`, ""], [esc(l.code), ""], [esc(l.name), ""],
+      [esc(l.vendor || "-"), ""], [l.waterKg ? kg(l.waterKg) : "-", "n"], [l.excludeKg ? kg(l.excludeKg) : "-", "n"], [kg(lotNetKg(l)), "n"]],
+    [[`합계 ${dayIn.length}건`, ""], ["", ""], ["", ""], ["", ""], ["", "n"], ["", "n"], [kg(dayIn.reduce((a, l) => a + lotNetKg(l), 0)), "n"]],
+    "이 날 등록된 신규 입고가 없습니다.");
+  const mvT = table(dayMoves,
+    [["Lot 번호", ""], ["품목", ""], ["이전 공정", "c"], ["다음 공정", "c"], ["투입(Kg)", "n"], ["배출(Kg)", "n"], ["손실(Kg)", "n"], ["혼합증가(Kg)", "n"]],
+    (m) => [[`<span class="mono">${esc(m.lotNo)}</span>`, ""], [esc(m.code || m.name || "-"), ""],
+      [esc(getStage(m.fromStage).label), "c"], [esc(getStage(m.toStage).label), "c"],
+      [kg(m.inputQty), "n"], [kg(m.outputQty), "n"], [m.lossQty > 0 ? kg(m.lossQty) : "-", "n"], [m.mixQty > 0 ? kg(m.mixQty) : "-", "n"]],
+    [[`합계 ${dayMoves.length}건`, ""], ["", ""], ["", ""], ["", ""], [kg(sum(dayMoves, "inputQty")), "n"], [kg(sum(dayMoves, "outputQty")), "n"],
+      [kg(sum(dayMoves, "lossQty")), "n"], [kg(sum(dayMoves, "mixQty")), "n"]],
+    "이 날 등록된 공정이동이 없습니다.");
+  return `
+<div class="head">
+  <div>
+    <h1>일일 생산이력 현황</h1>
+    <p class="sub">${esc(settings && settings.title || "리사이클링팀")} · ${esc(date)} (${wd})</p>
+  </div>
+  <table class="sign"><tr><td class="h">작성</td><td class="h">검토</td><td class="h">승인</td></tr><tr><td></td><td></td><td></td></tr></table>
+</div>
+<div class="kpis">
+  <div class="kpi"><span>신규 입고</span><b>${ton(dayIn.reduce((a, l) => a + (Number(l.qtyKg) || 0), 0))} 톤</b></div>
+  <div class="kpi"><span>공정이동 배출</span><b>${ton(sum(dayMoves, "outputQty"))} 톤</b></div>
+  <div class="kpi"><span>공정손실</span><b>${ton(sum(dayMoves, "lossQty"))} 톤</b></div>
+  <div class="kpi"><span>혼합증가</span><b>${ton(sum(dayMoves, "mixQty"))} 톤</b></div>
+</div>
+<h2>신규 입고 (${dayIn.length}건)</h2>${inT}
+<h2>공정이동 (${dayMoves.length}건)</h2>${mvT}`;
+}
+
+// 머리글 · 바닥글 고치기 — 두 인쇄(일일 제조일보 · 일일 생산이력 현황)가 같이 씁니다.
+function PrintHFModal({ settings, canEdit, docName, date, onSave, onClose }) {
+  const [v, setV] = useState(() => printHF(settings));
+  const [focus, setFocus] = useState("hr");
+  const vars = { 문서: docName, 날짜: date, 출력: nowStamp(), 담당: (settings && settings.manager) || "" };
+  const insert = (tok) => setV((x) => ({ ...x, [focus]: `${x[focus] || ""}${tok}` }));
+  return html`
+    <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onClose)}>
+      <div className="ivs-modal ivs-modal-lg" onClick=${(e) => e.stopPropagation()}>
+        <div className="ivs-modal-head">
+          <h3>인쇄 머리글 · 바닥글</h3>
+          <button className="ivs-icon-btn" onClick=${onClose}><${Icon} name="x" /></button>
+        </div>
+        <div className="ivs-modal-body">
+          <p className="ivs-section-hint" style=${{ marginBottom: 12 }}>
+            종이 맨 위 · 맨 아래에 찍을 글자예요. 일일 제조일보와 일일 생산이력 현황이 같이 씁니다. 비워두면 그 칸은 찍지 않아요.
+          </p>
+          <div className="ivs-hf-tokens">
+            <span>넣을 수 있는 값</span>
+            ${PRINT_TOKENS.map(([t, d]) => html`<button key=${t} type="button" className="ivs-devchip" disabled=${!canEdit}
+              title=${`지금 고른 칸에 ${t} 넣기`} onClick=${() => insert(t)}><b>${t}</b><span>${d}</span></button>`)}
+          </div>
+          <div className="ivs-hf-grid">
+            ${PRINT_HF_KEYS.map(([k, label]) => html`
+              <${Field} key=${k} label=${label}>
+                <input value=${v[k]} disabled=${!canEdit} onFocus=${() => setFocus(k)}
+                  onChange=${(e) => setV({ ...v, [k]: e.target.value })} placeholder="비워두면 찍지 않아요" />
+              <//>`)}
+          </div>
+          <div className="ivs-hf-paper">
+            <div className="ivs-hf-line">${["hl", "hc", "hr"].map((k) => html`<span key=${k}>${hfPreview(v[k], vars)}</span>`)}</div>
+            <div className="ivs-hf-body">${docName} · ${date}</div>
+            <div className="ivs-hf-line">${["fl", "fc", "fr"].map((k) => html`<span key=${k}>${hfPreview(v[k], vars)}</span>`)}</div>
+          </div>
+          <div className="ivs-hf-warn">
+            <${Icon} name="alert-triangle" size=${14} />
+            <span>인쇄 창의 <b>설정 더보기 → “머리글과 바닥글”</b> 체크는 꺼주세요. 켜두면 브라우저가 날짜 · 주소를 따로 찍어서 겹쳐 보여요.
+              한 번 끄면 브라우저가 기억합니다.</span>
+          </div>
+        </div>
+        <div className="ivs-modal-foot">
+          ${canEdit ? html`<button className="ivs-btn" style=${{ marginRight: "auto" }} onClick=${() => setV({ ...DEFAULT_PRINT_HF })}>기본값으로</button>` : null}
+          <button className="ivs-btn" onClick=${onClose}>${canEdit ? "취소" : "닫기"}</button>
+          ${canEdit ? html`<button className="ivs-btn ivs-btn-primary" onClick=${() => { onSave({ ...settings, printHF: v }); onClose(); }}>저장</button>` : null}
+        </div>
+      </div>
+    </div>`;
 }
 
 // ---------- 파일 내려받기 (일반 웹사이트라서 브라우저 다운로드를 바로 써요) ----------
@@ -7518,7 +7706,8 @@ function InventorySystem() {
     });
     rows.sort((a, b) => {
       const dir = sort.dir === "asc" ? 1 : -1;
-      const av = a[sort.key], bv = b[sort.key];
+      const av = sort.key === "netKg" ? lotNetKg(a) : a[sort.key];
+      const bv = sort.key === "netKg" ? lotNetKg(b) : b[sort.key];
       if (av == null) return 1;
       if (bv == null) return -1;
       return av > bv ? dir : av < bv ? -dir : 0;
@@ -7622,7 +7811,7 @@ function InventorySystem() {
 
   // ---------- 엑셀(.xlsx)로 내보내기 ----------
   const exportCsv = () => {
-    const headers = ["품목코드", "품목명", "카테고리", "거래처", "출고지", "Lot 번호", "구분", "직전 투입 Lot", "최초 입고 Lot", "최초 입고일", "생산공정", "주차", "현재공정", "수량(Kg)", "물중량(Kg)", "제외무게(Kg)", "입고일", "출하일", "최근 이동일", "톨링품", "이월"];
+    const headers = ["품목코드", "품목명", "카테고리", "거래처", "출고지", "Lot 번호", "구분", "직전 투입 Lot", "최초 입고 Lot", "최초 입고일", "생산공정", "주차", "현재공정", "수량(Kg)", "물중량(Kg)", "제외중량(Kg)", "총 중량(Kg)", "입고일", "출하일", "최근 이동일", "톨링품", "이월"];
     const rows = filtered.map((l) => {
       // 우리가 만든 Lot이면 어떤 Lot에서 나왔는지 같이 적어요 (직전 투입 Lot → 최초 입고 Lot).
       const made = l.origin === "production";
@@ -7634,7 +7823,7 @@ function InventorySystem() {
         tr.roots.map((x) => x.lotNo).join(", "),
         tr.roots.map((x) => x.receivedDate).join(", "),
         pr, weekLabel(l.receivedDate),
-        getStage(l.stage).label, l.qtyKg, l.waterKg ?? "", l.excludeKg ?? "", l.receivedDate,
+        getStage(l.stage).label, l.qtyKg, l.waterKg ?? "", l.excludeKg ?? "", lotNetKg(l), l.receivedDate,
         shipDateOf(l) || "", l.lastMove ?? "",
         l.tolling ? "Y" : "", l.carriedOver ? "Y" : "",
       ];
@@ -7955,9 +8144,9 @@ function InventorySystem() {
                 <th>Lot 번호</th>
                 <th>주차</th>
                 <th>현재공정</th>
-                <${Th} label="수량(포함)" sortKey="qtyKg" sort=${sort} onSort=${toggleSort} align="right" />
                 <th className="ivs-hide-sm ivs-right">물중량</th>
-                <th className="ivs-hide-sm ivs-right">제외무게</th>
+                <th className="ivs-hide-sm ivs-right">제외중량</th>
+                <${Th} label="총 중량" sortKey="netKg" sort=${sort} onSort=${toggleSort} align="right" />
                 <${Th} label="입고일" sortKey="receivedDate" sort=${sort} onSort=${toggleSort} />
                 <${Th} label="출하일" sortKey="shippedDate" sort=${sort} onSort=${toggleSort} />
                 <th className="ivs-hide-sm">최근 이동일</th>
@@ -7994,9 +8183,9 @@ function InventorySystem() {
                     </td>
                     <td className="ivs-dim">${weekLabel(l.receivedDate)}</td>
                     <td><span className="ivs-badge" style=${{ "--c": stage.color }}>${stage.label}</span></td>
-                    <td className="ivs-mono ivs-right">${fmtKg(l.qtyKg)}</td>
                     <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.waterKg)}</td>
                     <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.excludeKg)}</td>
+                    <td className="ivs-mono ivs-right" title=${(Number(l.waterKg) || 0) + (Number(l.excludeKg) || 0) > 0 ? `수량 ${fmtKg(l.qtyKg)} − 물중량 − 제외중량` : ""}>${fmtKg(lotNetKg(l))}</td>
                     <td className="ivs-mono">${l.receivedDate}</td>
                     <td className="ivs-mono">${shipDateOf(l) || html`<span className="ivs-dim">-</span>`}</td>
                     <td className="ivs-dim ivs-hide-sm">${l.lastMove ?? "-"}</td>
@@ -8089,14 +8278,14 @@ function InventorySystem() {
             <button className="ivs-btn ivs-btn-sm" onClick=${() => setPage(pageCount)} disabled=${pageNo >= pageCount}>마지막</button>
           </span>
         </div>
-      ` : activeTab === "production" ? html`<${ProductionTab} lots=${openLots} moves=${movesAll} canEdit=${canEdit} onClearMoves=${() => setClearMovesConfirm(true)} onDeleteMoves=${handleDeleteMoves} />`
+      ` : activeTab === "production" ? html`<${ProductionTab} lots=${openLots} moves=${movesAll} canEdit=${canEdit} settings=${settings} onSaveSettings=${persistSettings} onClearMoves=${() => setClearMovesConfirm(true)} onDeleteMoves=${handleDeleteMoves} />`
         : activeTab === "ship" ? html`<${ShipTab} lots=${openLots} moves=${moves} canEdit=${canEdit}
             onShip=${handleShip} onLabel=${(sel) => setLabelLots(sel)} />`
         : activeTab === "tolling" ? html`<${TollingTab} lots=${openLots} />`
         : activeTab === "dashboard" ? html`<${DashboardTab} lots=${openLots} moves=${moves} dayDelta=${dayDelta} />`
         : activeTab === "plan" ? html`<${PlanTab} mes=${mes} canEdit=${canEdit} onSave=${persistMes} />`
         : activeTab === "act" ? html`<${ActualTab} lots=${lotsAll} runs=${runsAll} moves=${movesAll} downs=${downsAll}
-            settings=${settings} mes=${mes} master=${master} canEdit=${canEdit}
+            settings=${settings} mes=${mes} master=${master} canEdit=${canEdit} onSaveSettings=${persistSettings}
             ym=${actYm} onYm=${setActYm}
             onSave=${handleSaveRun} onDelete=${handleDeleteRun} />`
         : activeTab === "basis" ? html`<${BasisTab} mes=${mes} downs=${downsAll} canEdit=${canEdit} onSave=${persistMes}
@@ -8372,7 +8561,11 @@ function LotFormModal({ mode, initial, master, onCancel, onSave, onOpenMaster })
           <${Field} label="입고일"><input type="date" className="ivs-input" value=${v.receivedDate} onChange=${set("receivedDate")} /><//>
           <${Field} label="수량(Kg) *"><input type="number" className="ivs-input" value=${v.qtyKg} onChange=${set("qtyKg")} /><//>
           <${Field} label="물중량(Kg)"><input type="number" className="ivs-input" value=${v.waterKg} onChange=${set("waterKg")} /><//>
-          <${Field} label="제외무게(Kg)"><input type="number" className="ivs-input" value=${v.excludeKg} onChange=${set("excludeKg")} /><//>
+          <${Field} label="제외중량(Kg)"><input type="number" className="ivs-input" value=${v.excludeKg} onChange=${set("excludeKg")} /><//>
+          <div className="ivs-netkg">
+            총 중량 <b>${fmtKg(lotNetKg(v))}</b>
+            <span>= 수량 − 물중량 − 제외중량 · 재고현황의 “총 중량” 칸에 이 값이 나와요</span>
+          </div>
           <div className="ivs-form-checks">
             <label className="ivs-checkbox-label"><input type="checkbox" checked=${v.tolling} onChange=${set("tolling")} /> 톨링품</label>
             <label className="ivs-checkbox-label"><input type="checkbox" checked=${v.carriedOver} onChange=${set("carriedOver")} /> 이월</label>
@@ -8626,7 +8819,7 @@ function MoveStageModal({ lot, onCancel, onConfirm }) {
 // 여러 로트를 한 번에 다음 공정으로 보낼 때 쓰는 창.
 // 단계를 하나 고르면, 고른 로트마다 "이동 후 배출 수량"을 따로 손볼 수 있어요 (기본값은 지금 수량 그대로).
 // 파일에서 읽은 표를 우리 로트 형태로 바꾸고, 넣어도 되는지 하나씩 따져봐요.
-const IMPORT_HEADERS = ["입고 Lot", "품목코드", "품목명", "카테고리", "거래처", "출고지", "입고일", "현재공정", "수량(Kg)", "물중량(Kg)", "제외무게(Kg)", "톨링품", "이월"];
+const IMPORT_HEADERS = ["입고 Lot", "품목코드", "품목명", "카테고리", "거래처", "출고지", "입고일", "현재공정", "수량(Kg)", "물중량(Kg)", "제외중량(Kg)", "톨링품", "이월"];
 
 function buildImportRows(table, existingLots, master) {
   if (!table || table.length === 0) return { rows: [], error: "파일에서 읽을 내용이 없어요." };
@@ -9858,7 +10051,7 @@ function DownTab({ mes, runs, downs, canEdit, onSave, onDelete, focusEq, onFocus
                 ${dtDetails(form.major, form.minor).map((d) => html`<option key=${d.code} value=${d.code}>${d.code} · ${d.name}</option>`)}
               </select>
             <//>
-            <${Field} label="비고 (설비, 현상 · 조치 내용)"><input value=${form.note} onChange=${setF("note")} placeholder="예: 셔레더 A 칼날 2매 파손 → 교체" /><//>
+            <${Field} label="비고 (설비, 현상 · 조치 내용)"><input value=${form.note} onChange=${setF("note")} placeholder="예: 슈레더 A 칼날 2매 파손 → 교체" /><//>
           </div>
           ${picked ? html`
             <div className="ivs-dtcode">
@@ -11033,7 +11226,8 @@ function ShipTab({ lots, moves, canEdit, onShip, onLabel }) {
     </div>`;
 }
 
-function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, onSave, onDelete, ym, onYm }) {
+function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, onSave, onDelete, ym, onYm, onSaveSettings }) {
+  const [hfOpen, setHfOpen] = useState(false);
   const today = new Date().toISOString().slice(0, 10);
   const setYm = onYm; // 화면 제목("9월 생산실적")과 같은 달을 봐야 해서 위에서 내려받아요
   // 산출 한 줄 = 생산 Lot 한 건. 톤백을 여러 개 뽑으면 같은 품목이라도 줄이 여러 개예요.
@@ -11205,8 +11399,9 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
     moves: (moves || []).filter((m) => m.date === logDate).length,
     downs: (downs || []).filter((d) => d.date === logDate).length,
   }), [runs, lots, moves, downs, logDate]);
-  const printDayLog = () => printDocument(`일 작업일보 ${logDate}`,
-    dailyReportHtml({ date: logDate, runs, lots, moves, downs, settings, mes }));
+  const printDayLog = () => printDocument(`일일 제조일보 ${logDate}`,
+    dailyReportHtml({ date: logDate, runs, lots, moves, downs, settings, mes }),
+    { hf: printHF(settings), vars: { 문서: "일일 제조일보", 날짜: logDate, 출력: nowStamp(), 담당: settings.manager || "" } });
 
   // 고른 Lot 가운데 이 공정을 이미 한 번 거쳐 나온 게 있으면 재작업으로 봐요 (예: 파쇄에서 나온 Lot을 다시 파쇄).
   const reworkHint = chosen.filter((l) => l.stage === "usable" || l.process === proc.key);
@@ -11241,7 +11436,7 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
 
       <div className="ivs-daylog">
         <div className="ivs-daylog-txt">
-          <b><${Printer} size=${13} /> 일 작업일보</b>
+          <b><${Printer} size=${13} /> 일일 제조일보</b>
           <span>
             고른 날 하루치를 A4 한 장으로 뽑아요 — 생산실적 · 신규 입고 · 공정이동 · 비가동과 결재란까지 들어갑니다.
             ${logCount.runs + logCount.ins + logCount.moves + logCount.downs === 0
@@ -11255,11 +11450,14 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
             onChange=${(e) => setLogDate(e.target.value)} />
           <button className="ivs-btn ivs-btn-sm" onClick=${() => setLogDate(shiftDay(logDate, 1))} title="하루 뒤">▶</button>
           <button className="ivs-btn ivs-btn-sm" onClick=${() => setLogDate(today)}>오늘</button>
+          <button className="ivs-btn ivs-btn-sm" onClick=${() => setHfOpen(true)} title="종이 위 · 아래에 찍을 글자">머리글 · 바닥글</button>
           <button className="ivs-btn ivs-btn-primary" onClick=${printDayLog}>
             <${Printer} size=${13} /> 인쇄 · PDF
           </button>
         </div>
       </div>
+      ${hfOpen ? html`<${PrintHFModal} settings=${settings} canEdit=${canEdit} docName="일일 제조일보" date=${logDate}
+        onSave=${(next) => onSaveSettings && onSaveSettings(next)} onClose=${() => setHfOpen(false)} />` : null}
 
       <div className="ivs-kpis cols-5">
         <${SummaryCard} label="투입량" value=${fmtTon(tot.inputKg)} unit="톤"
@@ -13691,7 +13889,8 @@ function PlanWindowModal({ mes, winKeys, onClose, onSave }) {
     </div>`;
 }
 
-function ProductionTab({ lots, moves, canEdit, onClearMoves, onDeleteMoves }) {
+function ProductionTab({ lots, moves, canEdit, settings, onSaveSettings, onClearMoves, onDeleteMoves }) {
+  const [hfOpen, setHfOpen] = useState(false);
   const todayStr = new Date().toISOString().slice(0, 10);
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const [pickedMoves, setPickedMoves] = useState(() => new Set()); // 지울 이력으로 체크해둔 것들
@@ -13776,11 +13975,17 @@ function ProductionTab({ lots, moves, canEdit, onClearMoves, onDeleteMoves }) {
 
       <div className="ivs-card">
         <div className="ivs-prod-report-head">
-          <div className="ivs-card-label" style=${{ marginBottom: 0 }}><${FileText} size=${13} style=${{ verticalAlign: -2, marginRight: 4 }} />일일 작업일보</div>
+          <div className="ivs-card-label" style=${{ marginBottom: 0 }}><${FileText} size=${13} style=${{ verticalAlign: -2, marginRight: 4 }} />일일 생산이력 현황</div>
           <div className="ivs-prod-report-actions">
             <input type="date" className="ivs-input" value=${selectedDate} onChange=${(e) => setSelectedDate(e.target.value)} />
-            <button className="ivs-btn" onClick=${() => window.print()}><${Printer} size=${13} /> 인쇄</button>
+            <button className="ivs-btn" onClick=${() => setHfOpen(true)} title="종이 위 · 아래에 찍을 글자">머리글 · 바닥글</button>
+            <button className="ivs-btn ivs-btn-primary" onClick=${() => printDocument(`일일 생산이력 현황 ${selectedDate}`,
+              productionDayHtml({ date: selectedDate, lots, moves, settings }),
+              { hf: printHF(settings), vars: { 문서: "일일 생산이력 현황", 날짜: selectedDate, 출력: nowStamp(), 담당: (settings && settings.manager) || "" } })}>
+              <${Printer} size=${13} /> 인쇄 · PDF</button>
           </div>
+          ${hfOpen ? html`<${PrintHFModal} settings=${settings} canEdit=${canEdit} docName="일일 생산이력 현황" date=${selectedDate}
+            onSave=${(next) => onSaveSettings && onSaveSettings(next)} onClose=${() => setHfOpen(false)} />` : null}
         </div>
         <div className="ivs-kpis">
           <${SummaryCard} label="신규 입고" value=${fmtTon(dayReceiptQty)} unit="톤" />
@@ -14256,7 +14461,7 @@ function DashboardTab({ lots, moves, dayDelta }) {
   const downloadLedger = () => {
     const headers = [
       "기준일", "공정단계", "품목코드", "품목명", "카테고리", "거래처", "출고지", "입고 Lot",
-      "입고일", "주차", "기준일 수량(Kg)", "물중량(Kg)", "제외무게(Kg)", "최종 공정이동일", "톨링품", "이월",
+      "입고일", "주차", "기준일 수량(Kg)", "물중량(Kg)", "제외중량(Kg)", "최종 공정이동일", "톨링품", "이월",
     ];
     const rows = snapshotLedger.map(({ lot, state }) => [
       asOfDate, getStage(state.stage).label, lot.code, lot.name,

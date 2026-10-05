@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>디자인 비교 · 원본 vs 샘플</title>
+<style>
+  :root { --bg: #0F172A; --bar: #111A2C; --line: #22314D; --text: #E2E8F0; --dim: #A6B4C8; --accent: #34D399; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Noto Sans KR", -apple-system, "Segoe UI", "Apple SD Gothic Neo", sans-serif; }
+  header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 16px; background: var(--bar); border-bottom: 1px solid var(--line); }
+  header b { font-size: 15px; }
+  header span { font-size: 12px; color: var(--dim); }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; margin-left: auto; }
+  .seg button { background: none; border: 0; color: var(--dim); padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  .seg button.on { background: rgba(52,211,153,.14); color: var(--accent); font-weight: 700; }
+  main { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; height: calc(100vh - 54px); }
+  main.one { grid-template-columns: 1fr; }
+  .pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .pane h2 { margin: 0; padding: 7px 12px; font-size: 13px; background: var(--bar); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; }
+  .pane h2 a { color: var(--dim); font-weight: 400; font-size: 12px; }
+  .frame { flex: 1; position: relative; overflow: hidden; background: #fff; }
+  .frame iframe { position: absolute; top: 0; left: 0; width: 1440px; border: 0; transform-origin: 0 0; }
+  .hide { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <b>디자인 비교</b>
+  <span>왼쪽 원본 · 오른쪽 디자인 샘플 — 둘 다 샘플 데이터로 열리고 실제 장부에는 저장되지 않아요. 화면은 1440px 기준으로 줄여 보여줍니다.</span>
+  <div class="seg">
+    <button data-mode="both" class="on">나란히</button>
+    <button data-mode="before">원본만</button>
+    <button data-mode="after">샘플만</button>
+  </div>
+</header>
+<main id="m">
+  <section class="pane" id="p-before"><h2>변경 전 (원본) <a href="../v2-preview/" target="_blank" rel="noopener">새 창으로 ↗</a></h2>
+    <div class="frame"><iframe src="../v2-preview/" title="원본 화면"></iframe></div></section>
+  <section class="pane" id="p-after"><h2>변경 후 (디자인 샘플) <a href="../v2-design/" target="_blank" rel="noopener">새 창으로 ↗</a></h2>
+    <div class="frame"><iframe src="../v2-design/" title="디자인 샘플 화면"></iframe></div></section>
+</main>
+<script>
+  // 1440px 화면을 칸 너비에 맞게 줄여서 보여줘요.
+  function fit() {
+    document.querySelectorAll('.frame').forEach(function (f) {
+      var r = f.clientWidth / 1440, i = f.querySelector('iframe');
+      i.style.transform = 'scale(' + r + ')';
+      i.style.height = (f.clientHeight / r) + 'px';
+    });
+  }
+  document.querySelectorAll('.seg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.seg button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      var mode = b.getAttribute('data-mode');
+      document.getElementById('p-before').classList.toggle('hide', mode === 'after');
+      document.getElementById('p-after').classList.toggle('hide', mode === 'before');
+      document.getElementById('m').classList.toggle('one', mode !== 'both');
+      fit();
+    });
+  });
+  window.addEventListener('resize', fit); fit();
+</script>
+</body>
+</html>

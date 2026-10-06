@@ -1420,13 +1420,13 @@
   /* ============================================================
      디자인 샘플 B (frontend-design) — 재료에서 가져온 색
      흑연(블랙매스) · 알루미늄 · 코발트(NCM) · 구리(Cu 칩). 글꼴은 IBM Plex Sans KR 한 가족.
-     번호 대신 제목 단계마다 모양을 달리하고 색은 구리 하나로 맞춰요 —
-     화면 이름(구멍 뚫린 Lot 꼬리표) · 구역 제목(꽉 찬 구리 탭) · 카드 제목(옅은 구리 머리띠).
+     번호 대신 제목 단계마다 모양을 달리해요 — 화면 이름은 구리(구멍 뚫린 Lot 꼬리표),
+     구역 제목(꽉 찬 탭)과 카드 제목(옅은 머리띠)은 왼쪽 메뉴의 선택 표시와 같은 코발트.
      번호는 순서가 실제로 있는 공정 Flow에만 둡니다.
      원본 위에 덮어쓰는 층이고 클래스 이름은 그대로예요.
      ============================================================ */
   .ivs-root[data-theme="light"] {
-    --tag-band: rgba(168,90,39,0.07); --tag-line: rgba(168,90,39,0.28);
+    --head-band: rgba(36,72,168,0.06); --head-line: rgba(36,72,168,0.24);
     --bg: #ECEFF2; --surface: #FFFFFF; --surface-2: #F4F6F8; --surface-3: #E3E7EB;
     --border: #D9DEE3; --border-strong: #B9C1C9;
     --text: #1D2226; --text-dim: #48525C; --text-faint: #646F7A;
@@ -1438,7 +1438,7 @@
     --grid: rgba(29,34,38,0.07); --shadow-sm: none; --shadow: 0 10px 30px rgba(29,34,38,0.14); --zebra: transparent;
   }
   .ivs-root[data-theme="dark"] {
-    --tag-band: rgba(208,138,85,0.10); --tag-line: rgba(208,138,85,0.32);
+    --head-band: rgba(134,166,255,0.10); --head-line: rgba(134,166,255,0.30);
     --bg: #1B1F23; --surface: #23282D; --surface-2: #2A3036; --surface-3: #333A41;
     --border: #363D45; --border-strong: #4A535D;
     --text: #ECEEF0; --text-dim: #B5BDC5; --text-faint: #98A2AC;
@@ -1499,22 +1499,22 @@
   .ivs-card-head-row { padding-bottom: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
   .ivs-modal { border-radius: 10px; }
 
-  /* ② 구역 제목 — 꽉 찬 구리 탭이 구리 선 위에 올라앉은 모양 (서류철 인덱스 탭) */
-  .ivs-section-head { align-items: flex-end; border-bottom: 2px solid var(--tag); margin-bottom: 18px; }
+  /* ② 구역 제목 — 꽉 찬 코발트 탭이 코발트 선 위에 올라앉은 모양 (서류철 인덱스 탭) */
+  .ivs-section-head { align-items: flex-end; border-bottom: 2px solid var(--accent); margin-bottom: 18px; }
   .ivs-section-head > .ivs-section-title { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; gap: 8px;
-    padding: 7px 16px 6px 14px; background: var(--tag); color: var(--tag-ink); border-radius: 6px 6px 0 0; }
+    padding: 7px 16px 6px 14px; background: var(--accent); color: var(--accent-ink); border-radius: 6px 6px 0 0; }
   .ivs-section-head > .ivs-section-title::before { content: ""; width: 7px; height: 7px; border-radius: 50%;
-    background: var(--tag-ink); opacity: .85; flex: 0 0 auto; }
+    background: var(--accent-ink); opacity: .85; flex: 0 0 auto; }
   .ivs-section-head > .ivs-section-hint { padding-bottom: 8px; }
 
-  /* ③ 카드 제목 — 카드 위쪽을 옅은 구리 머리띠로 채우고, 제목 앞에 구리 표식 */
+  /* ③ 카드 제목 — 카드 위쪽을 옅은 코발트 머리띠로 채우고, 제목 앞에 코발트 표식 */
   .ivs-card > .ivs-card-head-row:first-child { margin: -18px -20px 16px; padding: 12px 20px; min-height: 52px; box-sizing: border-box;
-    background: var(--tag-band); border-bottom: 1px solid var(--tag-line); border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0; }
+    background: var(--head-band); border-bottom: 1px solid var(--head-line); border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0; }
   .ivs-card .ivs-section-title, .ivs-card > .ivs-card-label, .ivs-card .ivs-prod-report-head > .ivs-card-label {
     font-size: 17.5px; font-weight: 700; gap: 10px; letter-spacing: -0.02em; color: var(--text); }
   .ivs-card .ivs-section-title::before, .ivs-card > .ivs-card-label::before, .ivs-card .ivs-prod-report-head > .ivs-card-label::before {
     content: ""; counter-increment: none; flex: 0 0 auto; width: 4px; min-width: 0; height: 18px; padding: 0;
-    border-radius: 2px; background: var(--tag); }
+    border-radius: 2px; background: var(--accent); }
 
   /* 공정 Flow — 실제 순서가 있는 곳이라 번호를 살리고, 구리색으로 단계 번호를 세워요 */
   .ivs-eqnode-no { color: var(--tag); font-size: 12px; font-weight: 700; }

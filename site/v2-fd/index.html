@@ -232,6 +232,9 @@
   .ivs-arrow-up { transform: rotate(180deg); }
   .ivs-empty { text-align: center; color: var(--text-dim); padding: 44px 0 !important; white-space: normal; }
   .ivs-tablefoot { font-size: 12px; color: var(--text-faint); margin-top: 10px; }
+  /* 표의 합계 줄 — 본문보다 조금 크고 굵게, 옅은 띠와 윗줄로 표 끝을 닫아요 */
+  tr.ivs-tablefoot td { font-size: 13.5px; font-weight: 700; color: var(--text); background: var(--surface-2);
+    border-top: 2px solid var(--border-strong); padding-top: 11px; padding-bottom: 11px; }
   .ivs-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .ivs-pager-ctl { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .ivs-pager-ctl label { display: inline-flex; align-items: center; gap: 4px; }
@@ -829,6 +832,8 @@
     border: 1px solid var(--border); background: var(--surface-2); color: var(--text-dim);
     font: inherit; transition: border-color .12s, background .12s; }
   .ivs-proctab:hover { border-color: color-mix(in srgb, var(--c) 55%, var(--border)); }
+  /* 공정마다 정해진 색을 왼쪽 띠로 늘 보여줘요 — 고르기 전에도 어느 공정이 어떤 색인지 알 수 있게 */
+  .ivs-proctab { box-shadow: inset 4px 0 0 var(--c); padding-left: 15px; }
   .ivs-proctab b { font-size: 13px; color: var(--text); }
   .ivs-proctab span { font-size: 11px; color: var(--text-dim); }
   .ivs-proctab.on { border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, var(--surface-2)); }
@@ -1087,12 +1092,12 @@
   .ivs-legend-swatch.round { border-radius: 50%; background: transparent; border: 2.5px solid #4C8DFF; }
 
   .ivs-wchart { display: flex; gap: 5px; align-items: flex-end; overflow-x: auto; padding-bottom: 4px; }
-  .ivs-wchart-col { flex: 1 1 0; min-width: 46px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .ivs-wchart-val { font-size: 11px; font-weight: 600; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .ivs-wchart-col { flex: 1 1 0; min-width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .ivs-wchart-val { font-size: 12.5px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
   .ivs-wchart-plot { width: 100%; height: 108px; display: flex; align-items: flex-end; }
   .ivs-wchart-bar { width: 100%; border-radius: 5px 5px 0 0; min-height: 2px; }
-  .ivs-wchart-name { font-size: 11px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
-  .ivs-wchart-sub { font-size: 9.5px; color: var(--text-faint); white-space: nowrap; }
+  .ivs-wchart-name { font-size: 13px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .ivs-wchart-sub { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
 
   .ivs-hire { position: relative; display: flex; gap: 20px; align-items: flex-end; padding-top: 24px; }
   /* 정원선은 칸마다 끊지 않고 차트 전체를 가로지르게 — 끊어 그리면 점선이 셋으로 보여요 */
@@ -1369,20 +1374,20 @@
   .ivs-week-row { border: 1px solid var(--border); border-left: 3px solid var(--c);
     border-radius: 9px; padding: 11px 14px; background: var(--surface-2); }
   .ivs-week-row-h { display: flex; align-items: baseline; gap: 9px; margin-bottom: 8px; }
-  .ivs-week-wk { font-size: 12px; font-weight: 700; color: var(--c); font-variant-numeric: tabular-nums; }
-  .ivs-week-range { font-size: 11px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
-  .ivs-week-kg { margin-left: auto; font-size: 15px; font-weight: 700; color: var(--text);
+  .ivs-week-wk { font-size: 14px; font-weight: 700; color: var(--c); font-variant-numeric: tabular-nums; }
+  .ivs-week-range { font-size: 12.5px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .ivs-week-kg { margin-left: auto; font-size: 17px; font-weight: 700; color: var(--text);
     font-variant-numeric: tabular-nums; }
-  .ivs-week-kg em { font-size: 10px; font-style: normal; color: var(--text-faint); margin-left: 2px; }
+  .ivs-week-kg em { font-size: 11.5px; font-style: normal; color: var(--text-faint); margin-left: 2px; }
   .ivs-week-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    font-size: 11px; color: var(--text-dim); }
+    font-size: 12.5px; color: var(--text-dim); }
   .ivs-week-meta .ivs-chip { margin-left: auto; }
-  .ivs-week-note { margin-top: 7px; font-size: 10.5px; color: var(--accent); }
+  .ivs-week-note { margin-top: 7px; font-size: 12px; color: var(--accent); }
   .ivs-week-total { display: flex; align-items: baseline; gap: 12px; padding: 11px 14px;
     border-radius: 9px; background: var(--accent-soft);
-    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); font-size: 12px; }
-  .ivs-week-total b { font-size: 15px; color: var(--text); font-variant-numeric: tabular-nums; }
-  .ivs-week-total span:last-child { margin-left: auto; font-size: 11px; }
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); font-size: 13px; }
+  .ivs-week-total b { font-size: 17px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .ivs-week-total span:last-child { margin-left: auto; font-size: 12.5px; }
   @media (max-width: 1100px) { .ivs-week-split { grid-template-columns: 1fr; } }
 
   /* ---------- 기준정보 : 조 편성 보기 ---------- */
@@ -1469,7 +1474,20 @@
 
   /* 왼쪽 메뉴 — 테마를 따라가요 (화이트면 흰 메뉴, 다크면 흑연색) */
   .ivs-side { background: var(--surface); color: var(--text); border-right: 1px solid var(--border); padding: 18px 12px; }
-  .ivs-side-group { letter-spacing: 0; text-transform: none; font-size: 11.5px; font-weight: 600; margin: 16px 10px 6px; }
+  /* 메뉴 묶음 이름(생산관리 · 재고관리 · 분석) — 링크보다 굵고 진하게, 앞에 코발트 네모 표식.
+     두 번째 묶음부터는 위에 가는 선을 그어 묶음 사이를 끊어요 */
+  .ivs-side-group { letter-spacing: -0.01em; text-transform: none; font-size: 13.5px; font-weight: 700; color: var(--text);
+    margin: 14px 4px 6px; padding: 12px 6px 0; border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px; }
+  .ivs-side-group::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); flex: 0 0 auto; }
+  .ivs-side-nav > .ivs-side-group:first-child { border-top: none; padding-top: 0; }
+
+  /* 고르는 버튼 묶음(일별 · 주간 · 월간, 대분류 · 소분류 …) — 고른 칸은 메뉴와 같은 옅은 코발트 */
+  .ivs-seg-btn.on { background: var(--accent-soft); color: var(--accent); font-weight: 700;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent); }
+
+  /* 후속공정 버튼 — 화이트에서는 공정 색 글자가 흐려서 본문색과 섞어 진하게 */
+  .ivs-root[data-theme="light"] .ivs-proctab.on b { color: color-mix(in srgb, var(--c) 62%, var(--text)); }
   .ivs-side-link { border-radius: var(--radius-sm); font-weight: 500; color: var(--text-dim); padding: 9px 11px; }
   .ivs-side-link:hover { background: var(--surface-2); color: var(--text); }
   .ivs-side-link.on { background: var(--accent-soft); color: var(--accent); font-weight: 700; box-shadow: inset 3px 0 0 var(--accent); }
@@ -5230,6 +5248,10 @@ const PROCESSES = [
     warn: "응축액 출고는 이전 공정 Lot을 고르지 않아요. 실측 중량만 넣으면 그 날짜로 출하완료 Lot이 만들어져요." },
 ];
 const FLOW_PROCESSES = PROCESSES.filter((p) => !p.standalone);
+// 후속공정 버튼 색 — 입고 경로 색을 그대로 쓰면 전기방전·해체가 같은 색이 돼서, 공정마다 따로 정해요.
+// (재작업은 주황 #D97706이라 그와 겹치지 않게 골랐어요)
+const PROC_COLOR = { discharge: "#8B5CF6", disassemble: "#22A06B", crush: "#17C1D9", calcine: "#F0555C" };
+const procColor = (p) => (p && PROC_COLOR[p.key]) || (p && ROUTES[p.route] ? ROUTES[p.route].color : "#8494AC");
 const processByKey = Object.fromEntries(PROCESSES.map((p) => [p.key, p]));
 const outputKindByKey = Object.fromEntries(OUTPUT_KINDS.map((k) => [k.key, k]));
 // 카테고리를 고르면 품목명이 현장에서 부르는 이름으로 자동으로 채워져요.
@@ -10390,7 +10412,7 @@ function DownTab({ mes, runs, downs, canEdit, onSave, onDelete, focusEq, onFocus
       <div className="ivs-chart-split">
         <div className="ivs-card">
           <div className="ivs-card-head-row">
-            <h2 className="ivs-section-title">파레토 — 무엇 때문에 많이 섰나</h2>
+            <h2 className="ivs-section-title">정지 원인 순위 — 무엇 때문에 많이 섰나</h2>
             <div className="ivs-seg">
               ${[["major", "대분류"], ["minor", "소분류"], ["detail", "상세"], ["device", "기기"]].map(([k, t]) => html`
                 <button key=${k} className=${`ivs-seg-btn ${tab === k ? "on" : ""}`} onClick=${() => setTab(k)}>${t}</button>`)}
@@ -11841,14 +11863,14 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
             ${FLOW_PROCESSES.map((pr) => html`
               <button key=${pr.key} type="button"
                 className=${`ivs-proctab ${pr.key === proc.key ? "on" : ""}`}
-                style=${{ "--c": ROUTES[pr.route].color }}
+                style=${{ "--c": procColor(pr) }}
                 onClick=${() => setProcess(pr.key)}>
                 <b>${pr.label}</b>
                 <span>${stageLabels(pr.from)} → ${getStage(pr.to).label}</span>
               </button>
             `)}
           </div>
-          <div className="ivs-routebar" style=${{ "--c": route.color, marginTop: 0 }}>
+          <div className="ivs-routebar" style=${{ "--c": procColor(proc), marginTop: 0 }}>
             <span className="ivs-routebar-tag">${route.label}</span>
             <span className="ivs-routebar-flow">${route.flow}</span>
             <span className="ivs-routebar-hint">${proc.hint}</span>
@@ -12199,7 +12221,7 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
                         <td className="ivs-mono">${r.date}</td>
                         <td><span className=${`ivs-cal-tag ${r.shift}`}>${SHIFT_LABEL[r.shift]}</span></td>
                         <td><span className="ivs-badge" style=${{ "--c": CREW_COLOR[r.crew] || "#8494AC" }}>${r.crew}조</span></td>
-                        <td><span className="ivs-badge" style=${{ "--c": ROUTES[rp.route].color }}>${rp.label}</span></td>
+                        <td><span className="ivs-badge" style=${{ "--c": procColor(rp) }}>${rp.label}</span></td>
                         <td className="ivs-mono ivs-right">${r.workers || "-"}</td>
                         <td className="ivs-mono ivs-right">${r.inputKg ? fmtKg(r.inputKg) : "-"}</td>
                         <td>
@@ -12376,7 +12398,7 @@ function LotPickerModal({ lots, proc, selected, onToggle, onSetSelected, onClose
             ${FLOW_PROCESSES.map((p) => html`
               <button key=${p.key} type="button"
                 className=${`ivs-proctab ${p.key === tab ? "on" : ""}`}
-                style=${{ "--c": ROUTES[p.route].color }}
+                style=${{ "--c": procColor(p) }}
                 onClick=${() => setTab(p.key)}>
                 <b>${p.label}</b>
                 <span>${stageLabels(p.from)} · ${countAt(p)}건</span>
@@ -12388,7 +12410,7 @@ function LotPickerModal({ lots, proc, selected, onToggle, onSetSelected, onClose
               <span>출하대기 · ${lots.filter((l) => !l.closed && l.stage === "usable").length}건</span>
             </button>
           </div>
-          <div className="ivs-routebar" style=${{ "--c": tab === "rework" ? "#D97706" : ROUTES[view.route].color, marginBottom: 12, marginTop: 0 }}>
+          <div className="ivs-routebar" style=${{ "--c": tab === "rework" ? "#D97706" : procColor(view), marginBottom: 12, marginTop: 0 }}>
             <span className="ivs-routebar-tag">${tab === "rework" ? "재작업" : ROUTES[view.route].label}</span>
             <span className="ivs-routebar-flow">${tab === "rework" ? `출하대기 → ${proc.label} 다시` : `${stageLabels(view.from)} → ${getStage(view.to).label}`}</span>
             <span className="ivs-routebar-hint">

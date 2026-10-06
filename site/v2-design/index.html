@@ -1051,6 +1051,8 @@
 
   .ivs-matrix th .ivs-mx-h { display: inline-block; padding: 1px 7px; border-radius: 5px; font-size: 11px;
     color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); }
+  /* 화이트 테마 — 노랑·주황 분류색은 흰 바탕에서 흐려서 글자색만 본문색과 섞어 진하게 해요 */
+  .ivs-root[data-theme="light"] .ivs-matrix th .ivs-mx-h { color: color-mix(in srgb, var(--c) 60%, var(--text)); }
   .ivs-mx-cell { background: color-mix(in srgb, var(--c) calc(var(--a) * 100%), transparent); }
 
   /* ---------- 생산계획 : 로드맵 · 기준 ---------- */
@@ -1299,6 +1301,57 @@
   .ivs-slide .ivs-table-wrap { border-color: #2E3B52; }
   .ivs-slide .ivs-section-hint { color: #64748B; }
   @media print { .ivs-slide { page-break-after: always; border-radius: 0; } }
+
+  /* 화이트 테마 — 슬라이드도 흰 종이로. 바탕·선·글자는 화면 테마 색을 그대로 쓰고,
+     PT 포인트 색(--pt-XXXXXX)은 흰 바탕에서 읽히는 진한 색으로 바꿔 끼워요. 내려받는 .pptx는 다크 그대로입니다. */
+  .ivs-root[data-theme="light"] .ivs-flowline-step.on { color: #047857; background: rgba(4,120,87,.08); border-color: rgba(4,120,87,.35); }
+  .ivs-root[data-theme="light"] .ivs-slides {
+    --pt-FFFFFF: var(--text); --pt-94A3B8: var(--text-dim); --pt-64748B: #64748B;
+    --pt-10B981: #047857; --pt-EF4444: #C62828; --pt-3B82F6: #1D4ED8; --pt-F59E0B: #B45309;
+    --pt-06B6D4: #0E7490; --pt-14B8A6: #0F766E; --pt-A855F7: #7E22CE; --pt-EC4899: #BE185D; --pt-F97316: #C2410C;
+    --sl-card: var(--surface-2); --sl-panel: var(--surface-2); --sl-line: var(--border); --sl-track: var(--surface-3); }
+  .ivs-root[data-theme="light"] .ivs-slide { background: var(--surface); border-color: var(--border); color: var(--text);
+    box-shadow: var(--shadow-sm); }
+  .ivs-root[data-theme="light"] .ivs-slide.cover { border-top-color: var(--pt-10B981); }
+  .ivs-root[data-theme="light"] .ivs-slide-eyebrow { color: var(--pt-10B981); }
+  .ivs-root[data-theme="light"] .ivs-slide-coverrule { background: var(--pt-10B981); }
+  .ivs-root[data-theme="light"] :is(.ivs-slide-title, .ivs-slide-covertitle, .ivs-slide-bar-v, .ivs-sv-col-v,
+    .ivs-sv-gauge-l, .ivs-slide-trend-x b, .ivs-slide-issue-h b, .ivs-slide-issue-r b, .ivs-slide-plantxt b,
+    .ivs-slide-banner, .ivs-slide-table td) { color: var(--text); }
+  .ivs-root[data-theme="light"] .ivs-slide-trend-x em.hd { color: var(--text); }
+  .ivs-root[data-theme="light"] :is(.ivs-slide-sub, .ivs-slide-coversub, .ivs-slide-kpi-l, .ivs-slide-kpi-v em,
+    .ivs-slide-point span:last-child, .ivs-slide-bar-l, .ivs-sv-gauge-v em, .ivs-sv-gauge-m, .ivs-sv-gauge-s,
+    .ivs-sv-col-l, .ivs-sv-legend, .ivs-slide-trend-x span, .ivs-slide-issue-r, .ivs-slide-plantxt span,
+    .ivs-slide-plandue, .ivs-slide-table th) { color: var(--text-dim); }
+  .ivs-root[data-theme="light"] :is(.ivs-slide-no, .ivs-slide-covermeta, .ivs-sv-col-v span, .ivs-sv-col-l span + span,
+    .ivs-slide-trend-x em, .ivs-slide .ivs-section-hint) { color: #64748B; }
+  .ivs-root[data-theme="light"] :is(.ivs-slide-kpi, .ivs-slide-issue) { background: var(--sl-card); border-color: var(--sl-line); }
+  .ivs-root[data-theme="light"] .ivs-slide-issue { border: 1px solid var(--sl-line); border-top: 3px solid var(--c); }
+  .ivs-root[data-theme="light"] :is(.ivs-slide-point, .ivs-slide-bars, .ivs-sv-gauges, .ivs-sv-cols, .ivs-sv-pareto,
+    .ivs-sv-pa, .ivs-slide-trend, .ivs-slide-planrow) { background: var(--sl-panel); }
+  .ivs-root[data-theme="light"] :is(.ivs-slide-bar-t, .ivs-slide-kpi-bar, .ivs-sv-col-track) { background: var(--sl-track); }
+  .ivs-root[data-theme="light"] .ivs-sv-gauge-bg { stroke: var(--sl-track); }
+  .ivs-root[data-theme="light"] :is(.ivs-sv-gauge-mark) { stroke: var(--text); }
+  .ivs-root[data-theme="light"] :is(.ivs-slide-kpi-bar u, .ivs-slide-bar-t u) { background: var(--text); opacity: .7; }
+  .ivs-root[data-theme="light"] .ivs-slide-pn { color: #FFFFFF; }
+  .ivs-root[data-theme="light"] :is(.ivs-sv-col-l, .ivs-slide-trend-svg) { border-color: var(--sl-line); }
+  .ivs-root[data-theme="light"] .ivs-slide-trend-tick { background: var(--sl-line); }
+  .ivs-root[data-theme="light"] .ivs-sv-cum { color: var(--pt-F59E0B) !important; }
+  .ivs-root[data-theme="light"] .ivs-sv-mark { border-top-color: var(--pt-F59E0B); }
+  .ivs-root[data-theme="light"] .ivs-sv-mark span { color: var(--pt-F59E0B); }
+  .ivs-root[data-theme="light"] .ivs-sv-pareto-line { stroke: var(--pt-F59E0B); }
+  .ivs-root[data-theme="light"] .ivs-sv-pareto-dot { fill: var(--surface); stroke: var(--pt-F59E0B); }
+  .ivs-root[data-theme="light"] .ivs-sv-pareto-80 { stroke: var(--text-dim); }
+  .ivs-root[data-theme="light"] .ivs-sv-legend i.act, .ivs-root[data-theme="light"] .ivs-sv-pair span.act.ok { background: var(--pt-10B981); }
+  .ivs-root[data-theme="light"] .ivs-sv-pair span.act { background: var(--pt-F59E0B); }
+  .ivs-root[data-theme="light"] .ivs-sv-pair span.act.ok { background: var(--pt-10B981); }
+  .ivs-root[data-theme="light"] .ivs-slide-banner { border-left-color: var(--pt-3B82F6); background: rgba(29,78,216,.07); }
+  .ivs-root[data-theme="light"] .ivs-slide-banner.action { border-left-color: var(--pt-EF4444); background: rgba(198,40,40,.07); }
+  .ivs-root[data-theme="light"] .ivs-slide-banner.insight { border-left-color: var(--pt-10B981); background: rgba(4,120,87,.07); }
+  .ivs-root[data-theme="light"] .ivs-slide-banner.action b { color: var(--pt-EF4444); }
+  .ivs-root[data-theme="light"] .ivs-slide-banner.insight b { color: var(--pt-10B981); }
+  .ivs-root[data-theme="light"] :is(.ivs-slide-table th, .ivs-slide-table td, .ivs-slide .ivs-table-wrap) { border-color: var(--border); }
+  .ivs-root[data-theme="light"] .ivs-slide-table th { background: var(--surface-2); }
 
   @media (max-width: 1100px) {
     .ivs-slide-kpis { grid-template-columns: repeat(2, 1fr); }
@@ -10908,6 +10961,13 @@ function ReportTab({ mes, runs, downs, lots, settings }) {
 }
 
 // 화면 미리보기 — 내려받는 .pptx와 같은 설명서(visual)로 그려요.
+// 보고서 미리보기 색 — PT 색을 CSS 변수로 감싸 둬요. 다크에서는 그대로(.pptx와 같은 색),
+// 화이트 테마에서는 헤더 스타일이 같은 이름의 변수를 진한 색으로 바꿔 끼워 흰 바탕에서도 읽히게 합니다.
+const ptc = (c) => {
+  const h = String(c || "").replace("#", "").toUpperCase();
+  return h ? `var(--pt-${h}, #${h})` : "";
+};
+
 function SlidePreview({ s, no, total }) {
   const v = s.visual || {};
   if (v.type === "cover") {
@@ -10921,7 +10981,7 @@ function SlidePreview({ s, no, total }) {
       </div>`;
   }
   return html`
-    <div className="ivs-slide" style=${{ "--accent": `#${String(s.accent || "10B981").replace("#", "")}` }}>
+    <div className="ivs-slide" style=${{ "--accent": ptc(s.accent || "10B981") }}>
       <div className="ivs-slide-head">
         <span className="ivs-slide-kicker">${s.kicker}</span>
         <span className="ivs-slide-no">${no} / ${total}</span>
@@ -10934,8 +10994,8 @@ function SlidePreview({ s, no, total }) {
           <div className="ivs-slide-points">
             ${s.points.map((p, i) => html`
               <div className="ivs-slide-point" key=${i}>
-                <span className="ivs-slide-pn" style=${{ background: `#${String(p.color || "3B82F6").replace("#", "")}` }}>${i + 1}</span>
-                <b style=${{ color: `#${String(p.color || "3B82F6").replace("#", "")}` }}>${p.label}</b>
+                <span className="ivs-slide-pn" style=${{ background: ptc(p.color || "3B82F6") }}>${i + 1}</span>
+                <b style=${{ color: ptc(p.color || "3B82F6") }}>${p.label}</b>
                 <span>${p.text}</span>
               </div>`)}
           </div>` : null}
@@ -10949,7 +11009,7 @@ function SlidePreview({ s, no, total }) {
 
 function SlideVisual({ v }) {
   if (!v) return null;
-  const hx2 = (c) => `#${String(c || "").replace("#", "")}`;
+  const hx2 = ptc;
   if (v.type === "kpi") {
     return html`<div className="ivs-slide-kpis">
       ${v.items.map((k, i) => html`<div className="ivs-slide-kpi" key=${i}>
@@ -10999,7 +11059,7 @@ function SlideVisual({ v }) {
               return html`<line x1=${x1} y1=${y1} x2=${x2} y2=${y2} className="ivs-sv-gauge-mark" />`;
             })() : null}
           </svg>
-          <div className="ivs-sv-gauge-v" style=${{ color: Number.isFinite(val) ? hx2(it.color) : "#64748B",
+          <div className="ivs-sv-gauge-v" style=${{ color: Number.isFinite(val) ? hx2(it.color) : hx2("64748B"),
             fontSize: Number.isFinite(val) ? null : 20 }}>
             ${Number.isFinite(val) ? html`${it.text || String(val)}<em>${it.unit || ""}</em>` : "실적 없음"}
           </div>
@@ -11086,7 +11146,7 @@ function SlideVisual({ v }) {
             return html`<line x1=${50 + 35 * Math.cos(a)} y1=${50 + 35 * Math.sin(a)}
               x2=${50 + 49 * Math.cos(a)} y2=${50 + 49 * Math.sin(a)} className="ivs-sv-gauge-mark" />`; })()}
         </svg>
-        <div className="ivs-sv-gauge-v" style=${{ color: v.achieve == null ? "#64748B" : hx2(v.achieveColor),
+        <div className="ivs-sv-gauge-v" style=${{ color: v.achieve == null ? hx2("64748B") : hx2(v.achieveColor),
           fontSize: v.achieve == null ? 20 : null }}>
           ${v.achieve == null ? "계획 없음" : html`${v.achieve.toFixed(1)}<em>%</em>`}
         </div>
@@ -11104,7 +11164,7 @@ function SlideVisual({ v }) {
             ${rows.map((r, i) => {
               const met = (Number(r.actual) || 0) >= (Number(r.plan) || 0) && (Number(r.plan) || 0) > 0;
               return html`<div className="ivs-sv-pacol" key=${i}>
-                <div className="ivs-sv-col-v" style=${{ color: met ? "#10B981" : "#F59E0B" }}><b>${r.actualText || ""}</b></div>
+                <div className="ivs-sv-col-v" style=${{ color: met ? hx2("10B981") : hx2("F59E0B") }}><b>${r.actualText || ""}</b></div>
                 <div className="ivs-sv-pair">
                   <span className="plan" style=${{ height: `${((Number(r.plan) || 0) / max) * 100}%` }}></span>
                   <span className=${met ? "act ok" : "act"} style=${{ height: `${((Number(r.actual) || 0) / max) * 100}%` }}></span>
@@ -11126,8 +11186,8 @@ function SlideVisual({ v }) {
     const pts = rows.map((r, i) => [rows.length === 1 ? 50 : (100 * i) / (rows.length - 1), y(Number(r.value) || 0)]);
     return html`<div className="ivs-slide-trend">
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="ivs-slide-trend-svg">
-        <polygon points=${`0,100 ${pts.map(([a, b]) => `${a},${b}`).join(" ")} 100,100`} fill=${hx2(v.color)} opacity="0.16" />
-        <polyline points=${pts.map(([a, b]) => `${a},${b}`).join(" ")} fill="none" stroke=${hx2(v.color)} strokeWidth="2" vectorEffect="non-scaling-stroke" />
+        <polygon points=${`0,100 ${pts.map(([a, b]) => `${a},${b}`).join(" ")} 100,100`} style=${{ fill: hx2(v.color) }} opacity="0.16" />
+        <polyline points=${pts.map(([a, b]) => `${a},${b}`).join(" ")} fill="none" style=${{ stroke: hx2(v.color) }} strokeWidth="2" vectorEffect="non-scaling-stroke" />
       </svg>
       <div className="ivs-slide-trend-x">
         ${rows.map((r, i) => html`<span key=${i}>

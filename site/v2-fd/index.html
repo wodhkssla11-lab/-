@@ -1420,8 +1420,8 @@
   /* ============================================================
      디자인 샘플 B (frontend-design) — 재료에서 가져온 색
      흑연(블랙매스) · 알루미늄 · 코발트(NCM) · 구리(Cu 칩). 글꼴은 IBM Plex Sans KR 한 가족.
-     번호 대신 제목 단계마다 모양을 달리해요 — 화면 이름은 구리(구멍 뚫린 Lot 꼬리표),
-     구역 제목(꽉 찬 탭)과 카드 제목(옅은 머리띠)은 왼쪽 메뉴의 선택 표시와 같은 코발트.
+     제목 표시는 모두 왼쪽 메뉴의 선택 표시와 같은 코발트 — 화면 이름(구멍 뚫린 Lot 꼬리표) ·
+     구역 제목(꽉 찬 탭) · 카드 제목(옅은 머리띠 + 1, 2, 3 번호 배지).
      번호는 순서가 실제로 있는 공정 Flow에만 둡니다.
      원본 위에 덮어쓰는 층이고 클래스 이름은 그대로예요.
      ============================================================ */
@@ -1459,11 +1459,11 @@
     font-variant-numeric: tabular-nums;
   }
   .ivs-mono, .ivs-kpi-value, .ivs-pager-no { font-family: inherit; font-variant-numeric: tabular-nums; letter-spacing: 0; }
-  /* ① 화면 이름 — 톤백에 다는 구리 Lot 꼬리표 (구멍 뚫린 태그) */
+  /* ① 화면 이름 — 톤백에 다는 Lot 꼬리표 (구멍 뚫린 태그), 코발트 */
   .ivs-title { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.2;
     display: inline-flex; align-items: center; gap: 12px; }
   .ivs-title::before { content: ""; flex: 0 0 auto; width: 30px; height: 22px; border-radius: 0 4px 4px 0;
-    background: radial-gradient(circle at 10px 50%, var(--bg) 0 2.8px, transparent 3.3px), var(--tag);
+    background: radial-gradient(circle at 10px 50%, var(--bg) 0 2.8px, transparent 3.3px), var(--accent);
     clip-path: polygon(8px 0, 100% 0, 100% 100%, 8px 100%, 0 50%); }
   .ivs-subtitle { font-size: 13px; }
 
@@ -1506,15 +1506,21 @@
   .ivs-section-head > .ivs-section-title::before { content: ""; width: 7px; height: 7px; border-radius: 50%;
     background: var(--accent-ink); opacity: .85; flex: 0 0 auto; }
   .ivs-section-head > .ivs-section-hint { padding-bottom: 8px; }
+  /* 생산계획 · 기준정보 · 집계는 화면 이름과 같은 말이 겹쳐서 구역 제목을 빼고 안내 글만 남겨요 */
+  .ivs-plan > .ivs-section-head, .ivs-dash > .ivs-section-head { border-bottom: none; margin-bottom: 12px; }
+  .ivs-plan > .ivs-section-head > .ivs-section-title, .ivs-dash > .ivs-section-head > .ivs-section-title { display: none; }
+  .ivs-plan > .ivs-section-head > .ivs-section-hint, .ivs-dash > .ivs-section-head > .ivs-section-hint { padding-bottom: 0; }
 
-  /* ③ 카드 제목 — 카드 위쪽을 옅은 코발트 머리띠로 채우고, 제목 앞에 코발트 표식 */
+  /* ③ 카드 제목 — 카드 위쪽을 옅은 코발트 머리띠로 채우고, 제목 앞에 코발트 번호 배지 (화면마다 1부터) */
   .ivs-card > .ivs-card-head-row:first-child { margin: -18px -20px 16px; padding: 12px 20px; min-height: 52px; box-sizing: border-box;
     background: var(--head-band); border-bottom: 1px solid var(--head-line); border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0; }
   .ivs-card .ivs-section-title, .ivs-card > .ivs-card-label, .ivs-card .ivs-prod-report-head > .ivs-card-label {
     font-size: 17.5px; font-weight: 700; gap: 10px; letter-spacing: -0.02em; color: var(--text); }
   .ivs-card .ivs-section-title::before, .ivs-card > .ivs-card-label::before, .ivs-card .ivs-prod-report-head > .ivs-card-label::before {
-    content: ""; counter-increment: none; flex: 0 0 auto; width: 4px; min-width: 0; height: 18px; padding: 0;
-    border-radius: 2px; background: var(--accent); }
+    content: counter(ivssec); counter-increment: ivssec; flex: 0 0 auto; min-width: 24px; height: 24px; padding: 0 6px;
+    box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 5px; background: var(--accent); color: var(--accent-ink);
+    font-size: 13px; font-weight: 700; letter-spacing: 0; font-variant-numeric: tabular-nums; }
 
   /* 공정 Flow — 실제 순서가 있는 곳이라 번호를 살리고, 구리색으로 단계 번호를 세워요 */
   .ivs-eqnode-no { color: var(--tag); font-size: 12px; font-weight: 700; }
@@ -1544,6 +1550,51 @@
   @media (prefers-reduced-motion: reduce) {
     .ivs-root *, .ivs-root *::before, .ivs-root *::after { transition: none !important; animation: none !important; }
   }
+
+  /* 보고서 — 화면 미리보기도 B안 색으로 (다크는 흑연 · 화이트는 알루미늄). 표지와 흐름 표시는 코발트.
+     내려받는 .pptx는 그대로 딥 네이비예요. */
+  .ivs-root[data-theme] .ivs-flowline-step.on { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  /* 슬라이드마다 --accent를 자기 색으로 다시 정하니, 화면의 코발트는 바깥(.ivs-slides)에서 따로 받아 둬요 */
+  .ivs-root[data-theme] .ivs-slides { --b-accent: var(--accent); }
+  .ivs-root[data-theme] .ivs-slide.cover { border-top-color: var(--b-accent); }
+  .ivs-root[data-theme] .ivs-slide-eyebrow { color: var(--b-accent); }
+  .ivs-root[data-theme] .ivs-slide-coverrule { background: var(--b-accent); }
+  .ivs-root[data-theme="dark"] .ivs-slides { --pt-FFFFFF: var(--text); --pt-94A3B8: var(--text-dim); --pt-64748B: var(--text-faint);
+    --sl-card: var(--surface-2); --sl-panel: var(--surface-2); --sl-line: var(--border); --sl-track: var(--surface-3); }
+  .ivs-root[data-theme="dark"] .ivs-slide { background: var(--surface); border-color: var(--border); color: var(--text);
+    box-shadow: var(--shadow-sm); }
+  .ivs-root[data-theme="dark"] :is(.ivs-slide-title, .ivs-slide-covertitle, .ivs-slide-bar-v, .ivs-sv-col-v,
+    .ivs-sv-gauge-l, .ivs-slide-trend-x b, .ivs-slide-issue-h b, .ivs-slide-issue-r b, .ivs-slide-plantxt b,
+    .ivs-slide-banner, .ivs-slide-table td) { color: var(--text); }
+  .ivs-root[data-theme="dark"] .ivs-slide-trend-x em.hd { color: var(--text); }
+  .ivs-root[data-theme="dark"] :is(.ivs-slide-sub, .ivs-slide-coversub, .ivs-slide-kpi-l, .ivs-slide-kpi-v em,
+    .ivs-slide-point span:last-child, .ivs-slide-bar-l, .ivs-sv-gauge-v em, .ivs-sv-gauge-m, .ivs-sv-gauge-s,
+    .ivs-sv-col-l, .ivs-sv-legend, .ivs-slide-trend-x span, .ivs-slide-issue-r, .ivs-slide-plantxt span,
+    .ivs-slide-plandue, .ivs-slide-table th) { color: var(--text-dim); }
+  .ivs-root[data-theme="dark"] :is(.ivs-slide-no, .ivs-slide-covermeta, .ivs-sv-col-v span, .ivs-sv-col-l span + span,
+    .ivs-slide-trend-x em, .ivs-slide .ivs-section-hint) { color: var(--text-faint); }
+  .ivs-root[data-theme="dark"] :is(.ivs-slide-kpi, .ivs-slide-issue) { background: var(--sl-card); border-color: var(--sl-line); }
+  .ivs-root[data-theme="dark"] .ivs-slide-issue { border: 1px solid var(--sl-line); border-top: 3px solid var(--c); }
+  .ivs-root[data-theme="dark"] :is(.ivs-slide-point, .ivs-slide-bars, .ivs-sv-gauges, .ivs-sv-cols, .ivs-sv-pareto,
+    .ivs-sv-pa, .ivs-slide-trend, .ivs-slide-planrow) { background: var(--sl-panel); }
+  .ivs-root[data-theme="dark"] :is(.ivs-slide-bar-t, .ivs-slide-kpi-bar, .ivs-sv-col-track) { background: var(--sl-track); }
+  .ivs-root[data-theme="dark"] .ivs-sv-gauge-bg { stroke: var(--sl-track); }
+  .ivs-root[data-theme="dark"] :is(.ivs-sv-gauge-mark) { stroke: var(--text); }
+  .ivs-root[data-theme="dark"] :is(.ivs-sv-col-l, .ivs-slide-trend-svg) { border-color: var(--sl-line); }
+  .ivs-root[data-theme="dark"] .ivs-slide-trend-tick { background: var(--sl-line); }
+  .ivs-root[data-theme="dark"] .ivs-sv-cum { color: var(--pt-F59E0B) !important; }
+  .ivs-root[data-theme="dark"] .ivs-sv-mark { border-top-color: var(--pt-F59E0B); }
+  .ivs-root[data-theme="dark"] .ivs-sv-mark span { color: var(--pt-F59E0B); }
+  .ivs-root[data-theme="dark"] .ivs-sv-pareto-line { stroke: var(--pt-F59E0B); }
+  .ivs-root[data-theme="dark"] .ivs-sv-pareto-dot { fill: var(--surface); stroke: var(--pt-F59E0B); }
+  .ivs-root[data-theme="dark"] .ivs-sv-pareto-80 { stroke: var(--text-dim); }
+  .ivs-root[data-theme="dark"] .ivs-sv-legend i.act, .ivs-root[data-theme="dark"] .ivs-sv-pair span.act.ok { background: var(--pt-10B981); }
+  .ivs-root[data-theme="dark"] .ivs-sv-pair span.act { background: var(--pt-F59E0B); }
+  .ivs-root[data-theme="dark"] .ivs-sv-pair span.act.ok { background: var(--pt-10B981); }
+  .ivs-root[data-theme="dark"] .ivs-slide-banner.action b { color: var(--pt-EF4444); }
+  .ivs-root[data-theme="dark"] .ivs-slide-banner.insight b { color: var(--pt-10B981); }
+  .ivs-root[data-theme="dark"] :is(.ivs-slide-table th, .ivs-slide-table td, .ivs-slide .ivs-table-wrap) { border-color: var(--border); }
+  .ivs-root[data-theme="dark"] .ivs-slide-table th { background: var(--surface-2); }
 </style>
 
 </head>
@@ -8163,7 +8214,7 @@ function InventorySystem() {
           <div className="ivs-title-row">
             <h1 className="ivs-title">
               ${LAYOUT === "sidebar"
-                ? (activeTab === "act" ? `${Number(actYm.slice(5))}월 생산실적` : menuLabel(activeTab))
+                ? menuLabel(activeTab)
                 : settings.title}
             </h1>
             <button className="ivs-icon-btn ivs-title-edit" onClick=${() => setSettingsModalOpen(true)} title="설정 (이름 변경 · 편집 잠금)">

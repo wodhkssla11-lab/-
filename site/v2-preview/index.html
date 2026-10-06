@@ -8033,7 +8033,7 @@ function InventorySystem() {
           <div className="ivs-title-row">
             <h1 className="ivs-title">
               ${LAYOUT === "sidebar"
-                ? (activeTab === "act" ? `${Number(actYm.slice(5))}월 생산실적` : menuLabel(activeTab))
+                ? menuLabel(activeTab)
                 : settings.title}
             </h1>
             <button className="ivs-icon-btn ivs-title-edit" onClick=${() => setSettingsModalOpen(true)} title="설정 (이름 변경 · 편집 잠금)">

@@ -1506,10 +1506,10 @@
   .ivs-section-head > .ivs-section-title::before { content: ""; width: 7px; height: 7px; border-radius: 50%;
     background: var(--accent-ink); opacity: .85; flex: 0 0 auto; }
   .ivs-section-head > .ivs-section-hint { padding-bottom: 8px; }
-  /* 생산계획 · 기준정보 · 집계는 화면 이름과 같은 말이 겹쳐서 구역 제목을 빼고 안내 글만 남겨요 */
-  .ivs-plan > .ivs-section-head, .ivs-dash > .ivs-section-head { border-bottom: none; margin-bottom: 12px; }
-  .ivs-plan > .ivs-section-head > .ivs-section-title, .ivs-dash > .ivs-section-head > .ivs-section-title { display: none; }
-  .ivs-plan > .ivs-section-head > .ivs-section-hint, .ivs-dash > .ivs-section-head > .ivs-section-hint { padding-bottom: 0; }
+  /* 생산계획 · 생산실적 · 기준정보 · 집계는 화면 이름과 같은 말이 겹쳐서 구역 제목을 빼고 안내 글만 남겨요 */
+  :is(.ivs-plan, .ivs-prod, .ivs-dash) > .ivs-section-head { border-bottom: none; margin-bottom: 12px; }
+  :is(.ivs-plan, .ivs-prod, .ivs-dash) > .ivs-section-head > .ivs-section-title { display: none; }
+  :is(.ivs-plan, .ivs-prod, .ivs-dash) > .ivs-section-head > .ivs-section-hint { padding-bottom: 0; }
 
   /* ③ 카드 제목 — 카드 위쪽을 옅은 코발트 머리띠로 채우고, 제목 앞에 코발트 번호 배지 (화면마다 1부터) */
   .ivs-card > .ivs-card-head-row:first-child { margin: -18px -20px 16px; padding: 12px 20px; min-height: 52px; box-sizing: border-box;

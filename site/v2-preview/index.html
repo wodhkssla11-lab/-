@@ -187,16 +187,24 @@
   .ivs-stock em { font-style: normal; font-weight: 500; color: var(--text-dim); font-variant-numeric: tabular-nums; }
   .ivs-stockgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
   .ivs-stock-card { min-width: 0; }
-  .ivs-stock-card .ivs-pipe-name { font-size: 14px; font-weight: 700; color: color-mix(in srgb, var(--c) 72%, var(--text)); }
+  .ivs-stock-card .ivs-pipe-name { font-size: 15px; font-weight: 700; color: color-mix(in srgb, var(--c) 72%, var(--text)); }
   .ivs-stock-card .ivs-pipe-dot { width: 10px; height: 10px; }
   .ivs-stock-card-cls { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 6px; font-size: 11.5px; color: var(--text-dim); min-height: 17px; }
   .ivs-stock-card-cls span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
   .ivs-stock-card-cls i { width: 7px; height: 7px; border-radius: 2px; }
-  .ivs-stock-ana { display: grid; grid-template-columns: minmax(240px, 300px) 1fr; gap: 16px; margin-top: 16px; align-items: start; }
+  /* 왼쪽 요약 카드 셋과 오른쪽 표의 높이를 맞춰요 — 표가 카드 높이만큼 늘어나고 줄 간격이 고르게 벌어져요 */
+  .ivs-stock-ana { display: grid; grid-template-columns: minmax(240px, 300px) 1fr; gap: 16px; margin-top: 16px; align-items: stretch; }
+  .ivs-stock-kpis .ivs-stock-kpi { flex: 1 1 0; justify-content: center; }
+  .ivs-stock-ana > .ivs-table-wrap { display: flex; }
+  .ivs-stock-ana > .ivs-table-wrap > table { height: 100%; }
+  /* 합계 열 — 합계 줄과 같은 띠 · 굵기로, 왼쪽 선으로 구분 */
+  .ivs-table td.ivs-totcol, .ivs-table th.ivs-totcol { background: var(--surface-2); font-weight: 700; color: var(--text);
+    border-left: 2px solid var(--border-strong); }
+  .ivs-table tfoot td.ivs-totcol { background: var(--surface-3); }
   .ivs-stock-kpis { display: flex; flex-direction: column; gap: 8px; }
   .ivs-stock-kpi { display: flex; flex-direction: column; gap: 2px; padding: 11px 14px; border-radius: var(--radius-sm, 6px);
     background: var(--surface-2); border: 1px solid var(--border); }
-  .ivs-stock-kpi > span { font-size: 12.5px; font-weight: 600; color: var(--text-dim); }
+  .ivs-stock-kpi > span { font-size: 14px; font-weight: 600; color: var(--text-dim); }
   .ivs-stock-kpi > b { font-size: 20px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
   .ivs-stock-kpi > b em { font-size: 12px; font-style: normal; font-weight: 500; color: var(--text-dim); margin-left: 2px; }
   .ivs-stock-kpi > b.ivs-stock-kpi-lot { font-size: 15px; word-break: break-all; }
@@ -228,7 +236,7 @@
   .ivs-stkcol-r { font-size: 11px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
   .ivs-stkcol-r.warn { color: var(--warn); font-weight: 700; }
   @media (max-width: 1100px) { .ivs-stockgrid { grid-template-columns: repeat(2, 1fr); } .ivs-stock-ana, .ivs-stockdash { grid-template-columns: 1fr; } }
-  .ivs-pipe-name { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); font-weight: 500; }
+  .ivs-pipe-name { display: flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--text-dim); font-weight: 500; }
   .ivs-pipe-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c); flex-shrink: 0; }
   .ivs-pipe-val { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
   .ivs-pipe-val em { font-size: 11.5px; font-weight: 500; color: var(--text-dim); font-style: normal; margin-left: 2px; }
@@ -1441,7 +1449,7 @@
   .ivs-week-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .ivs-week-stat { display: flex; flex-direction: column; gap: 3px; padding: 12px 14px; border-radius: var(--radius-sm);
     background: var(--surface-2); border: 1px solid var(--border); }
-  .ivs-week-stat > span { font-size: 12.5px; font-weight: 600; color: var(--text-dim); }
+  .ivs-week-stat > span { font-size: 14px; font-weight: 600; color: var(--text-dim); }
   .ivs-week-stat > b { font-size: 19px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
   .ivs-week-stat > b em { font-size: 12px; font-style: normal; font-weight: 500; color: var(--text-dim); margin-left: 2px; }
   .ivs-week-stat > small { font-size: 11.5px; color: var(--text-dim); }
@@ -1631,7 +1639,7 @@
   .ivs-kpis { gap: 12px; margin-bottom: 14px; }
   .ivs-kpi { border-radius: var(--radius-sm); padding: 15px 18px; box-shadow: none; }
   .ivs-kpi.accent::before { inset: 0 0 auto 0; width: auto; height: 3px; background: var(--accent); }
-  .ivs-kpi-label { font-size: 12.5px; font-weight: 600; color: var(--text-dim); letter-spacing: -0.01em; }
+  .ivs-kpi-label { font-size: 14px; font-weight: 600; color: var(--text-dim); letter-spacing: -0.01em; }
   .ivs-kpi-value { font-size: 28px; font-weight: 600; letter-spacing: -0.03em; }
   .ivs-kpi-value em { font-size: 13px; font-weight: 500; }
 
@@ -6625,7 +6633,7 @@ const lotNetKg = (l) => (Number(l && l.qtyKg) || 0) - (Number(l && l.waterKg) ||
 //   폐유기용제 15/30/45 : 지정폐기물 보관기한(45일)을 넘기기 전에 알리도록
 const LOT_CLASSES = [
   { key: "raw", label: "원재료", color: "#E9692F", days: [90, 180, 365] },
-  { key: "wip", label: "반제품", color: "#8B5CF6", days: [60, 120, 180] },
+  { key: "wip", label: "반제품", color: "#3B82F6", days: [60, 120, 180] },
   { key: "product", label: "제품", color: "#22A06B", days: [30, 90, 180] },
   { key: "waste", label: "폐유기용제", color: "#0EA5E9", days: [15, 30, 45] },
 ];
@@ -6645,7 +6653,7 @@ const lotClassOf = (l, stage) => lotClassByKey[lotClassKeyOf(l, stage)];
 const STOCK_STATUS = [
   { key: "normal", label: "정상", color: "#22A06B", desc: "재고연령이 정상 기준 이내" },
   { key: "caution", label: "유의", color: "#D4A017", desc: "정상 기준을 넘김 — 소진 계획 확인" },
-  { key: "long", label: "장기재고", color: "#F97316", desc: "재고연령(또는 무이동)이 장기 기준을 넘김" },
+  { key: "long", label: "장기재고", color: "#8B5CF6", desc: "재고연령(또는 무이동)이 장기 기준을 넘김" },
   { key: "obsolete", label: "악성재고", color: "#E5484D", desc: "장기 기준 끝을 넘기고 최근에도 움직이지 않음" },
 ];
 const stockStatusByKey = Object.fromEntries(STOCK_STATUS.map((s) => [s.key, s]));
@@ -8667,8 +8675,8 @@ function InventorySystem() {
               <div className="ivs-stock-kpi">
                 <span>가장 오래된 Lot</span>
                 ${stockSum.oldest ? html`
-                  <b className="ivs-stock-kpi-lot">${stockSum.oldest.lot.lotNo}</b>
-                  <small>${stockSum.oldest.st.cls.label} · ${stockSum.oldest.st.age}일 ·
+                  <b className="ivs-stock-kpi-lot" title=${stockSum.oldest.lot.lotNo}>${stockSum.oldest.lot.vendor || "-"}</b>
+                  <small>${(categoryById[stockSum.oldest.lot.categoryId] || {}).label || "-"} · ${stockSum.oldest.st.cls.label} · ${stockSum.oldest.st.age}일 ·
                     <span style=${{ color: stockSum.oldest.st.status.color, fontWeight: 700 }}>${stockSum.oldest.st.status.label}</span></small>`
                   : html`<b>-</b><small>재고가 없어요</small>`}
               </div>
@@ -8676,9 +8684,9 @@ function InventorySystem() {
             <div className="ivs-table-wrap">
               <table className="ivs-table ivs-table-fit ivs-stock-matrix">
                 <thead><tr>
-                  <th>구분</th><th>판정 기준 (재고연령)</th>
+                  <th>구분</th><th>판정 기준</th>
                   ${STOCK_STATUS.map((ss) => html`<th key=${ss.key} className="ivs-right"><span className="ivs-stock" style=${{ "--c": ss.color }}><i />${ss.label}</span></th>`)}
-                  <th className="ivs-right">합계 (톤)</th>
+                  <th className="ivs-right ivs-totcol">합계 (톤)</th>
                 </tr></thead>
                 <tbody>
                   ${LOT_CLASSES.map((c) => html`<tr key=${c.key}>
@@ -8695,13 +8703,13 @@ function InventorySystem() {
                           : html`<span className="ivs-dim">-</span>`}
                       </td>`;
                     })}
-                    <td className="ivs-right ivs-mono"><b>${fmtTon(stockSum.byCls[c.key].kg)}</b></td>
+                    <td className="ivs-right ivs-mono ivs-totcol">${fmtTon(stockSum.byCls[c.key].kg)}</td>
                   </tr>`)}
                 </tbody>
                 <tfoot><tr className="ivs-tablefoot">
                   <td colSpan=${2}>합계 · ${stockSum.count} lot</td>
                   ${STOCK_STATUS.map((ss) => html`<td key=${ss.key} className="ivs-right ivs-mono">${fmtTon(stockSum.byStatus[ss.key].kg)}</td>`)}
-                  <td className="ivs-right ivs-mono">${fmtTon(stockSum.kg)}</td>
+                  <td className="ivs-right ivs-mono ivs-totcol">${fmtTon(stockSum.kg)}</td>
                 </tr></tfoot>
               </table>
             </div>

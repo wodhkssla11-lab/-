@@ -173,7 +173,68 @@
   .ivs-pipe-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .ivs-pipe-card.selected { background: var(--surface-3); border-color: var(--c); }
   .ivs-pipe-card.empty { opacity: .62; }
-  .ivs-pipe-name { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); font-weight: 500; }
+
+  /* ---------- 재고 구분 · 재고상태 ---------- */
+  /* 구분 (원재료 · 반제품 · 제품 · 폐유기용제) — 색 · 음영 없이 품목명과 같은 보통 글자로 */
+  .ivs-lotcls { white-space: nowrap; font: inherit; color: inherit; }
+  /* 재고상태 — 색 점 + 문구 + 재고연령. 색만으로 구분하지 않게 글자를 늘 같이 써요 */
+  .ivs-stock { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+    font-size: 12px; font-weight: 700; color: color-mix(in srgb, var(--c) 70%, var(--text));
+    background: color-mix(in srgb, var(--c) 14%, transparent); border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); }
+  .ivs-stock i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex: 0 0 auto; }
+  .ivs-stock em { font-style: normal; font-weight: 500; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .ivs-stockgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .ivs-stock-card { min-width: 0; }
+  .ivs-stock-card .ivs-pipe-name { font-size: 13.5px; font-weight: 700; color: color-mix(in srgb, var(--c) 72%, var(--text)); }
+  .ivs-stock-card .ivs-pipe-dot { width: 10px; height: 10px; }
+  .ivs-stock-card-cls { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 6px; font-size: 11.5px; color: var(--text-dim); min-height: 17px; }
+  .ivs-stock-card-cls span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .ivs-stock-card-cls i { width: 7px; height: 7px; border-radius: 2px; }
+  /* 왼쪽 요약 카드 셋과 오른쪽 표의 높이를 맞춰요 — 표가 카드 높이만큼 늘어나고 줄 간격이 고르게 벌어져요 */
+  .ivs-stock-ana { display: grid; grid-template-columns: minmax(240px, 300px) 1fr; gap: 16px; margin-top: 16px; align-items: stretch; }
+  .ivs-stock-kpis .ivs-stock-kpi { flex: 1 1 0; justify-content: center; }
+  .ivs-stock-ana > .ivs-table-wrap { display: flex; }
+  .ivs-stock-ana > .ivs-table-wrap > table { height: 100%; }
+  /* 합계 열 — 합계 줄과 같은 띠 · 굵기로, 왼쪽 선으로 구분 */
+  .ivs-table td.ivs-totcol, .ivs-table th.ivs-totcol { background: var(--surface-2); font-weight: 700; color: var(--text);
+    border-left: 2px solid var(--border-strong); }
+  .ivs-table tfoot td.ivs-totcol { background: var(--surface-3); }
+  .ivs-stock-kpis { display: flex; flex-direction: column; gap: 8px; }
+  .ivs-stock-kpi { display: flex; flex-direction: column; gap: 2px; padding: 11px 14px; border-radius: var(--radius-sm, 6px);
+    background: var(--surface-2); border: 1px solid var(--border); }
+  .ivs-stock-kpi > span { font-size: 13.5px; font-weight: 600; color: var(--text-dim); }
+  .ivs-stock-kpi > b { font-size: 20px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .ivs-stock-kpi > b em { font-size: 12px; font-style: normal; font-weight: 500; color: var(--text-dim); margin-left: 2px; }
+  .ivs-stock-kpi > b.ivs-stock-kpi-lot { font-size: 15px; word-break: break-all; }
+  .ivs-stock-kpi > small { font-size: 11.5px; color: var(--text-dim); }
+  .ivs-stock-kpi.warn > b { color: var(--warn); }
+  .ivs-stock-matrix .ivs-stock { font-size: 11.5px; padding: 2px 8px; }
+  .ivs-stock-cell { font: inherit; font-weight: 700; color: var(--text); background: transparent; cursor: pointer;
+    border: 1px solid transparent; border-radius: 4px; padding: 2px 8px; font-variant-numeric: tabular-nums; }
+  .ivs-stock-cell:hover { border-color: var(--c); background: color-mix(in srgb, var(--c) 10%, transparent); }
+  .ivs-stock-cell.on { border-color: var(--c); background: color-mix(in srgb, var(--c) 18%, transparent); }
+  .ivs-stock-note { margin: 12px 0 0; font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+  /* 재고집계 — 재고상태 분석 */
+  .ivs-stockdash-kpis { margin-bottom: 18px; }
+  .ivs-stockdash { display: grid; grid-template-columns: minmax(300px, 0.9fr) 1.1fr; gap: 26px; align-items: start; }
+  .ivs-stkbars { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+  .ivs-stkbar-row { display: grid; grid-template-columns: 92px 1fr 56px; gap: 10px; align-items: center; }
+  .ivs-stkbar-row > b { text-align: right; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  .ivs-stkbar-track { height: 22px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+  .ivs-stkbar-fill { height: 100%; display: flex; min-width: 2px; }
+  .ivs-stkbar-fill i { display: block; height: 100%; min-width: 3px; }
+  .ivs-stkcols { display: flex; gap: 6px; align-items: flex-end; margin-top: 8px; overflow-x: auto; padding-bottom: 2px; }
+  .ivs-stkcol { flex: 1 1 0; min-width: 40px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .ivs-stkcol-v { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .ivs-stkcol-plot { width: 100%; height: 140px; display: flex; align-items: flex-end; justify-content: center; }
+  .ivs-stkcol-bar { width: min(36px, 80%); display: flex; flex-direction: column-reverse; border-radius: 4px 4px 0 0; overflow: hidden; min-height: 2px; }
+  .ivs-stkcol-bar i { display: block; width: 100%; min-height: 2px; }
+  .ivs-stkcol-l { font-size: 12px; font-weight: 600; color: var(--text); display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
+  .ivs-stkcol-l em { font-style: normal; font-size: 10.5px; color: var(--accent); font-weight: 700; }
+  .ivs-stkcol-r { font-size: 11px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .ivs-stkcol-r.warn { color: var(--warn); font-weight: 700; }
+  @media (max-width: 1100px) { .ivs-stockgrid { grid-template-columns: repeat(2, 1fr); } .ivs-stock-ana, .ivs-stockdash { grid-template-columns: 1fr; } }
+  .ivs-pipe-name { display: flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--text-dim); font-weight: 500; }
   .ivs-pipe-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c); flex-shrink: 0; }
   .ivs-pipe-val { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
   .ivs-pipe-val em { font-size: 11.5px; font-weight: 500; color: var(--text-dim); font-style: normal; margin-left: 2px; }
@@ -618,6 +679,14 @@
   .ivs-half-grid > * { min-width: 0; }
   .ivs-half-grid > .ivs-card { margin-bottom: 0; height: 100%; }
   .ivs-chart-split { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: 26px; align-items: start; }
+  /* 나란히 놓인 두 카드의 높이를 맞춰요 (3개월 월별 계획 · 월별 상세) */
+  .ivs-chart-split.ivs-split-eq { align-items: stretch; }
+  .ivs-chart-split.ivs-split-eq > .ivs-card { margin-bottom: 0; }
+  .ivs-chart-split.ivs-split-eq { margin-bottom: 14px; }
+  /* 좁은 카드 안의 표 — 기본 표의 최소 너비(1080px)를 풀어서 가로 스크롤 없이 카드에 맞춰요 */
+  .ivs-table.ivs-table-fit { min-width: 0; }
+  .ivs-table.ivs-table-fit th, .ivs-table.ivs-table-fit td { padding-left: 10px; padding-right: 10px; white-space: nowrap; }
+  .ivs-table.ivs-table-fit td:first-child { white-space: normal; }
   .ivs-chart-split > * { min-width: 0; }
 
   .ivs-donut-wrap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
@@ -1062,13 +1131,13 @@
 
   /* ---------- 생산계획 : 로드맵 · 기준 ---------- */
   .ivs-roadmap { display: flex; gap: 8px; align-items: stretch; }
-  .ivs-rm-seg { flex: 1 1 0; min-width: 178px; padding: 13px 14px 12px; border-radius: 11px;
+  .ivs-rm-seg { flex: 1 1 0; min-width: 0; padding: 13px 14px 12px; border-radius: 11px;
     background: var(--surface-2); border: 1px solid var(--border); border-top: 3px solid var(--c);
     display: flex; flex-direction: column; gap: 6px; }
-  .ivs-rm-name { font-size: 13px; font-weight: 700; color: var(--text); }
-  .ivs-rm-range { font-size: 11px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
-  .ivs-rm-kg { font-size: 17px; font-weight: 700; color: var(--c); font-variant-numeric: tabular-nums; }
-  .ivs-rm-sub { font-size: 10.5px; color: var(--text-faint); }
+  .ivs-rm-name { font-size: 15.5px; font-weight: 700; color: var(--text); }
+  .ivs-rm-range { font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .ivs-rm-kg { font-size: 19px; font-weight: 700; color: var(--c); font-variant-numeric: tabular-nums; }
+  .ivs-rm-sub { font-size: 12px; color: var(--text-dim); }
   .ivs-ph-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: 0; }
   .ivs-basis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 26px; }
   .ivs-basis-row { display: grid; grid-template-columns: minmax(140px, 1fr) auto; gap: 8px 12px;
@@ -1124,6 +1193,8 @@
   .ivs-cal-day.k-offHoliday  { background: color-mix(in srgb, var(--c) 13%, var(--surface-2)); }
   .ivs-cal-day.k-offNonProd  { background: color-mix(in srgb, var(--c) 15%, var(--surface-2)); }
   .ivs-cal-day.stop .ivs-cal-stop { color: var(--c); }
+  /* 다크 — "계획 기간 밖"처럼 어두운 회색 표시는 바탕에 묻혀서, 흐린 글자색과 섞어 읽히게 */
+  .ivs-root[data-theme="dark"] .ivs-cal-day.stop .ivs-cal-stop { color: color-mix(in srgb, var(--c) 35%, var(--text-dim)); }
   .ivs-cal-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px;
     padding-top: 13px; border-top: 1px solid var(--border); }
   .ivs-cal-legend-item { display: inline-flex; align-items: center; gap: 7px;
@@ -1365,7 +1436,24 @@
   }
 
   /* ---------- 당월 주별 요약 : 그래프는 작게, 요약은 오른쪽에 ---------- */
-  .ivs-week-split { display: grid; grid-template-columns: minmax(240px, 0.85fr) 1.15fr; gap: 26px; align-items: start; }
+  .ivs-week-split { display: grid; grid-template-columns: minmax(240px, 0.85fr) 1.15fr; gap: 26px; align-items: stretch; }
+  /* 왼쪽 — 그래프가 오른쪽 주별 목록 높이만큼 늘어나고, 그 아래 요약 숫자 넷 */
+  .ivs-week-left { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .ivs-week-left > div:first-child { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+  .ivs-week-left .ivs-wchart { flex: 1 1 auto; align-items: stretch; }
+  .ivs-week-left .ivs-wchart-col { justify-content: flex-end; }
+  .ivs-week-left .ivs-wchart-plot { flex: 1 1 auto; height: auto; min-height: 150px; }
+  .ivs-week-left .ivs-legend { flex: 0 0 auto; }
+  .ivs-week-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .ivs-week-stat { display: flex; flex-direction: column; gap: 3px; padding: 12px 14px; border-radius: var(--radius-sm);
+    background: var(--surface-2); border: 1px solid var(--border); }
+  .ivs-week-stat > span { font-size: 13.5px; font-weight: 600; color: var(--text-dim); }
+  .ivs-week-stat > b { font-size: 19px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .ivs-week-stat > b em { font-size: 12px; font-style: normal; font-weight: 500; color: var(--text-dim); margin-left: 2px; }
+  .ivs-week-stat > small { font-size: 11.5px; color: var(--text-dim); }
+  .ivs-week-stat.ok > b { color: var(--good); }
+  .ivs-week-stat.warn > b { color: var(--warn); }
+  .ivs-week-stat.bad > b { color: var(--bad); }
   /* 당월은 주가 서너 개뿐이라, 폭을 안 잡아두면 막대가 멋대로 넓어져요 */
   .ivs-wchart.compact { gap: 14px; justify-content: center; }
   .ivs-wchart.compact .ivs-wchart-plot { height: 150px; }
@@ -1549,7 +1637,7 @@
   .ivs-kpis { gap: 12px; margin-bottom: 14px; }
   .ivs-kpi { border-radius: var(--radius-sm); padding: 15px 18px; box-shadow: none; }
   .ivs-kpi.accent::before { inset: 0 0 auto 0; width: auto; height: 3px; background: var(--accent); }
-  .ivs-kpi-label { font-size: 12.5px; font-weight: 600; color: var(--text-dim); letter-spacing: -0.01em; }
+  .ivs-kpi-label { font-size: 13.5px; font-weight: 600; color: var(--text-dim); letter-spacing: -0.01em; }
   .ivs-kpi-value { font-size: 28px; font-weight: 600; letter-spacing: -0.03em; }
   .ivs-kpi-value em { font-size: 13px; font-weight: 500; }
 
@@ -4271,6 +4359,7 @@ const html = window.htmReact.html;
 
 // ---------- 아이콘: lucide 아이콘을 인라인 SVG로 내장 (lucide-react 대체) ----------
 const ICON_DEFS = {
+  truck: '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
   search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
   plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
   x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
@@ -4479,41 +4568,26 @@ const THEME_KEY = "ivs_theme";
 // 화면 배치는 왼쪽 사이드바로 확정했어요. (비교용으로 window.IVS_LAYOUT="tabs"도 남겨둠)
 const LAYOUT = (typeof window !== "undefined" && window.IVS_LAYOUT === "tabs") ? "tabs" : "sidebar";
 
-// 메뉴는 세 묶음으로 나눠요 — 재고 / 생산 / 분석.
+// 메뉴는 두 묶음 — 현장에서 매일 쓰는 "생산관리"와 들여다보는 "분석".
+// (화면 key는 그대로라 저장된 데이터 · 바로가기와 상관없이 이름과 자리만 바뀌어요.)
 const MENU_GROUPS = [
   { title: "생산관리", items: [
     { key: "plan", label: "생산계획", icon: "calendar" },
     { key: "act", label: "생산실적", icon: "file-text" },
-    { key: "production", label: "생산이력", icon: "arrow-right-circle" },
-  ] },
-  { title: "재고관리", items: [
     { key: "inventory", label: "재고현황", icon: "layers" },
-    { key: "ship", label: "출하처리", icon: "arrow-right-circle" },
-    { key: "tolling", label: "톨링품재고현황", icon: "users" },
+    { key: "dashboard", label: "재고집계", icon: "package" },
+    { key: "production", label: "공정이동 현황", icon: "arrow-right-circle" },
+    { key: "ship", label: "출하처리", icon: "truck" },
+    { key: "tolling", label: "톨링품 재고현황", icon: "users" },
+    { key: "down", label: "비가동집계", icon: "alert-triangle" },
   ] },
   { title: "분석", items: [
     { key: "util", label: "가동율 현황", icon: "monitor" },
-    { key: "down", label: "비가동 현황", icon: "alert-triangle" },
-    { key: "dashboard", label: "집계", icon: "package" },
     { key: "report", label: "보고서", icon: "printer" },
     { key: "basis", label: "기준정보", icon: "settings" },
   ] },
 ];
 const MENU_ITEMS = MENU_GROUPS.flatMap((g) => g.items);
-// 사이드바에서는 제목 아래 한 줄로 그 화면이 무엇인지 알려줘요.
-const PAGE_SUB = {
-  inventory: "로트 단위 공정 이동 관리",
-  ship: "출하대기 Lot 라벨 출력과 출하완료 처리",
-  tolling: "톨링품으로 체크한 로트만 모아보기",
-  plan: "3조 2교대 · 월별 capa 기준 생산계획",
-  act: "일자 · 교대조별 투입과 회수 실적",
-  production: "공정이동 이력과 일일 생산이력 현황",
-  util: "설비별 시간가동율 · 성능가동율",
-  down: "비가동 유형별 집계와 Pareto",
-  dashboard: "기간별 재고 · 입고 집계",
-  report: "주간 · 월간 생산실적 보고서 (PPT)",
-  basis: "생산계획의 기준값 · 근무형태 · 단계 · 비생산 기간",
-};
 const menuLabel = (key) => (MENU_ITEMS.find((m) => m.key === key) || {}).label || "";
 // 미리보기 모드: 페이지에서 window.IVS_PREVIEW = true 로 켜면 Firebase를 아예 건드리지 않고
 // 내장 샘플 데이터로만 동작해요 (실제 데이터에 영향 없음, PIN 잠금도 건너뜀).
@@ -4523,7 +4597,7 @@ const PREVIEW_MODE = typeof window !== "undefined" && window.IVS_PREVIEW === tru
 const dayOffset = (n) => {
   const d = new Date();
   d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
+  return localDateStr(d);
 };
 
 // 미리보기 샘플 — 입고 타입별 3개 경로(모듈/팩 · 셀 · BM 분말)가 모두 보이도록 짜뒀어요.
@@ -4607,6 +4681,25 @@ function seedData() {
     });
   });
   return lots;
+}
+
+// 재고상태 미리보기용 — 오래 서 있는 로트 몇 개. 정상 말고 유의 · 장기 · 악성이 어떻게 보이는지 확인하려고 둬요.
+// (미리보기 화면에서만 쓰여요. 실제 팀 데이터에는 들어가지 않습니다.)
+function agedSeedLots() {
+  const mk = (id, code, name, cat, v, lotNo, age, stage, kg, extra = {}) => ({
+    id: `lot-seed-${id}`, code, name, categoryId: cat, vendor: VENDORS[v].name, shipLoc: VENDORS[v].loc,
+    lotNo, receivedDate: dayOffset(-age), stage, qtyKg: kg, waterKg: null, excludeKg: null,
+    tolling: false, carriedOver: false, lastMove: null, ...extra,
+  });
+  const made = (age, process) => ({ origin: "production", lastMove: dayOffset(-age), process });
+  return [
+    mk("a1", "PK0001", "전기차팩", "ev_pack", 1, "P260529-0007", 130, "raw_in", 4200),                          // 원재료 · 유의
+    mk("a2", "ES0001", "ESS(울산)", "ess", 0, "E260209-0012", 240, "discharge", 18500, { lastMove: dayOffset(-150) }), // 원재료 · 장기
+    mk("a3", "MD0001", "모듈스크랩(천안)", "ev_module", 0, "M250823-0031", 410, "raw_in", 9600, { carriedOver: true }), // 원재료 · 악성
+    mk("a4", "HVC0001", "전기차 셀", "hv_cell", 4, "CELL-260724-1", 75, "crush_wait", 3100, made(75, "disassemble")),  // 반제품 · 유의
+    mk("a5", "DRCC0001", "혼합 Cu-chip", "mixed_cu_chip", 5, "DRCC0001-260619-1", 110, "usable", 860, made(110, "crush")), // 제품 · 장기
+    mk("a6", "CD0001", "응축액", "condensate", 3, "CD0001-260828-1", 40, "usable", 1250, made(40, "calcine")),        // 폐유기용제 · 장기
+  ];
 }
 
 // 공정이동(생산) 이력 샘플 — 생산실적을 넣을 때마다 여기에 한 건씩 쌓여요.
@@ -4819,8 +4912,9 @@ const DEFAULT_MES = {
   targetRates: { bm: 55, cu: 12, al: 10, cd: 5 }, // 목표 회수율(%)
 };
 
-const dayDiff = (fromStr, toStr) =>
-  Math.round((new Date(`${toStr}T00:00:00`) - new Date(`${fromStr}T00:00:00`)) / 86400000);
+// 날짜 문자열(YYYY-MM-DD) 사이의 날 수. 둘 다 UTC 자정으로 읽어서 시간대 · 서머타임 영향이 없어요.
+const daysBetween = (a, b) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86400000);
+const dayDiff = daysBetween;
 
 // 그 날 각 조가 무엇을 하는지 — { A: "day", B: "off", C: "night" }
 function crewShifts(dateStr, anchor) {
@@ -5284,10 +5378,9 @@ const vendorCodeOf = (master, name) => {
 const lotStamp = (date) => String(date || "").replace(/-/g, "").slice(2); // 2026-09-16 → 260916
 // 날짜를 하루씩 옮겨요.
 const shiftDay = (date, n) => {
-  const d = new Date(`${date}T00:00:00`);
-  if (Number.isNaN(d.getTime())) return date;
-  d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
+  const t = Date.parse(`${date}T00:00:00Z`);
+  if (Number.isNaN(t)) return date;
+  return new Date(t + n * 86400000).toISOString().slice(0, 10);
 };
 
 // 이미 붙어 있는 Lot 번호에서 변화값만 골라내요.
@@ -5628,7 +5721,7 @@ function usageNow(extra) {
   const m = monthKey();
   const cur = u.month === m ? u : {
     month: m, opens: 0, saves: 0, down: 0, up: 0,
-    since: new Date().toISOString().slice(0, 10),
+    since: localDateStr(),
     prevMonth: u.month || "", prevDown: Number(u.down) || 0, prevUp: Number(u.up) || 0,
   };
   return {
@@ -5886,7 +5979,7 @@ async function autoArchive() {
 // 화면을 처음 연 사람의 브라우저가 "오늘 것이 없네" 하고 한 번만 뜹니다.
 // 올리는 양은 무료 한도(내려받기 10 GB)에 잡히지 않아서, 통신량 걱정 없이 둘 수 있어요.
 async function autoSnapshot() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   const hasRecords = COLL.some((c) => Object.keys(LIVE_DOC[c] || {}).length > 0);
   if (!hasRecords) return null; // 빈 장부는 떠둘 이유가 없어요 (오히려 덮어쓰면 위험해요)
   const json = { "Content-Type": "application/json" };
@@ -6043,6 +6136,8 @@ const weekLabel = (dateStr) => {
 const uid = () => `lot-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 const sumBy = (arr, key) => arr.reduce((s, x) => s + (Number(x[key]) || 0), 0);
 const pad2 = (n) => String(n).padStart(2, "0");
+// 이 PC 시계 기준 오늘(YYYY-MM-DD). toISOString은 세계시라 한국 오전 9시 전에는 어제로 나와요.
+const localDateStr = (d = new Date()) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 
 // 대시보드 "월마감 스냅샷": 선택한 연/월/일로 기준일을 계산해요.
 // 일까지 고르면 그 날짜, 월만 고르면 그 달 말일, 연도만 고르면 그 해 12/31.
@@ -6055,10 +6150,23 @@ function computeAsOfDate(year, month, day) {
   return `${year}-12-31`;
 }
 
+// 공정이동 순서 — 날짜순, 같은 날이면 등록한 순서(이동 id에 찍힌 시각)대로.
+// 새 이동은 목록 맨 앞에 붙어서, 날짜만으로 정렬하면 같은 날 두 번 옮긴 로트의 앞뒤가 뒤집혀요.
+const moveStamp = (m) => {
+  const x = /^move-(\d{10,})(?:-[a-z]*(\d+))?/.exec(String((m && m.id) || ""));
+  return x ? [Number(x[1]), Number(x[2] || 0)] : [0, 0];
+};
+const moveOrder = (a, b) => {
+  if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+  const sa = moveStamp(a), sb = moveStamp(b);
+  return sa[0] - sb[0] || sa[1] - sb[1];
+};
+
 // 공정이동 이력을 거슬러 올라가, 기준일 시점에 이 로트가 어떤 단계에 얼마나 있었는지 재구성해요.
-function reconstructLotState(lot, lotMoves, asOfDate) {
+// presorted = 이미 moveOrder로 정렬된 목록을 넘길 때 (재고 재구성 색인) — 다시 정렬하지 않아요.
+function reconstructLotState(lot, lotMoves, asOfDate, presorted) {
   if (lot.receivedDate > asOfDate) return null; // 그 시점엔 아직 입고 전
-  const sorted = [...lotMoves].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  const sorted = presorted ? lotMoves : [...lotMoves].sort(moveOrder);
   const applicable = sorted.filter((m) => m.date <= asOfDate);
   if (applicable.length > 0) {
     const last = applicable[applicable.length - 1];
@@ -6503,6 +6611,152 @@ function printDocument(title, bodyHtml, hfOpt) {
 }
 // 총 중량 — 들어온 수량에서 물중량과 제외중량을 뺀 무게예요.
 const lotNetKg = (l) => (Number(l && l.qtyKg) || 0) - (Number(l && l.waterKg) || 0) - (Number(l && l.excludeKg) || 0);
+
+// ---------- 재고 구분 · 재고상태 ----------
+// 구분 — 로트가 무엇인지(원재료 · 반제품 · 제품 · 폐유기용제)를 데이터에서 자동으로 정해요. 손으로 고르지 않습니다.
+//   폐유기용제 : 응축액 품목 (열분해에서 나오는 폐유기용제) — 어디서 왔든 이 구분
+//   원재료     : 밖에서 들어온 로트 (새 로트 추가 · 엑셀/QR 입고). 전기방전처럼 같은 로트가
+//                단계만 옮기는 공정을 거쳐도 새 로트가 생기지 않으니 원재료 그대로예요.
+//   반제품     : 생산실적으로 만들어진 로트 중 아직 최종 단계(출하대기 · 출하완료) 전인 것
+//                ("혼합" 품목(DR 코드 — 혼합 분말 · Cu-chip · Al-chip · 자력)은 우리 공정에서만 나오는 산출물이라,
+//                 이월 · 수기 등록으로 들어왔어도 생산 로트로 봐요. 블랙매스는 사 오기도 해서 품목만으로 정하지 않아요.)
+//                (예: 해체에서 나온 셀 → 파쇄대기). 재작업으로 앞 공정에 다시 들어가도 반제품이에요.
+//   제품       : 생산실적으로 만들어져 출하대기 · 출하완료에 있는 것 (BM · Cu-chip · Al-chip)
+// days = [정상 끝, 유의 끝, 장기 끝]. 이 일수를 "넘으면" 다음 상태로 넘어가요 (예: 원재료 91일째부터 유의).
+// 구분마다 흐르는 속도가 달라 기준을 다르게 둬요.
+//   원재료 90/180/365 : 첨부 기준표의 기본값 그대로
+//   반제품 60/120/180 : 공정 중간에 멈춘 재공은 원재료보다 빨리 흘러야 해서 짧게
+//   제품   30/90/180  : 출하대기 제품은 월 단위로 나가는 게 정상이라 더 짧게
+//   폐유기용제 15/30/45 : 지정폐기물 보관기한(45일)을 넘기기 전에 알리도록
+const LOT_CLASSES = [
+  { key: "raw", label: "원재료", color: "#E9692F", days: [90, 180, 365] },
+  { key: "wip", label: "반제품", color: "#3B82F6", days: [60, 120, 180] },
+  { key: "product", label: "제품", color: "#22A06B", days: [30, 90, 180] },
+  { key: "waste", label: "폐유기용제", color: "#0EA5E9", days: [15, 30, 45] },
+];
+const lotClassByKey = Object.fromEntries(LOT_CLASSES.map((c) => [c.key, c]));
+const FINISHED_STAGE_KEYS = ["usable", "shipped"];
+// stage를 따로 주면 그 시점의 단계로 판단해요 (보고서에서 지난 날짜 재고를 다시 셀 때).
+const lotClassKeyOf = (l, stage) => {
+  if (!l) return "raw";
+  if (l.categoryId === "condensate") return "waste";
+  const cat = categoryById[l.categoryId];
+  if (l.origin !== "production" && !(cat && cat.mix)) return "raw";
+  return FINISHED_STAGE_KEYS.includes(stage || l.stage) ? "product" : "wip";
+};
+const lotClassOf = (l, stage) => lotClassByKey[lotClassKeyOf(l, stage)];
+
+// 재고상태 — 첨부 관리기준표의 네 단계. 색과 문구를 함께 써서 한눈에 읽히게 해요.
+const STOCK_STATUS = [
+  { key: "normal", label: "정상", color: "#22A06B", desc: "재고연령이 정상 기준 이내" },
+  { key: "caution", label: "유의", color: "#D4A017", desc: "정상 기준을 넘김 — 소진 계획 확인" },
+  { key: "long", label: "장기재고", color: "#8B5CF6", desc: "재고연령(또는 무이동)이 장기 기준을 넘김" },
+  { key: "obsolete", label: "악성재고", color: "#E5484D", desc: "장기 기준 끝을 넘기고 최근에도 움직이지 않음" },
+];
+const stockStatusByKey = Object.fromEntries(STOCK_STATUS.map((s) => [s.key, s]));
+// 재고연령 = 기준일 − 입고일(생산 Lot은 생산일)
+// 무이동일수 = 기준일 − 최근 이동일(이동이 없었으면 입고일)
+// 상태 판정 (n1 · n2 · n3 = 구분별 기준일수)
+//   악성재고 : 재고연령 > n3  그리고  무이동 > n1   (오래됐고 최근에도 안 움직임 — 복합판정)
+//   장기재고 : 재고연령 > n2  또는   무이동 > n2   (무이동은 재고연령보다 클 수 없어 사실상 연령 기준)
+//   유의     : 재고연령 > n1
+//   정상     : 그 밖
+// 장기 · 악성은 관리용 분류예요. 회계상 평가손실은 NRV · 진부화 · 손상 · 판매가능성을 따로 검토합니다.
+function lotStockState(l, refDate, at) {
+  // at = { stage, lastMove } — 지난 날짜로 다시 셀 때 그 시점 값. 없으면 지금 로트 값.
+  if (!l || !l.receivedDate || !refDate) return null;
+  const stage = at ? at.stage : l.stage;
+  if (!at && !isLiveLot(l)) return null;           // 출하완료 · 투입 종료 로트는 재고가 아니에요
+  if (at && FINAL_STAGE_KEYS.includes(stage)) return null;
+  const cls = lotClassOf(l, stage);
+  const [n1, n2, n3] = cls.days;
+  const start = l.receivedDate;
+  const lm = at ? at.lastMove : l.lastMove;
+  const last = lm && lm > start && lm <= refDate ? lm : start;
+  const age = Math.max(0, daysBetween(start, refDate));
+  const idle = Math.max(0, daysBetween(last, refDate));
+  const key = age > n3 && idle > n1 ? "obsolete"
+    : age > n2 || idle > n2 ? "long"
+    : age > n1 ? "caution" : "normal";
+  return { cls, age, idle, status: stockStatusByKey[key], days: cls.days };
+}
+// 재고상태 집계 — 상태별 · 구분별 중량(kg)과 로트 수. 중량은 공정별 재고현황 카드와 같은 기준(수량 kg)이에요.
+function stockSummary(items) {
+  // items = [{ lot, kg, st }]  (st = lotStockState 결과)
+  const zero = () => ({ kg: 0, count: 0 });
+  const byStatus = Object.fromEntries(STOCK_STATUS.map((s) => [s.key, { ...zero(), byCls: Object.fromEntries(LOT_CLASSES.map((c) => [c.key, zero()])) }]));
+  const byCls = Object.fromEntries(LOT_CLASSES.map((c) => [c.key, { ...zero(), ageKg: 0 }]));
+  let kg = 0, count = 0, ageKg = 0, oldest = null;
+  items.forEach(({ lot, kg: w, st }) => {
+    if (!st) return;
+    const q = Number(w) || 0;
+    const b = byStatus[st.status.key];
+    b.kg += q; b.count += 1; b.byCls[st.cls.key].kg += q; b.byCls[st.cls.key].count += 1;
+    byCls[st.cls.key].kg += q; byCls[st.cls.key].count += 1; byCls[st.cls.key].ageKg += q * st.age;
+    kg += q; count += 1; ageKg += q * st.age;
+    if (!oldest || st.age > oldest.st.age) oldest = { lot, st, kg: q };
+  });
+  const riskKg = byStatus.long.kg + byStatus.obsolete.kg;
+  return {
+    byStatus, byCls, kg, count, oldest,
+    riskKg, riskCount: byStatus.long.count + byStatus.obsolete.count,
+    riskPct: kg > 0 ? (riskKg / kg) * 100 : 0,
+    avgAge: kg > 0 ? ageKg / kg : 0,          // 중량 가중 평균 재고연령(일)
+  };
+}
+// 거래처_카테고리 — 재고 요약에서 로트를 사람이 알아보는 이름으로 부를 때
+const lotVendorCat = (l) => `${(l && l.vendor) || "-"}_${((l && categoryById[l.categoryId]) || {}).label || "-"}`;
+// 장기 · 악성 중 중량이 가장 많은 거래처_카테고리 { key, kg }
+function topRiskGroup(items) {
+  const m = new Map();
+  items.forEach(({ lot, kg, st }) => {
+    if (!st || (st.status.key !== "long" && st.status.key !== "obsolete")) return;
+    const k = lotVendorCat(lot);
+    m.set(k, (m.get(k) || 0) + (Number(kg) || 0));
+  });
+  let best = null;
+  m.forEach((kg, key) => { if (!best || kg > best.kg) best = { key, kg }; });
+  return best;
+}
+// 지금 재고(살아 있는 로트)의 재고상태 목록
+const liveStockItems = (lots, refDate) => lots.filter(isLiveLot)
+  .map((l) => ({ lot: l, kg: Number(l.qtyKg) || 0, st: lotStockState(l, refDate) }))
+  .filter((x) => x.st);
+// 공정이동 이력 색인 — 로트마다 이동 기록을 순서대로 모아둬요. 여러 날짜를 다시 셀 때 한 번만 만들어 씁니다.
+function stockMoveIndex(moves) {
+  const byLot = new Map();
+  (moves || []).forEach((m) => {
+    const k = m.lotId || m.lotNo;
+    if (!byLot.has(k)) byLot.set(k, []);
+    byLot.get(k).push(m);
+  });
+  byLot.forEach((arr) => arr.sort(moveOrder));
+  return byLot;
+}
+// 지난 날짜 기준 재고 — 공정이동 이력으로 그날의 단계 · 수량 · 최근 이동일을 되살려서 셉니다.
+// src = 공정이동 목록 또는 stockMoveIndex로 만든 색인.
+// 닫힌 날 · 출하일이 비어 있는 옛 로트는 마지막 이동일(그것도 없으면 입고일)에 끝난 것으로 봐요
+// — 날짜를 모르는 로트를 언제까지나 재고로 세지 않게.
+function stockItemsAt(lots, src, asOf) {
+  const byLot = src instanceof Map ? src : stockMoveIndex(src);
+  const out = [];
+  lots.forEach((l) => {
+    const lm = byLot.get(l.id) || byLot.get(l.lotNo) || [];
+    const lastMv = lm.length ? lm[lm.length - 1].date : "";
+    const fallback = lastMv > (l.receivedDate || "") ? lastMv : (l.receivedDate || "");
+    if (l.closed && (l.closedDate || l.lastMove || fallback) <= asOf) return;           // 그날 이미 다음 Lot으로 바뀜
+    const shipEnd = l.stage === "shipped" ? (l.shippedDate || l.lastMove || fallback) : null;
+    if (shipEnd !== null && shipEnd <= asOf) return;                                    // 그날 이미 출하
+    const st0 = reconstructLotState(l, lm, asOf, true);
+    if (!st0) return;
+    // 이동 기록 없이 출하완료로 적힌 로트가 그날엔 아직 출하 전이었다면 출하대기로 봐요 (출하일이 그날 뒤일 때만).
+    if (lm.length === 0 && FINAL_STAGE_KEYS.includes(st0.stage) && shipEnd !== null && shipEnd > asOf) st0.stage = "usable";
+    if (FINAL_STAGE_KEYS.includes(st0.stage)) return;
+    const st = lotStockState(l, asOf, { stage: st0.stage, lastMove: st0.lastMove || null });
+    if (st) out.push({ lot: l, kg: Number(st0.qtyKg) || 0, st });
+  });
+  return out;
+}
 const esc = (v) => String(v == null ? "" : v)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
@@ -6568,7 +6822,7 @@ function dailyReportHtml({ date, runs, lots, moves, downs, settings, mes }) {
   const crews = Array.from(new Set(dayRuns.map((r) => r.crew).filter(Boolean))).join(" · ") || "-";
   const d = new Date(`${date}T00:00:00`);
   const wd = ["일", "월", "화", "수", "목", "금", "토"][d.getDay()];
-  const now = new Date().toISOString().slice(0, 16).replace("T", " ");
+  const now = nowStamp();
 
   const rows = (list, cols, empty) => (list.length === 0
     ? `<div class="empty">${esc(empty)}</div>`
@@ -6676,7 +6930,7 @@ function dailyReportHtml({ date, runs, lots, moves, downs, settings, mes }) {
 <div class="sec"><h2>비가동 (${dayDowns.length}건)</h2>${dtRows}</div>`;
 }
 
-// ---------- 일일 생산이력 현황 ----------
+// ---------- 일일 공정이동 현황 ----------
 // 생산이력 화면의 하루치(신규 입고 · 공정이동)를 인쇄용으로 묶어요. 화면 메뉴나 버튼은 들어가지 않습니다.
 function productionDayHtml({ date, lots, moves, settings }) {
   const kg = (v) => `${(Number(v) || 0).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}`;
@@ -6714,7 +6968,7 @@ function productionDayHtml({ date, lots, moves, settings }) {
   return `
 <div class="head">
   <div>
-    <h1>일일 생산이력 현황</h1>
+    <h1>일일 공정이동 현황</h1>
     <p class="sub">${esc(settings && settings.title || "리사이클링팀")} · ${esc(date)} (${wd})</p>
   </div>
   <table class="sign"><tr><td class="h">작성</td><td class="h">검토</td><td class="h">승인</td></tr><tr><td></td><td></td><td></td></tr></table>
@@ -6729,7 +6983,7 @@ function productionDayHtml({ date, lots, moves, settings }) {
 <div class="sec"><h2>공정이동 (${dayMoves.length}건)</h2>${mvT}</div>`;
 }
 
-// 머리글 · 바닥글 고치기 — 두 인쇄(일일 제조일보 · 일일 생산이력 현황)가 같이 씁니다.
+// 머리글 · 바닥글 고치기 — 두 인쇄(일일 제조일보 · 일일 공정이동 현황)가 같이 씁니다.
 function PrintHFModal({ settings, canEdit, docName, date, onSave, onClose }) {
   const [v, setV] = useState(() => printHF(settings));
   const [focus, setFocus] = useState("hr");
@@ -6744,7 +6998,7 @@ function PrintHFModal({ settings, canEdit, docName, date, onSave, onClose }) {
         </div>
         <div className="ivs-modal-body">
           <p className="ivs-section-hint" style=${{ marginBottom: 12 }}>
-            종이 맨 위 · 맨 아래에 찍을 글자예요. 일일 제조일보와 일일 생산이력 현황이 같이 씁니다. 비워두면 그 칸은 찍지 않아요.
+            종이 맨 위 · 맨 아래에 찍을 글자예요. 일일 제조일보와 일일 공정이동 현황이 같이 씁니다. 비워두면 그 칸은 찍지 않아요.
           </p>
           <div className="ivs-hf-tokens">
             <span>넣을 수 있는 값</span>
@@ -7459,7 +7713,7 @@ const newLotForm = (master) => {
     code: CATEGORIES[0].code, name: autoItemName(CATEGORIES[0].id), categoryId: CATEGORIES[0].id,
     vendor: first ? first.name : "", shipLoc: first ? (first.loc || "") : "",
     lotNo: joinLotNo(first ? first.code : "", "", ""), srcLot: "",
-    receivedDate: new Date().toISOString().slice(0, 10),
+    receivedDate: localDateStr(),
     stage: "raw_in", qtyKg: "", waterKg: "", excludeKg: "", tolling: false, carriedOver: false,
   };
 };
@@ -7477,7 +7731,7 @@ function InventorySystem() {
 
   const [filters, setFilters] = useState({
     search: "", dateFrom: "", dateTo: "", year: "all",
-    tollingOnly: false, stage: "all", category: "all",
+    tollingOnly: false, stage: "all", category: "all", cls: "all", status: "all",
   });
   const [usage, setUsage] = useState(() => (LIVE_DATA && LIVE_DATA.usage) || {});
   const [downEq, setDownEq] = useState(null); // 가동율 화면에서 눌러 들어온 설비 — 비가동 현황이 이 설비만 봐요
@@ -7511,7 +7765,7 @@ function InventorySystem() {
   const [runs, setRuns] = useState(() => LIVE_DATA.runs); // 생산실적 (투입↔산출 Lot 연결 포함)
   const [downs, setDowns] = useState(() => LIVE_DATA.downs); // 비가동 기록 (설비 · 유형 · 분)
   // 생산실적이 어느 달을 보고 있는지 — 화면 제목을 "9월 생산실적"처럼 쓰려고 위로 올렸어요.
-  const [actYm, setActYm] = useState(() => new Date().toISOString().slice(0, 10).slice(0, 7));
+  const [actYm, setActYm] = useState(() => localDateStr().slice(0, 7));
   const [masterModalOpen, setMasterModalOpen] = useState(false);
   const [unlocked, setUnlocked] = useState(false); // 세션에서만 유지 (보안을 위해 저장하지 않음)
   const [viewUnlocked, setViewUnlocked] = useState(false); // 세션에서만 유지
@@ -7676,7 +7930,7 @@ function InventorySystem() {
   // 따로 연달아 부르면 두 번째 호출이 첫 번째가 바꾼 lots를 못 본 채로 옛 값을 덮어쓸 수 있어요.
   const handleMoveStage = async (lot, targetStage, outputQty) => {
     if (!canEdit) return;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localDateStr();
     const inputQty = lot.qtyKg;
     const diff = outputQty - inputQty;
     const nextLots = lots.map((l) => (l.id === lot.id ? { ...l, stage: targetStage, qtyKg: outputQty, lastMove: today } : l));
@@ -7993,6 +8247,8 @@ function InventorySystem() {
   // 비가동은 화면에 보일 때 지금 코드표 체계로 맞춰 읽어요 (옛 설비 번호 · 대분류도 여기서 옮겨집니다).
   const downsAll = useMemo(() => archRows("downs", downs).map(normDown), [archRows, downs]);
   const lotsAll = useMemo(() => archRows("lots", lots), [archRows, lots]);
+  // 재고 재구성용 — 닫힌 로트와 공정이동 이력까지 있어야 지난 날짜 재고를 되살릴 수 있어요 (보고서 · 재고집계).
+  const stockSrc = useMemo(() => ({ lots: lotsAll, moves: movesAll }), [lotsAll, movesAll]);
   // Lot 추적용 색인 — 닫힌 로트도 들어있어야 출하대기 Lot에서 원입고 Lot까지 거슬러 갈 수 있어요.
   const lotsById = useMemo(() => new Map(lotsAll.map((l) => [l.id, l])), [lotsAll]);
   const lotsByNo = useMemo(() => new Map(lotsAll.map((l) => [l.lotNo, l])), [lotsAll]);
@@ -8010,6 +8266,18 @@ function InventorySystem() {
   const shipDateOf = (l) => (l.stage === "shipped"
     ? l.shippedDate || shipDateByLot.get(l.id) || l.lastMove || null : null);
 
+  // ---------- 재고상태 (구분별 기준 · 오늘 기준 자동 계산) ----------
+  const stockRef = localDateStr();
+  const stockById = useMemo(() => {
+    const m = new Map();
+    lots.forEach((l) => { const st = lotStockState(l, stockRef); if (st) m.set(l.id, st); });
+    return m;
+  }, [lots, stockRef]);
+  const stockItems = useMemo(() => lots.filter(isLiveLot)
+    .map((l) => ({ lot: l, kg: Number(l.qtyKg) || 0, st: stockById.get(l.id) })), [lots, stockById]);
+  const stockSum = useMemo(() => stockSummary(stockItems), [stockItems]);
+  const stockTopRisk = useMemo(() => topRiskGroup(stockItems), [stockItems]);
+
   const filtered = useMemo(() => {
     const words = filters.search.trim().toLowerCase().split(/\s+/).filter(Boolean);
     let rows = lots.filter((l) => {
@@ -8025,18 +8293,27 @@ function InventorySystem() {
       if (filters.tollingOnly && !l.tolling) return false;
       if (filters.stage !== "all" && l.stage !== filters.stage) return false;
       if (filters.category !== "all" && l.categoryId !== filters.category) return false;
+      if (filters.cls !== "all" && lotClassKeyOf(l) !== filters.cls) return false;
+      if (filters.status !== "all") {
+        const st = stockById.get(l.id);
+        if (!st || st.status.key !== filters.status) return false;
+      }
       return true;
     });
+    // 재고상태 정렬은 재고연령(일) 기준 — 재고가 아닌 로트(출하완료)는 맨 뒤로 가요.
+    const keyOf = (l) => sort.key === "netKg" ? lotNetKg(l)
+      : sort.key === "stockAge" ? (stockById.get(l.id) ? stockById.get(l.id).age : null)
+      : l[sort.key];
     rows.sort((a, b) => {
       const dir = sort.dir === "asc" ? 1 : -1;
-      const av = sort.key === "netKg" ? lotNetKg(a) : a[sort.key];
-      const bv = sort.key === "netKg" ? lotNetKg(b) : b[sort.key];
+      const av = keyOf(a);
+      const bv = keyOf(b);
       if (av == null) return 1;
       if (bv == null) return -1;
       return av > bv ? dir : av < bv ? -dir : 0;
     });
     return rows;
-  }, [lots, filters, sort]);
+  }, [lots, filters, sort, stockById]);
 
   // 화면에 실제로 그리는 구간만 잘라요. 필터·정렬은 전체 기준 그대로라 집계 숫자는 달라지지 않아요.
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
@@ -8050,7 +8327,7 @@ function InventorySystem() {
   useEffect(() => { setPage(1); }, [filters, sort, pageSize]);
 
   const resetFilters = () =>
-    setFilters({ search: "", dateFrom: "", dateTo: "", year: "all", tollingOnly: false, stage: "all", category: "all" });
+    setFilters({ search: "", dateFrom: "", dateTo: "", year: "all", tollingOnly: false, stage: "all", category: "all", cls: "all", status: "all" });
 
   const toggleSort = (key) =>
     setSort((s) => (s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }));
@@ -8095,7 +8372,7 @@ function InventorySystem() {
   const dayDelta = useMemo(() => {
     const y = new Date();
     y.setDate(y.getDate() - 1);
-    const asOf = y.toISOString().slice(0, 10);
+    const asOf = localDateStr(y);
     const movesByLot = new Map();
     moves.forEach((m) => {
       const key = m.lotId || m.lotNo;
@@ -8134,25 +8411,28 @@ function InventorySystem() {
 
   // ---------- 엑셀(.xlsx)로 내보내기 ----------
   const exportCsv = () => {
-    const headers = ["품목코드", "품목명", "카테고리", "거래처", "출고지", "Lot 번호", "구분", "직전 투입 Lot", "최초 입고 Lot", "최초 입고일", "생산공정", "주차", "현재공정", "수량(Kg)", "물중량(Kg)", "제외중량(Kg)", "총 중량(Kg)", "입고일", "출하일", "최근 이동일", "톨링품", "이월"];
+    const headers = ["구분", "품목코드", "품목명", "카테고리", "거래처", "출고지", "Lot 번호", "입고/생산", "직전 투입 Lot", "최초 입고 Lot", "최초 입고일", "생산공정", "주차", "현재공정", "수량(Kg)", "총 중량(Kg)", "재고상태", "재고연령(일)", "무이동(일)", "입고일", "출하일", "최근 이동일", "물중량(Kg)", "제외중량(Kg)", "톨링품", "이월"];
     const rows = filtered.map((l) => {
       // 우리가 만든 Lot이면 어떤 Lot에서 나왔는지 같이 적어요 (직전 투입 Lot → 최초 입고 Lot).
       const made = l.origin === "production";
       const tr = made ? lotTrace(l, lotsById, lotsByNo) : { direct: [], roots: [] };
       const pr = l.process ? (processByKey[l.process] || {}).label || "" : "";
+      const st = stockById.get(l.id);
       return [
-        l.code, l.name, categoryById[l.categoryId]?.label || "", l.vendor, l.shipLoc, l.lotNo, made ? "생산" : "입고",
+        lotClassOf(l).label, l.code, l.name, categoryById[l.categoryId]?.label || "", l.vendor, l.shipLoc, l.lotNo, made ? "생산" : "입고",
         tr.direct.map((x) => x.lotNo).join(", "),
         tr.roots.map((x) => x.lotNo).join(", "),
         tr.roots.map((x) => x.receivedDate).join(", "),
         pr, weekLabel(l.receivedDate),
-        getStage(l.stage).label, l.qtyKg, l.waterKg ?? "", l.excludeKg ?? "", lotNetKg(l), l.receivedDate,
-        shipDateOf(l) || "", l.lastMove ?? "",
+        getStage(l.stage).label, l.qtyKg, lotNetKg(l),
+        st ? st.status.label : "", st ? st.age : "", st ? st.idle : "",
+        l.receivedDate, shipDateOf(l) || "", l.lastMove ?? "",
+        l.waterKg ?? "", l.excludeKg ?? "",
         l.tolling ? "Y" : "", l.carriedOver ? "Y" : "",
       ];
     });
-    const today = new Date().toISOString().slice(0, 10);
-    const widths = [11, 20, 14, 20, 11, 20, 7, 24, 24, 13, 11, 18, 13, 14, 13, 14, 12, 12, 13, 9, 7];
+    const today = localDateStr();
+    const widths = [10, 11, 20, 14, 20, 11, 20, 9, 24, 24, 13, 11, 18, 13, 12, 13, 10, 11, 10, 12, 12, 13, 12, 13, 8, 7];
     downloadXlsx(`재고현황_${today}.xlsx`, `재고현황 ${today}`, [headers, ...rows], widths);
     showToast("엑셀 파일로 내보냈어요.", "success");
   };
@@ -8250,7 +8530,7 @@ function InventorySystem() {
               : null}
             ${saving ? html`<span className="ivs-saving"><${Loader2} size=${12} className="ivs-spin" /> 저장 중</span>` : null}
           </div>
-          <p className="ivs-subtitle">${LAYOUT === "sidebar" ? (PAGE_SUB[activeTab] || settings.subtitle) : settings.subtitle}</p>
+          ${LAYOUT === "sidebar" ? null : html`<p className="ivs-subtitle">${settings.subtitle}</p>`}
         </div>
         <div className="ivs-header-actions">
           <button
@@ -8366,6 +8646,93 @@ function InventorySystem() {
           </div>
         </div>
 
+        <div className="ivs-card">
+          <div className="ivs-card-head-row">
+            <h2 className="ivs-section-title">재고상태별 재고현황</h2>
+            <span className="ivs-section-hint">카드를 누르면 아래 표가 그 상태만 보여줘요 · ${stockRef} 기준 · 재고연령과 무이동일수를 함께 봐요</span>
+          </div>
+          <div className="ivs-stockgrid">
+            ${STOCK_STATUS.map((ss) => {
+              const b = stockSum.byStatus[ss.key];
+              const pct = stockSum.kg > 0 ? (b.kg / stockSum.kg) * 100 : 0;
+              const parts = LOT_CLASSES.filter((c) => b.byCls[c.key].count > 0);
+              return html`
+                <button type="button" key=${ss.key}
+                  className=${`ivs-pipe-card ivs-stock-card ${filters.status === ss.key ? "selected" : ""} ${b.count === 0 ? "empty" : ""}`}
+                  style=${{ "--c": ss.color }}
+                  onClick=${() => setFilters((f) => ({ ...f, status: f.status === ss.key ? "all" : ss.key }))}
+                  title=${`${ss.label} — ${ss.desc}`}>
+                  <div className="ivs-pipe-name"><span className="ivs-pipe-dot" />${ss.label}</div>
+                  <div className="ivs-pipe-val">${fmtTon(b.kg)}<em>톤</em></div>
+                  <div className="ivs-pipe-sub">${b.count} lot · 재고의 ${pct.toFixed(1)}%</div>
+                  <div className="ivs-stock-card-cls">
+                    ${parts.length === 0 ? html`<span className="ivs-dim">해당 로트 없음</span>`
+                      : parts.map((c) => html`<span key=${c.key}>${c.label} ${fmtTon(b.byCls[c.key].kg)}</span>`)}
+                  </div>
+                  <div className="ivs-pipe-bar"><i style=${{ width: `${pct}%` }} /></div>
+                </button>`;
+            })}
+          </div>
+          <div className="ivs-stock-ana">
+            <div className="ivs-stock-kpis">
+              <div className=${`ivs-stock-kpi ${stockSum.riskKg > 0 ? "warn" : ""}`}>
+                <span>장기 · 악성 비중</span>
+                <b>${stockSum.riskPct.toFixed(1)}<em>%</em></b>
+                <small>${fmtTon(stockSum.riskKg)}톤 · ${stockSum.riskCount} lot${stockTopRisk ? ` (${stockTopRisk.key})` : ""}</small>
+              </div>
+              <div className="ivs-stock-kpi">
+                <span>평균 재고연령</span>
+                <b>${stockSum.avgAge.toFixed(0)}<em>일</em></b>
+                <small>중량 가중 평균 · ${stockSum.count} lot</small>
+              </div>
+              <div className="ivs-stock-kpi">
+                <span>가장 오래된 Lot</span>
+                ${stockSum.oldest ? html`
+                  <b className="ivs-stock-kpi-lot" title=${stockSum.oldest.lot.lotNo}>${lotVendorCat(stockSum.oldest.lot)}</b>
+                  <small>${stockSum.oldest.st.cls.label} · ${stockSum.oldest.st.age}일 ·
+                    <span style=${{ color: stockSum.oldest.st.status.color, fontWeight: 700 }}>${stockSum.oldest.st.status.label}</span></small>`
+                  : html`<b>-</b><small>재고가 없어요</small>`}
+              </div>
+            </div>
+            <div className="ivs-table-wrap">
+              <table className="ivs-table ivs-table-fit ivs-stock-matrix">
+                <thead><tr>
+                  <th>구분</th><th>판정 기준</th>
+                  ${STOCK_STATUS.map((ss) => html`<th key=${ss.key} className="ivs-right"><span className="ivs-stock" style=${{ "--c": ss.color }}><i />${ss.label}</span></th>`)}
+                  <th className="ivs-right ivs-totcol">합계 (톤)</th>
+                </tr></thead>
+                <tbody>
+                  ${LOT_CLASSES.map((c) => html`<tr key=${c.key}>
+                    <td><span className="ivs-lotcls" style=${{ "--c": c.color }}>${c.label}</span></td>
+                    <td className="ivs-dim">정상 ~${c.days[0]} · 유의 ~${c.days[1]} · 장기 ~${c.days[2]}일</td>
+                    ${STOCK_STATUS.map((ss) => {
+                      const v = stockSum.byStatus[ss.key].byCls[c.key];
+                      const on = filters.cls === c.key && filters.status === ss.key;
+                      return html`<td key=${ss.key} className="ivs-right ivs-mono">
+                        ${v.count > 0 ? html`<button type="button" className=${`ivs-stock-cell ${on ? "on" : ""}`} style=${{ "--c": ss.color }}
+                          onClick=${() => setFilters((f) => (f.cls === c.key && f.status === ss.key
+                            ? { ...f, cls: "all", status: "all" } : { ...f, cls: c.key, status: ss.key }))}
+                          title=${`${c.label} · ${ss.label} ${v.count} lot만 보기`}>${fmtTon(v.kg)}</button>`
+                          : html`<span className="ivs-dim">-</span>`}
+                      </td>`;
+                    })}
+                    <td className="ivs-right ivs-mono ivs-totcol">${fmtTon(stockSum.byCls[c.key].kg)}</td>
+                  </tr>`)}
+                </tbody>
+                <tfoot><tr className="ivs-tablefoot">
+                  <td colSpan=${2}>합계 · ${stockSum.count} lot</td>
+                  ${STOCK_STATUS.map((ss) => html`<td key=${ss.key} className="ivs-right ivs-mono">${fmtTon(stockSum.byStatus[ss.key].kg)}</td>`)}
+                  <td className="ivs-right ivs-mono ivs-totcol">${fmtTon(stockSum.kg)}</td>
+                </tr></tfoot>
+              </table>
+            </div>
+          </div>
+          <p className="ivs-stock-note">
+            재고연령 = 오늘 − 입고일(생산 Lot은 생산일) · 무이동 = 오늘 − 최근 이동일 · 악성재고는 장기 기준을 넘기고 유의 기준보다 오래 움직이지 않은 로트예요.
+            장기 · 악성은 관리용 분류이며, 회계상 평가손실은 NRV · 진부화 · 손상 · 판매가능성을 따로 검토합니다.
+          </p>
+        </div>
+
         <div className="ivs-filterbar">
           <div className="ivs-search">
             <${Search} size=${15} className="ivs-search-icon" />
@@ -8403,6 +8770,16 @@ function InventorySystem() {
               onChange=${(e) => setFilters((f) => ({ ...f, category: e.target.value }))}>
               <option value="all">전체 카테고리</option>
               ${CATEGORIES.map((c) => html`<option key=${c.id} value=${c.id}>${c.label}</option>`)}
+            </select>
+            <select className="ivs-select" value=${filters.cls}
+              onChange=${(e) => setFilters((f) => ({ ...f, cls: e.target.value }))}>
+              <option value="all">전체 구분</option>
+              ${LOT_CLASSES.map((c) => html`<option key=${c.key} value=${c.key}>${c.label}</option>`)}
+            </select>
+            <select className="ivs-select" value=${filters.status}
+              onChange=${(e) => setFilters((f) => ({ ...f, status: e.target.value }))}>
+              <option value="all">전체 재고상태</option>
+              ${STOCK_STATUS.map((st) => html`<option key=${st.key} value=${st.key}>${st.label}</option>`)}
             </select>
             <button className="ivs-btn" onClick=${resetFilters}><${RotateCcw} size=${13} /> 필터 초기화</button>
             <div className="ivs-spacer" />
@@ -8459,6 +8836,7 @@ function InventorySystem() {
                 <th className="ivs-th-check">
                   <input type="checkbox" checked=${allPageSelected} onChange=${togglePageAll} title="이 장에 보이는 행 전체 선택" />
                 </th>
+                <th>구분</th>
                 <${Th} label="품목코드" sortKey="code" sort=${sort} onSort=${toggleSort} />
                 <th>품목명</th>
                 <th>카테고리</th>
@@ -8467,28 +8845,32 @@ function InventorySystem() {
                 <th>Lot 번호</th>
                 <th>주차</th>
                 <th>현재공정</th>
-                <th className="ivs-hide-sm ivs-right">물중량</th>
-                <th className="ivs-hide-sm ivs-right">제외중량</th>
                 <${Th} label="총 중량" sortKey="netKg" sort=${sort} onSort=${toggleSort} align="right" />
+                <${Th} label="재고상태" sortKey="stockAge" sort=${sort} onSort=${toggleSort} />
                 <${Th} label="입고일" sortKey="receivedDate" sort=${sort} onSort=${toggleSort} />
                 <${Th} label="출하일" sortKey="shippedDate" sort=${sort} onSort=${toggleSort} />
                 <th className="ivs-hide-sm">최근 이동일</th>
+                <th className="ivs-hide-sm ivs-right">물중량</th>
+                <th className="ivs-hide-sm ivs-right">제외중량</th>
                 <th className="ivs-th-actions"></th>
               </tr>
             </thead>
             <tbody>
               ${filtered.length === 0 ? html`
-                <tr><td colSpan=${16} className="ivs-empty">조건에 맞는 로트가 없어요. 필터를 조정해보세요.</td></tr>
+                <tr><td colSpan=${18} className="ivs-empty">조건에 맞는 로트가 없어요. 필터를 조정해보세요.</td></tr>
               ` : paged.map((l) => {
                 const cat = categoryById[l.categoryId];
                 const stage = getStage(l.stage);
                 const made = l.origin === "production";
                 const tr = made ? lotTrace(l, lotsById, lotsByNo) : null;
                 const open = traceLotId === l.id;
+                const lc = lotClassOf(l);
+                const st = stockById.get(l.id);
                 return html`
                   <${Fragment} key=${l.id}>
                   <tr>
                     <td><input type="checkbox" checked=${selected.has(l.id)} onChange=${() => toggleSelectOne(l.id)} /></td>
+                    <td><span className="ivs-lotcls" style=${{ "--c": lc.color }}>${lc.label}</span></td>
                     <td className="ivs-mono">${l.code}</td>
                     <td>${l.name}</td>
                     <td>${cat ? html`<span className="ivs-badge" style=${{ "--c": cat.color }}>${cat.label}</span>` : html`<span className="ivs-dim">-</span>`}</td>
@@ -8506,12 +8888,16 @@ function InventorySystem() {
                     </td>
                     <td className="ivs-dim">${weekLabel(l.receivedDate)}</td>
                     <td><span className="ivs-badge" style=${{ "--c": stage.color }}>${stage.label}</span></td>
-                    <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.waterKg)}</td>
-                    <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.excludeKg)}</td>
                     <td className="ivs-mono ivs-right" title=${(Number(l.waterKg) || 0) + (Number(l.excludeKg) || 0) > 0 ? `중량 ${fmtKg(l.qtyKg)} − 물중량 − 제외중량` : ""}>${fmtKg(lotNetKg(l))}</td>
+                    <td>${st ? html`<span className="ivs-stock" style=${{ "--c": st.status.color }}
+                        title=${`재고연령 ${st.age}일 · 무이동 ${st.idle}일\n${st.cls.label} 기준: 정상 ~${st.days[0]}일 · 유의 ~${st.days[1]}일 · 장기 ~${st.days[2]}일 · 그 뒤 무이동이면 악성`}>
+                        <i />${st.status.label}<em>${st.age}일</em></span>`
+                      : html`<span className="ivs-dim">-</span>`}</td>
                     <td className="ivs-mono">${l.receivedDate}</td>
                     <td className="ivs-mono">${shipDateOf(l) || html`<span className="ivs-dim">-</span>`}</td>
                     <td className="ivs-dim ivs-hide-sm">${l.lastMove ?? "-"}</td>
+                    <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.waterKg)}</td>
+                    <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.excludeKg)}</td>
                     <td className="ivs-row-menu-cell">
                       ${canEdit ? html`
                         <button className="ivs-icon-btn" onClick=${() => setOpenMenuId(openMenuId === l.id ? null : l.id)}>
@@ -8535,7 +8921,7 @@ function InventorySystem() {
                   </tr>
                   ${open && tr ? html`
                     <tr className="ivs-trace-row">
-                      <td colSpan=${16}>
+                      <td colSpan=${18}>
                         <div className="ivs-trace">
                           <div>
                             <div className="ivs-chart-label">최초 입고 Lot</div>
@@ -8605,7 +8991,7 @@ function InventorySystem() {
         : activeTab === "ship" ? html`<${ShipTab} lots=${openLots} moves=${moves} canEdit=${canEdit}
             onShip=${handleShip} onLabel=${(sel) => setLabelLots(sel)} />`
         : activeTab === "tolling" ? html`<${TollingTab} lots=${openLots} />`
-        : activeTab === "dashboard" ? html`<${DashboardTab} lots=${openLots} moves=${moves} dayDelta=${dayDelta} />`
+        : activeTab === "dashboard" ? html`<${DashboardTab} lots=${openLots} moves=${moves} dayDelta=${dayDelta} stockSrc=${stockSrc} />`
         : activeTab === "plan" ? html`<${PlanTab} mes=${mes} canEdit=${canEdit} onSave=${persistMes} />`
         : activeTab === "act" ? html`<${ActualTab} lots=${lotsAll} runs=${runsAll} moves=${movesAll} downs=${downsAll}
             settings=${settings} mes=${mes} master=${master} canEdit=${canEdit} onSaveSettings=${persistSettings}
@@ -8614,7 +9000,8 @@ function InventorySystem() {
         : activeTab === "basis" ? html`<${BasisTab} mes=${mes} downs=${downsAll} canEdit=${canEdit} onSave=${persistMes}
             usage=${usage} onToast=${showToast} archOpen=${archOpen} onArchOpen=${setArchOpen}
             counts=${{ lots: lots.length, moves: moves.length, runs: runs.length, downs: downs.length }} />`
-        : activeTab === "report" ? html`<${ReportTab} mes=${mes} runs=${runsAll} downs=${downsAll} lots=${openLots} settings=${settings} />`
+        : activeTab === "report" ? html`<${ReportTab} mes=${mes} runs=${runsAll} downs=${downsAll} lots=${openLots} settings=${settings}
+            stockSrc=${stockSrc} />`
         : activeTab === "util" ? html`<${UtilTab} mes=${mes} runs=${runsAll} downs=${downsAll}
             onOpenDown=${(eqId) => { setDownEq(eqId); setActiveTab("down"); }} />`
         : activeTab === "down" ? html`<${DownTab} mes=${mes} runs=${runsAll} downs=${downsAll} canEdit=${canEdit}
@@ -9188,7 +9575,7 @@ function buildImportRows(table, existingLots, master) {
     }
 
     const dateRaw = pick(r, "receivedDate");
-    const receivedDate = dateRaw ? toDateStr(dateRaw) : new Date().toISOString().slice(0, 10);
+    const receivedDate = dateRaw ? toDateStr(dateRaw) : localDateStr();
     if (dateRaw && !/^\d{4}-\d{2}-\d{2}$/.test(receivedDate)) errs.push(`입고일 형식 확인 "${dateRaw}"`);
 
     const vendor = pick(r, "vendor");
@@ -9277,7 +9664,7 @@ function buildRangeLots(prefix, from, to, pad, dflt) {
 }
 
 function ScanInModal({ lots, master, onCancel, onConfirm }) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   const vendors = master.vendors || [];
   const [mode, setMode] = useState("scan"); // "scan" | "range"
   // 스캔으로 안 들어오는 값들 — 한 번 정해두면 이번에 찍는 Lot 전부에 똑같이 붙어요.
@@ -9543,7 +9930,7 @@ function ImportLotsModal({ lots, master, onCancel, onConfirm }) {
     const sample = [
       "SB-BM260907-1", cat.code, cat.label, cat.label,
       vendor ? vendor.name : "", vendor ? (vendor.loc || "") : "",
-      new Date().toISOString().slice(0, 10), STAGES[0].label, 900, "", "", "", "",
+      localDateStr(), STAGES[0].label, 900, "", "", "", "",
     ];
     downloadXlsx("입고Lot_업로드양식.xlsx", "업로드 양식", [IMPORT_HEADERS, sample],
       [16, 11, 18, 14, 20, 12, 12, 14, 12, 13, 14, 9, 7]);
@@ -9634,7 +10021,7 @@ function ImportLotsModal({ lots, master, onCancel, onConfirm }) {
 
 // 고른 Lot을 한 번에 출하완료로 — 표에서 체크한 뒤 "출하완료"를 누르면 여기로 와요.
 function BulkShipModal({ lots, onCancel, onConfirm }) {
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(() => localDateStr());
   const targets = lots.filter((l) => l.stage === "usable");
   const already = lots.filter((l) => l.stage !== "usable");
   const kg = targets.reduce((a, l) => a + (Number(l.qtyKg) || 0), 0);
@@ -9804,17 +10191,19 @@ function SettingsModal({ settings, unlocked, onUnlock, onSave, onClose }) {
 // 가동율은 두 갈래로 나눠서 봐요 — 둘을 곱한 게 설비종합효율이에요.
 //   시간가동율 = 실제 돌린 시간 ÷ 계획 시간            (얼마나 안 섰나)
 //   성능가동율 = 실제 투입량 ÷ (capa × 실제 돌린 시간)  (돌 때 얼마나 제 성능을 냈나)
+// 날짜 계산은 세계시(UTC) 자정 기준으로 해요. 현지 자정으로 만든 뒤 toISOString으로 읽으면
+// 한국(UTC+9)에서는 하루 앞 날짜가 나와서, 주의 시작 · 기간 끝이 하루씩 밀렸어요.
 const dateRange = (from, to) => {
   const out = [];
-  let d = new Date(`${from}T00:00:00`);
-  const end = new Date(`${to}T00:00:00`);
-  while (d <= end && out.length < 800) {
-    out.push(d.toISOString().slice(0, 10));
-    d = new Date(d.getTime() + 86400000);
+  let t = Date.parse(`${from}T00:00:00Z`);
+  const end = Date.parse(`${to}T00:00:00Z`);
+  while (t <= end && out.length < 800) {
+    out.push(new Date(t).toISOString().slice(0, 10));
+    t += 86400000;
   }
   return out;
 };
-const addDaysStr = (dateStr, n) => new Date(new Date(`${dateStr}T00:00:00`).getTime() + n * 86400000).toISOString().slice(0, 10);
+const addDaysStr = (dateStr, n) => new Date(Date.parse(`${dateStr}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
 // 그 주의 월요일
 const mondayOf = (dateStr) => {
   const d = new Date(`${dateStr}T00:00:00`);
@@ -9962,7 +10351,7 @@ const fmtPct = (v, d = 1) => (v == null ? "-" : `${v.toFixed(d)}%`);
 
 // 기간 고르기 — 일/주/월 공통 (세 화면이 같은 방식으로 기간을 고르게)
 function usePeriod(initial = "month") {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   const [gran, setGran] = useState(initial); // "day" | "week" | "month"
   const [anchor, setAnchor] = useState(today);
   const from = gran === "day" ? anchor : gran === "week" ? mondayOf(anchor) : `${anchor.slice(0, 7)}-01`;
@@ -10073,7 +10462,7 @@ function UtilTab({ mes, runs, downs, onOpenDown }) {
                 return html`
                   <button key=${e.id} type="button"
                     className=${`ivs-eqnode ${e.min > 0 && share >= 30 ? "hot" : ""} ${last ? "last" : ""} ${e.support ? "support" : ""}`}
-                    style=${{ "--c": c }} title=${`${e.id} ${e.name}\n${(e.devices || []).join(", ")}\n\n누르면 비가동 현황에서 이 설비만 봐요`}
+                    style=${{ "--c": c }} title=${`${e.id} ${e.name}\n${(e.devices || []).join(", ")}\n\n누르면 비가동집계에서 이 설비만 봐요`}
                     onClick=${() => onOpenDown && onOpenDown(e.id)}>
                     <span className="ivs-eqnode-no">${e.support ? "지원" : i + 1}<em>${e.id}</em></span>
                     <span className="ivs-eqnode-img"><${EqGlyph} icon=${e.icon} size=${42} /></span>
@@ -10103,7 +10492,7 @@ function UtilTab({ mes, runs, downs, onOpenDown }) {
             ? html`<div className="ivs-prod-empty center">이 기간에 기록된 비가동이 없어요.</div>`
             : html`<div className="ivs-rank-list">
                 ${[...eqs].sort((a, b) => b.min - a.min).filter((e) => e.min > 0).map((e) => html`
-                  <div className="ivs-rank-row ivs-clickable" key=${e.id} title="누르면 비가동 현황에서 이 설비만 봐요"
+                  <div className="ivs-rank-row ivs-clickable" key=${e.id} title="누르면 비가동집계에서 이 설비만 봐요"
                     onClick=${() => onOpenDown && onOpenDown(e.id)}>
                     <div className="ivs-rank-left">
                       <span className="ivs-rank-dot" style=${{ background: utilColor(e.util, target) }}></span>
@@ -10219,7 +10608,7 @@ function UtilTrend({ rows, target }) {
 // ---------- 비가동 현황 ----------
 function DownTab({ mes, runs, downs, canEdit, onSave, onDelete, focusEq, onFocusEq }) {
   const p = usePeriod("month");
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   // 설비고장 › 기계 › 베어링 · 축 손상 (20-01-01) 을 기본으로 잡아둬요 — 가장 자주 쓰는 갈래예요.
   const firstCode = "20-01-01";
   const [form, setForm] = useState(() => ({
@@ -10596,7 +10985,7 @@ const DT_META = {
 };
 const dtMeta = (k) => DT_META[k] || DT_META["외부요인"];
 
-function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
+function buildReport(kind, from, to, mes, runs, downs, lots, settings, stockSrc) {
   const isMonth = kind === "month";
   const target = Number(mes.targetUtil) || 90;
   const tr = mes.targetRates || { bm: 55, cu: 12, al: 10, cd: 5 };
@@ -10636,7 +11025,7 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
       eyebrow: isMonth ? "MONTHLY PRODUCTION REVIEW" : "WEEKLY PRODUCTION REVIEW",
       title: `${isMonth ? "월간" : "주간"} 생산실적 보고`,
       subtitle: `${label}   ·   ${org}`,
-      meta: [`투입 ${fmtTon(tot.inputKg)}톤`, `달성율 ${fmtPct(achieve)}`, `설비종합효율 ${fmtPct(utilAll)}`, `작성 ${new Date().toISOString().slice(0, 10)}`] },
+      meta: [`투입 ${fmtTon(tot.inputKg)}톤`, `달성율 ${fmtPct(achieve)}`, `설비종합효율 ${fmtPct(utilAll)}`, `작성 ${localDateStr()}`] },
   });
 
   // ── 1. Executive Summary : 결론을 제목에 ────────────────
@@ -10850,6 +11239,11 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
     });
   }
 
+  // ── 재고 현황 — 핵심 · 증감 · 추이 · 특이사항 ──────────────
+  // 기초 = 기간 시작 전날, 기말 = 기간 끝(아직 안 지났으면 오늘). 둘 다 공정이동 이력으로 그날 재고를 되살려 셉니다.
+  const stockRpt = stockSrc && stockSrc.lots ? buildStockReport(isMonth, from, to, weeks, stockSrc, label) : null;
+  if (stockRpt) stockRpt.slides.forEach((x) => S.push(x));
+
   // ── 7. 현안 과제 및 대응 방안 ───────────────────────────
   const issueSrc = byMajor.slice(0, 3);
   const cards = issueSrc.map((m, i) => {
@@ -10991,14 +11385,122 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings) {
   return { label, kind, from, to, tot, prev, slides: S };
 }
 
-function ReportTab({ mes, runs, downs, lots, settings }) {
-  const today = new Date().toISOString().slice(0, 10);
+// 보고서용 재고 장표 두 장 — ① 핵심 · 증감 (KPI + 세 줄 요약) ② 추이 (기간 중 재고 흐름 + 특이사항)
+function buildStockReport(isMonth, from, to, weeks, src, label) {
+  const today = localDateStr();
+  const end = to < today ? to : today;
+  if (end < from) return null;                       // 아직 시작하지 않은 기간
+  const open = addDaysStr(from, -1);
+  const allLots = src.lots || [];
+  const idx = stockMoveIndex(src.moves || []);
+  const itemsOpen = stockItemsAt(allLots, idx, open);
+  const sOpen = stockSummary(itemsOpen);
+  const itemsEnd = stockItemsAt(allLots, idx, end);
+  const sEnd = stockSummary(itemsEnd);
+  const inRange = (d) => !!d && d >= from && d <= end;
+  const movesOf = (l) => idx.get(l.id) || idx.get(l.lotNo) || [];
+  // 입고 = 밖에서 들어온 로트의 "들어올 때" 중량 — 그 뒤 공정에서 바뀐 현재 중량이 아니라 첫 이동의 투입량(없으면 지금 중량).
+  const inKg = allLots.filter((l) => l.origin !== "production" && inRange(l.receivedDate))
+    .reduce((a, l) => { const lm = movesOf(l); return a + (Number(lm.length ? lm[0].inputQty : l.qtyKg) || 0); }, 0);
+  // 출하 = 출하완료로 넘어간 이동의 산출량. 이동 기록 없이 출하완료로 적힌 로트는 로트 중량으로.
+  // 지금 장부에 있는 로트만 셉니다 — 지운 로트의 이동 기록은 기초 · 기말 재고에도 없으니 함께 빼야 맞아요.
+  // (응축액 탱크 배출은 재고를 거치지 않아 빼요)
+  const outKg = allLots.filter((l) => l.process !== "cdout").reduce((a, l) => {
+    const ship = movesOf(l).filter((m) => m.toStage === "shipped");
+    if (ship.length) return a + ship.filter((m) => inRange(m.date)).reduce((b, m) => b + (Number(m.outputQty) || 0), 0);
+    return a + (l.stage === "shipped" && inRange(l.shippedDate || l.lastMove) ? Number(l.qtyKg) || 0 : 0);
+  }, 0);
+  const delta = sEnd.kg - sOpen.kg;
+  const convKg = delta - inKg + outKg;               // 공정에서 투입 → 산출로 바뀌며 생긴 차이 (감량 · 분리)
+  // 추이 — 주간은 날마다, 월간은 주마다(그 주 마지막 날) 재고를 다시 셉니다.
+  const pts = [{ date: open, label: "기초" }];
+  if (isMonth) {
+    weeks.forEach((w, i) => {
+      const d = addDaysStr(w.key, 6) < end ? addDaysStr(w.key, 6) : end;
+      if (d >= from && !pts.some((p) => p.date === d)) pts.push({ date: d, label: `${weekTag(i)}\n~${mmdd(d)}` });
+    });
+  } else {
+    dateRange(from, end).forEach((d) => pts.push({ date: d, label: `${mmdd(d)}\n(${dowOf(d)})` }));
+  }
+  const trend = pts.map((p) => ({ ...p, kg: p.date === end ? sEnd.kg : p.date === open ? sOpen.kg : stockSummary(stockItemsAt(allLots, idx, p.date)).kg }));
+  const peak = trend.reduce((a, p) => (p.kg >= a.kg ? p : a), trend[0]); // 같은 값이면 가장 최근 날
+  const low = trend.reduce((a, p) => (p.kg < a.kg ? p : a), trend[0]);
+  // 특이사항 — 기간 중 장기 · 악성으로 넘어간 로트, 가장 오래된 로트, 폐유기용제 보관기한
+  const openKeys = new Map(itemsOpen.map((x) => [x.lot.id, x.st.status.key]));
+  const turned = itemsEnd.filter((x) => (x.st.status.key === "long" || x.st.status.key === "obsolete")
+    && !["long", "obsolete"].includes(openKeys.get(x.lot.id)));
+  const turnedKg = turned.reduce((a, x) => a + x.kg, 0);
+  const wasteNear = itemsEnd.filter((x) => x.st.cls.key === "waste" && x.st.age > x.st.days[1]);
+  const riskUp = sEnd.riskPct - sOpen.riskPct;
+  const sign = (v) => (v >= 0 ? "+" : "−");
+  const tonD = (v) => `${sign(v)}${fmtTon(Math.abs(v))}톤`;
+  const statusLine = STOCK_STATUS.map((st) => `${st.label} ${fmtTon(sEnd.byStatus[st.key].kg)}`).join(" · ");
+  const notes = [];
+  if (turned.length) notes.push(`기간 중 장기 · 악성 전환 ${turned.length}건 ${fmtTon(turnedKg)}톤`);
+  if (sEnd.byStatus.obsolete.count) notes.push(`악성재고 ${sEnd.byStatus.obsolete.count}건 ${fmtTon(sEnd.byStatus.obsolete.kg)}톤 처분 · 재투입 검토`);
+  if (wasteNear.length) {
+    const oldest = Math.max(...wasteNear.map((x) => x.st.age)), limit = wasteNear[0].st.days[2];
+    notes.push(oldest >= limit
+      ? `폐유기용제 ${wasteNear.length}건 보관 ${oldest}일 — 보관기한(${limit}일) ${oldest > limit ? `${oldest - limit}일 초과` : "도달"}, 즉시 위탁처리`
+      : `폐유기용제 ${wasteNear.length}건 보관 ${oldest}일 — ${limit}일 보관기한 전 위탁처리`);
+  }
+  if (!notes.length && sEnd.oldest) notes.push(`최장기 Lot ${sEnd.oldest.lot.lotNo} (${sEnd.oldest.st.cls.label} · ${sEnd.oldest.st.age}일) 외 특이사항 없음`);
+  if (!notes.length) notes.push("특이사항 없음");
+  const riskColor = sEnd.riskPct >= 20 ? PT.red : sEnd.riskPct >= 10 ? PT.amber : PT.green;
+  const endTag = end === to ? "기말" : `${mmdd(end)} 현재`;
+
+  const slides = [];
+  slides.push({
+    kicker: "분석", accent: riskColor,
+    title: `${endTag} 재고 ${fmtTon(sEnd.kg)}톤, 기초 대비 ${fmtTon(Math.abs(delta))}톤 ${delta >= 0 ? "증가" : "감소"},\n장기 · 악성재고 ${fmtTon(sEnd.riskKg)}톤 (${sEnd.riskPct.toFixed(1)}%) ${sEnd.riskPct >= 10 ? "집중 관리 필요" : "관리 수준 유지"}`,
+    subtitle: `재고 현황 · 핵심 · 증감 · 추이 · 특이사항 · ${open} → ${end}`,
+    visual: { type: "kpi", items: [
+      { label: `${endTag} 재고`, value: fmtTon(sEnd.kg), unit: "톤", color: PT.text,
+        delta: `기초 ${fmtTon(sOpen.kg)}톤 대비 ${tonD(delta)}`, deltaColor: PT.dim, deltaDir: delta > 0 ? "up" : delta < 0 ? "down" : "flat" },
+      { label: "기간 입고", value: fmtTon(inKg), unit: "톤", color: PT.text,
+        delta: `출하 ${fmtTon(outKg)}톤 · 공정 감량 · 분리 ${tonD(convKg)}`, deltaColor: PT.dim, deltaDir: "flat" },
+      { label: "장기 · 악성 비중", value: sEnd.riskPct.toFixed(1), unit: "%", color: riskColor,
+        delta: `${sEnd.riskCount}건 ${fmtTon(sEnd.riskKg)}톤 · 기초 대비 ${sign(riskUp)}${Math.abs(riskUp).toFixed(1)}%p`,
+        deltaColor: riskUp > 0 ? PT.red : PT.green, deltaDir: riskUp > 0 ? "up" : riskUp < 0 ? "down" : "flat",
+        bar: { pct: sEnd.riskPct, max: Math.max(30, sEnd.riskPct), mark: 10, color: riskColor } },
+      { label: "평균 재고연령 (중량 가중)", value: sEnd.avgAge.toFixed(0), unit: "일", color: PT.text,
+        delta: `기초 ${sOpen.avgAge.toFixed(0)}일 대비 ${sign(sEnd.avgAge - sOpen.avgAge)}${Math.abs(sEnd.avgAge - sOpen.avgAge).toFixed(0)}일`,
+        deltaColor: PT.dim, deltaDir: "flat" },
+    ] },
+    points: [
+      { label: "증감", color: delta >= 0 ? PT.amber : PT.green,
+        text: `기초 ${fmtTon(sOpen.kg)} → ${endTag} ${fmtTon(sEnd.kg)}톤 (${tonD(delta)}) = 입고 ${fmtTon(inKg)} − 출하 ${fmtTon(outKg)} ${sign(convKg)} 공정 감량 · 분리 ${fmtTon(Math.abs(convKg))}톤` },
+      { label: "추이", color: PT.blue,
+        text: `최고 ${peak.label.replace("\n", " ")} ${fmtTon(peak.kg)}톤 · 최저 ${low.label.replace("\n", " ")} ${fmtTon(low.kg)}톤 · 폭 ${fmtTon(peak.kg - low.kg)}톤 · 상태별 ${statusLine}` },
+      { label: "특이사항", color: sEnd.byStatus.obsolete.count || turned.length ? PT.red : PT.green, text: notes.slice(0, 2).join(" / ") },
+    ],
+  });
+  if (trend.length >= 2) {
+    const rising = sEnd.kg >= sOpen.kg;
+    slides.push({
+      kicker: "분석", accent: rising ? PT.amber : PT.green,
+      title: rising
+        ? `기간 중 재고 ${fmtTon(Math.abs(delta))}톤 누적,\n최고 ${fmtTon(peak.kg)}톤 (${peak.label.replace("\n", " ")}) 도달`
+        : `기간 중 재고 ${fmtTon(Math.abs(delta))}톤 소진,\n${endTag} ${fmtTon(sEnd.kg)}톤으로 기초 대비 감소`,
+      subtitle: `${isMonth ? "주차별" : "일자별"} 재고 추이 · ${label} (단위: 톤, 공정이동 이력으로 그날 재고 재구성)`,
+      visual: { type: "trend", color: rising ? PT.amber : PT.green,
+        rows: trend.map((p) => ({ label: p.label, value: p.kg / 1000, text: (p.kg / 1000).toFixed(1) })) },
+      banner: { kind: sEnd.byStatus.obsolete.count || turned.length ? "action" : "insight",
+        label: sEnd.byStatus.obsolete.count || turned.length ? "Action Required" : "Insight",
+        text: `${notes.join(" · ")} — 장기 · 악성은 관리용 분류이며 평가손실은 NRV · 진부화 기준 별도 검토` },
+    });
+  }
+  return { slides, sOpen, sEnd, inKg, outKg, delta, convKg, trend, turned, notes, open, end };
+}
+
+function ReportTab({ mes, runs, downs, lots, settings, stockSrc }) {
+  const today = localDateStr();
   const [kind, setKind] = useState("week"); // "week" | "month"
   const [anchor, setAnchor] = useState(today);
   const from = kind === "week" ? mondayOf(anchor) : `${anchor.slice(0, 7)}-01`;
   const to = kind === "week" ? addDaysStr(mondayOf(anchor), 6) : monthDateList(anchor.slice(0, 7)).slice(-1)[0];
-  const rep = useMemo(() => buildReport(kind, from, to, mes, runs, downs, lots, settings),
-    [kind, from, to, mes, runs, downs, lots, settings]);
+  const rep = useMemo(() => buildReport(kind, from, to, mes, runs, downs, lots, settings, stockSrc),
+    [kind, from, to, mes, runs, downs, lots, settings, stockSrc]);
   const [busy, setBusy] = useState(false);
 
   const download = () => {
@@ -11350,7 +11852,7 @@ function SoonTab({ title, step, lines }) {
 //   2) QR 라벨을 뽑아서 톤백에 붙인다
 //   3) 출하일자를 넣고 "출하완료"로 넘긴다  → 재고에서 빠지고 출하 이력에 남아요
 function ShipTab({ lots, moves, canEdit, onShip, onLabel }) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   const [picked, setPicked] = useState(() => new Set());
   const [shipDate, setShipDate] = useState(today);
   const [q, setQ] = useState("");
@@ -11382,7 +11884,7 @@ function ShipTab({ lots, moves, canEdit, onShip, onLabel }) {
   const pickedKg = sumBy(pickedLots, "qtyKg");
 
   // 며칠째 출하를 기다리고 있는지 — 오래 묵은 Lot이 있으면 먼저 내보내야죠.
-  const ageOf = (l) => Math.max(0, Math.round((new Date(`${today}T00:00:00`) - new Date(`${(l.lastMove || l.receivedDate)}T00:00:00`)) / 86400000));
+  const ageOf = (l) => Math.max(0, daysBetween(l.lastMove || l.receivedDate, today));
   const oldest = waiting.reduce((m, l) => Math.max(m, ageOf(l)), 0);
 
   const toggle = (id) => setPicked((prev) => {
@@ -11558,7 +12060,7 @@ function ShipTab({ lots, moves, canEdit, onShip, onLabel }) {
 
 function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, onSave, onDelete, ym, onYm, onSaveSettings }) {
   const [hfOpen, setHfOpen] = useState(false);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   const setYm = onYm; // 화면 제목("9월 생산실적")과 같은 달을 봐야 해서 위에서 내려받아요
   // 산출 한 줄 = 생산 Lot 한 건. 톤백을 여러 개 뽑으면 같은 품목이라도 줄이 여러 개예요.
   // Cu-chip · Al-chip은 섞어서 배출하니 거래처를 "혼합"으로 미리 잡아둡니다.
@@ -11759,10 +12261,6 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
 
   return html`
     <div className="ivs-prod">
-      <div className="ivs-section-head">
-        <h2 className="ivs-section-title">생산실적</h2>
-        <span className="ivs-section-hint">일일 작업실적을 넣으면 그 Lot이 다음 공정으로 넘어가면서 재고현황이 같이 바뀌어요</span>
-      </div>
 
       <div className="ivs-daylog">
         <div className="ivs-daylog-txt">
@@ -12610,7 +13108,6 @@ const hourVerdict = (h) => (h > 52 ? { t: "초과", c: "bad" } : h >= 48 ? { t: 
 
 function PlanTab({ mes, canEdit, onSave }) {
   const days = useMemo(() => planDays(mes), [mes]);
-  const horizon = planHorizon(mes);
   const phases = useMemo(() => planByPhase(mes, days), [mes, days]);
   const months = useMemo(() => planByMonth(mes, days), [mes, days]);
   const weeksAll = useMemo(() => planByWeek(mes, days), [mes, days]);
@@ -12621,7 +13118,7 @@ function PlanTab({ mes, canEdit, onSave }) {
   // 당월은 오늘 날짜를 따라가요 — 10월이 되면 저절로 10월 계획이 열립니다.
   // 3개월은 보통 당월부터 세 달이지만, 월 마지막 주에는 다음 달부터 세 달을 보여줘요
   // (9월 마지막 주 → 10~12월). 그 주에 다음 3개월 계획을 세우니까요.
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   const curYm = today.slice(0, 7);
   const lastWeek = Number(today.slice(8, 10)) > monthDateList(curYm).length - 7;
   const baseStart = lastWeek ? ymShift(curYm, 1) : curYm;
@@ -12703,13 +13200,6 @@ function PlanTab({ mes, canEdit, onSave }) {
 
   return html`
     <div className="ivs-plan">
-      <div className="ivs-section-head">
-        <h2 className="ivs-section-title">생산계획</h2>
-        <span className="ivs-section-hint">
-          ${horizon ? `${horizon.from} ~ ${horizon.to}` : "단계를 먼저 등록해주세요"}
-          ${" · "}설비 처리능력 ${Number(mes.capa).toLocaleString("ko-KR")} kg/hr 기준
-        </span>
-      </div>
 
       <div className="ivs-periodbar">
         <div className="ivs-seg">
@@ -12824,7 +13314,7 @@ function PlanTab({ mes, canEdit, onSave }) {
               const kg = ds.reduce((a, d) => a + d.totalKg, 0);
               const op = ds.filter((d) => !d.isStop).length;
               return html`
-                <div className="ivs-rm-seg" key=${p.id} style=${{ flexGrow: Math.max(2, Math.min(6, ds.length / 4)), "--c": p.color }}>
+                <div className="ivs-rm-seg" key=${p.id} style=${{ "--c": p.color }}>
                   <div className="ivs-rm-name">${p.name}</div>
                   <div className="ivs-rm-range">${ds[0].date.slice(5).replace("-", "/")} ~ ${ds[ds.length - 1].date.slice(5).replace("-", "/")}</div>
                   <div className="ivs-rm-kg">${kgTon(kg)} 톤</div>
@@ -12872,8 +13362,8 @@ function PlanTab({ mes, canEdit, onSave }) {
           </div>
         </div>
       ` : html`
-        <!-- 3개월 : 월별 생산계획 + 월별 상세 -->
-        <div className="ivs-chart-split">
+        <!-- 3개월 : 월별 생산계획 + 월별 상세 (두 카드 높이를 맞춰요) -->
+        <div className="ivs-chart-split ivs-split-eq">
           <div className="ivs-card">
             <div className="ivs-card-head-row">
               <h2 className="ivs-section-title">${winLabel} 월별 생산계획</h2>
@@ -12893,7 +13383,7 @@ function PlanTab({ mes, canEdit, onSave }) {
               }}><${Icon} name="download" size=${13} /> 엑셀</button>
             </div>
             <div className="ivs-table-wrap">
-              <table className="ivs-table">
+              <table className="ivs-table ivs-table-fit">
                 <thead><tr><th>구분</th><th className="ivs-right">조업일</th><th className="ivs-right">계획(kg)</th>
                   <th className="ivs-right">일평균</th><th className="ivs-right">BM 계획(kg)</th></tr></thead>
                 <tbody>
@@ -12935,7 +13425,39 @@ function PlanTab({ mes, canEdit, onSave }) {
         ${scope === "month" ? html`
           <!-- 당월은 주가 넷뿐이라 그래프를 크게 그릴 이유가 없어요. 옆에 요약을 세웁니다. -->
           <div className="ivs-week-split">
-            <${PlanWeekChart} rows=${view.weeks} compact=${true} />
+            <div className="ivs-week-left">
+              <${PlanWeekChart} rows=${view.weeks} compact=${true} />
+              ${(() => {
+                // 그래프 아래 — 주 단위로 한 번 더 짚어볼 숫자 넷
+                const wk = view.weeks.filter((w) => w.opDays > 0);
+                const top = wk.reduce((a, w) => (!a || w.kg > a.kg ? w : a), null);
+                const hMax = view.weeks.reduce((a, w) => (!a || w.personHours > a.personHours ? w : a), null);
+                const stopDays = view.days.filter((d) => d.isStop).length;
+                const hv = hMax && hMax.personHours > 0 ? hourVerdict(hMax.personHours) : null;
+                return html`<div className="ivs-week-stats">
+                  <div className="ivs-week-stat">
+                    <span>주 평균 계획</span>
+                    <b>${kgTon(wk.length ? view.kg / wk.length : 0)}<em>톤</em></b>
+                    <small>조업한 ${wk.length}주 기준</small>
+                  </div>
+                  <div className="ivs-week-stat">
+                    <span>가장 많은 주</span>
+                    <b>${top ? html`${top.week} · ${kgTon(top.kg)}<em>톤</em>` : "-"}</b>
+                    <small>${top ? `${top.label} · 월 대비 ${view.kg > 0 ? ((top.kg / view.kg) * 100).toFixed(0) : 0}%` : "조업한 주가 없어요"}</small>
+                  </div>
+                  <div className=${`ivs-week-stat ${hv ? hv.c : ""}`}>
+                    <span>1인 주 근로 최대</span>
+                    <b>${hv ? html`${hMax.personHours.toFixed(1)}<em>h</em>` : "-"}</b>
+                    <small>${hv ? `${hMax.week} · ${hv.t} (52h 기준)` : "근무 계획이 없어요"}</small>
+                  </div>
+                  <div className="ivs-week-stat">
+                    <span>조업일 · 쉬는 날</span>
+                    <b>${view.opDays}<em>일</em> · ${stopDays}<em>일</em></b>
+                    <small>쉬는 날 = 휴일 · 비조업일</small>
+                  </div>
+                </div>`;
+              })()}
+            </div>
             <div className="ivs-week-side">
               ${view.weeks.map((w) => {
                 const v = hourVerdict(w.personHours);
@@ -13652,7 +14174,7 @@ function ArchiveCard({ archOpen, onArchOpen, onToast }) {
     try {
       const data = await loadArchiveYear(y);
       if (data) { onArchOpen({ ...archOpen, [y]: data });
-        onToast && onToast(`${y}년 기록을 꺼냈어요. 생산이력 · 가동율 · 보고서에서 함께 보입니다.`, "success"); }
+        onToast && onToast(`${y}년 기록을 꺼냈어요. 공정이동 현황 · 가동율 · 보고서에서 함께 보입니다.`, "success"); }
     } catch (e) { onToast && onToast("보관함을 여는 데 실패했어요.", "error"); }
     setBusy("");
   };
@@ -13718,7 +14240,7 @@ function ArchiveCard({ archOpen, onArchOpen, onToast }) {
 
       <div className=${`ivs-usage-note ${openYears.length ? "warn" : "ok"}`}>
         ${openYears.length ? html`
-          <b>${openYears.sort().join(" · ")}년을 꺼내 놓았습니다.</b> 생산이력 · 가동율 · 비가동 · 보고서에서
+          <b>${openYears.sort().join(" · ")}년을 꺼내 놓았습니다.</b> 공정이동 현황 · 가동율 · 비가동 · 보고서에서
           그 해 기록이 함께 보입니다. 꺼내 본 기록은 화면에만 얹히고 장부에는 다시 저장되지 않아요.
           이 화면을 새로 열면 저절로 닫힙니다.
         ` : html`
@@ -13759,7 +14281,7 @@ function BackupCard({ counts, onToast }) {
   const handleDownload = async () => {
     setBusy("download");
     try {
-      const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "");
+      const stamp = nowStamp().replace(/[-: ]/g, "");
       downloadFile(`DRT-생산시스템-백업-${stamp}.json`,
         JSON.stringify({ savedAt: new Date().toISOString(), data: LIVE_DOC }, null, 0),
         "application/json");
@@ -13933,7 +14455,7 @@ function PlanEditModal({ which, mes, months, onClose, onSave }) {
   const upd = (i, k, v) => setRows(rows.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
   const del = (i) => setRows(rows.filter((_, j) => j !== i));
   const addYm = () => {
-    const last = rows.length > 0 ? rows[rows.length - 1].ym : new Date().toISOString().slice(0, 7);
+    const last = rows.length > 0 ? rows[rows.length - 1].ym : monthKey();
     setRows([...rows, { ym: ymShift(last, 1), capa: "", dayHours: "", dayOnlyHours: "", util: "", note: "" }]);
   };
   const add = () => {
@@ -14221,7 +14743,7 @@ function PlanWindowModal({ mes, winKeys, onClose, onSave }) {
 
 function ProductionTab({ lots, moves, canEdit, settings, onSaveSettings, onClearMoves, onDeleteMoves }) {
   const [hfOpen, setHfOpen] = useState(false);
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = localDateStr();
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const [pickedMoves, setPickedMoves] = useState(() => new Set()); // 지울 이력으로 체크해둔 것들
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -14292,8 +14814,6 @@ function ProductionTab({ lots, moves, canEdit, settings, onSaveSettings, onClear
     <div className="ivs-prod">
       <div className="ivs-prod-report-head" style=${{ marginBottom: 16 }}>
         <p className="ivs-prod-desc" style=${{ margin: 0 }}>
-          공정이동 이력을 생산 관점에서 모아 보여줍니다. 재고현황과 같은 이력 데이터를 그대로 사용해요 —
-          여기서 뭔가 등록하는 게 아니라, "재고현황"에서 등록한 공정이동을 분석용으로 다시 보여주는 화면입니다.
           이 이력은 로트와는 별개로 남기 때문에, 재고현황에서 로트를 지워도 여기 통계에는 과거 이동 기록이 그대로 반영돼요.
         </p>
         ${canEdit ? html`
@@ -14305,16 +14825,16 @@ function ProductionTab({ lots, moves, canEdit, settings, onSaveSettings, onClear
 
       <div className="ivs-card">
         <div className="ivs-prod-report-head">
-          <div className="ivs-card-label" style=${{ marginBottom: 0 }}><${FileText} size=${13} style=${{ verticalAlign: -2, marginRight: 4 }} />일일 생산이력 현황</div>
+          <div className="ivs-card-label" style=${{ marginBottom: 0 }}><${FileText} size=${13} style=${{ verticalAlign: -2, marginRight: 4 }} />일일 공정이동 현황</div>
           <div className="ivs-prod-report-actions">
             <input type="date" className="ivs-input" value=${selectedDate} onChange=${(e) => setSelectedDate(e.target.value)} />
             <button className="ivs-btn" onClick=${() => setHfOpen(true)} title="종이 위 · 아래에 찍을 글자">머리글 · 바닥글</button>
-            <button className="ivs-btn ivs-btn-primary" onClick=${() => printDocument(`일일 생산이력 현황 ${selectedDate}`,
+            <button className="ivs-btn ivs-btn-primary" onClick=${() => printDocument(`일일 공정이동 현황 ${selectedDate}`,
               productionDayHtml({ date: selectedDate, lots, moves, settings }),
-              { hf: printHF(settings), vars: { 문서: "일일 생산이력 현황", 날짜: selectedDate, 출력: nowStamp(), 담당: (settings && settings.manager) || "" } })}>
+              { hf: printHF(settings), vars: { 문서: "일일 공정이동 현황", 날짜: selectedDate, 출력: nowStamp(), 담당: (settings && settings.manager) || "" } })}>
               <${Printer} size=${13} /> 인쇄 · PDF</button>
           </div>
-          ${hfOpen ? html`<${PrintHFModal} settings=${settings} canEdit=${canEdit} docName="일일 생산이력 현황" date=${selectedDate}
+          ${hfOpen ? html`<${PrintHFModal} settings=${settings} canEdit=${canEdit} docName="일일 공정이동 현황" date=${selectedDate}
             onSave=${(next) => onSaveSettings && onSaveSettings(next)} onClose=${() => setHfOpen(false)} />` : null}
         </div>
         <div className="ivs-kpis">
@@ -14618,7 +15138,7 @@ function CollapsibleCard({ title, children }) {
 const top7 = (rows) => (rows || []).slice(0, 7);
 const RANK_PALETTE = ["#3B82F6", "#A855F7", "#22C55E", "#F97316", "#06B6D4", "#EAB308", "#EF4444", "#EC4899", "#14B8A6", "#8B98AD"];
 
-function DashboardTab({ lots, moves, dayDelta }) {
+function DashboardTab({ lots, moves, dayDelta, stockSrc }) {
   const availableYears = useMemo(() => {
     const s = new Set(
       [...lots.map((l) => l.receivedDate?.slice(0, 4)), ...moves.map((m) => m.date?.slice(0, 4)), String(new Date().getFullYear())]
@@ -14648,6 +15168,27 @@ function DashboardTab({ lots, moves, dayDelta }) {
 
   const periodLots = useMemo(() => lots.filter((l) => inPeriod(l.receivedDate)), [lots, inPeriod]);
 
+  // ---------- 재고상태 분석 (오늘 기준 + 고른 연도의 월말 추이) ----------
+  const stockToday = localDateStr();
+  const stockNow = useMemo(() => liveStockItems((stockSrc && stockSrc.lots) || lots, stockToday), [stockSrc, lots, stockToday]);
+  const stockNowSum = useMemo(() => stockSummary(stockNow), [stockNow]);
+  const stockTopRisk = useMemo(() => topRiskGroup(stockNow), [stockNow]);
+  const stockTrend = useMemo(() => {
+    if (!stockSrc) return [];
+    const idx = stockMoveIndex(stockSrc.moves);
+    const out = [];
+    for (let m = 1; m <= 12; m++) {
+      const first = `${year}-${pad2(m)}-01`;
+      if (first > stockToday) break;
+      const last = addDaysStr(m === 12 ? `${Number(year) + 1}-01-01` : `${year}-${pad2(m + 1)}-01`, -1);
+      const d = last < stockToday ? last : stockToday;
+      out.push({ m, date: d, s: stockSummary(stockItemsAt(stockSrc.lots, idx, d)) });
+    }
+    return out;
+  }, [stockSrc, year, stockToday]);
+  const stockWatch = useMemo(() => stockNow.filter((x) => x.st.status.key === "long" || x.st.status.key === "obsolete")
+    .sort((a, b) => b.st.age - a.st.age), [stockNow]);
+
   // ---------- 선택 기간 요약 ----------
   const totalInKg = sumBy(periodLots, "qtyKg");
   const totalNetKg = periodLots.reduce((s, l) => s + (l.qtyKg - (l.waterKg || 0)), 0);
@@ -14662,7 +15203,7 @@ function DashboardTab({ lots, moves, dayDelta }) {
   // ---------- 월마감(기준일) 스냅샷 ----------
   // 기준일은 언제나 "고른 달의 말일"이에요. 위쪽 기간 선택과는 따로 움직입니다.
   // 아직 끝나지 않은 이번 달은 말일이 오지 않았으니 오늘까지로 잡아요 (미래 날짜로 장부를 뽑지 않게).
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = localDateStr();
   const closeMonths = useMemo(() => {
     const dates = [...lots.map((l) => l.receivedDate), ...moves.map((m) => m.date)].filter(Boolean).sort();
     const first = (dates[0] || todayStr).slice(0, 7);
@@ -14807,10 +15348,6 @@ function DashboardTab({ lots, moves, dayDelta }) {
 
   return html`
     <div className="ivs-dash">
-      <div className="ivs-section-head">
-        <h2 className="ivs-section-title">집계</h2>
-        <span className="ivs-section-hint">기간을 고르면 아래 "선택 기간" 카드와 순위가 함께 바뀌어요</span>
-      </div>
 
       <div className="ivs-prod-periodbar">
         <span className="ivs-dim">기간</span>
@@ -14846,6 +15383,93 @@ function DashboardTab({ lots, moves, dayDelta }) {
         "현재고"는 기간과 무관하게 지금 이 순간의 실시간 수량이에요.
         재공(현재고)에서 빠지는 최종 단계는 "출하완료" 하나예요 — 열분해대기는 아직 공정이 남아있어서 현재고에 포함돼요.
       </p>
+
+      <div className="ivs-card">
+        <div className="ivs-card-head-row">
+          <h2 className="ivs-section-title">재고상태 분석</h2>
+          <span className="ivs-section-hint">${stockToday} 기준 · 월말 추이는 공정이동 이력으로 그날 재고를 되살려 셉니다</span>
+        </div>
+        <div className="ivs-kpis ivs-stockdash-kpis">
+          <${SummaryCard} label="현재 재고" value=${fmtTon(stockNowSum.kg)} unit="톤"
+            sub=${`${stockNowSum.count} lot · 원재료 ${fmtTon(stockNowSum.byCls.raw.kg)} · 반제품 ${fmtTon(stockNowSum.byCls.wip.kg)} · 제품 ${fmtTon(stockNowSum.byCls.product.kg)} · 폐유기용제 ${fmtTon(stockNowSum.byCls.waste.kg)}`} />
+          <${SummaryCard} label="장기 · 악성 비중" value=${stockNowSum.riskPct.toFixed(1)} unit="%"
+            sub=${`${fmtTon(stockNowSum.riskKg)}톤 · ${stockNowSum.riskCount} lot${stockTopRisk ? ` (${stockTopRisk.key})` : ""}`} />
+          <${SummaryCard} label="악성재고" value=${fmtTon(stockNowSum.byStatus.obsolete.kg)} unit="톤" sub=${`${stockNowSum.byStatus.obsolete.count} lot · 처분 · 재투입 검토 대상`} />
+          <${SummaryCard} label="평균 재고연령" value=${stockNowSum.avgAge.toFixed(0)} unit="일" sub="중량 가중 평균" />
+        </div>
+        <div className="ivs-stockdash">
+          <div>
+            <div className="ivs-chart-label">구분별 재고상태 (톤)</div>
+            <div className="ivs-stkbars">
+              ${(() => {
+                const max = Math.max(1, ...LOT_CLASSES.map((c) => stockNowSum.byCls[c.key].kg));
+                return LOT_CLASSES.map((c) => {
+                  const ck = stockNowSum.byCls[c.key].kg;
+                  return html`<div className="ivs-stkbar-row" key=${c.key}>
+                    <span className="ivs-lotcls" style=${{ "--c": c.color }}>${c.label}</span>
+                    <div className="ivs-stkbar-track">
+                      <div className="ivs-stkbar-fill" style=${{ width: `${(ck / max) * 100}%` }}>
+                        ${STOCK_STATUS.map((st) => {
+                          const v = stockNowSum.byStatus[st.key].byCls[c.key].kg;
+                          return v > 0 ? html`<i key=${st.key} style=${{ flexGrow: v, background: st.color }} title=${`${c.label} · ${st.label} ${fmtTon(v)}톤`} />` : null;
+                        })}
+                      </div>
+                    </div>
+                    <b>${fmtTon(ck)}</b>
+                  </div>`;
+                });
+              })()}
+            </div>
+            <div className="ivs-legend" style=${{ marginTop: 10 }}>
+              ${STOCK_STATUS.map((st) => html`<span className="ivs-legend-row" key=${st.key}><i className="ivs-legend-swatch" style=${{ background: st.color }}></i>${st.label}</span>`)}
+            </div>
+          </div>
+          <div>
+            <div className="ivs-chart-label">${year}년 월말 재고상태 추이 (톤)</div>
+            ${stockTrend.every((t) => t.s.count === 0) ? html`<div className="ivs-prod-empty center">
+                ${year}년 재고 자료가 없어요.${year < stockToday.slice(0, 4) ? " 지난 연도는 기준정보 › 지난연도 보관함에서 꺼내면 보여요." : ""}</div>` : html`
+              <div className="ivs-stkcols">
+                ${(() => {
+                  const max = Math.max(1, ...stockTrend.map((t) => t.s.kg));
+                  return stockTrend.map((t) => html`<div className="ivs-stkcol" key=${t.m} title=${STOCK_STATUS.map((st) => `${st.label} ${fmtTon(t.s.byStatus[st.key].kg)}톤`).join("\n")}>
+                    <span className="ivs-stkcol-v">${fmtTon(t.s.kg)}</span>
+                    <div className="ivs-stkcol-plot">
+                      <div className="ivs-stkcol-bar" style=${{ height: `${(t.s.kg / max) * 100}%` }}>
+                        ${STOCK_STATUS.map((st) => t.s.byStatus[st.key].kg > 0
+                          ? html`<i key=${st.key} style=${{ flexGrow: t.s.byStatus[st.key].kg, background: st.color }} />` : null)}
+                      </div>
+                    </div>
+                    <span className="ivs-stkcol-l">${t.m}월${t.date === stockToday ? html`<em>오늘</em>` : null}</span>
+                    <span className=${`ivs-stkcol-r ${t.s.riskPct >= 10 ? "warn" : ""}`}>${t.s.riskPct.toFixed(0)}%</span>
+                  </div>`);
+                })()}
+              </div>
+              <div className="ivs-section-hint" style=${{ marginTop: 8 }}>막대 아래 % = 장기 · 악성 비중 · 막대에 마우스를 올리면 상태별 톤이 보여요</div>`}
+          </div>
+        </div>
+        <div className="ivs-chart-label" style=${{ marginTop: 18 }}>관리 대상 Lot — 장기 · 악성재고 ${stockWatch.length}건 (오래된 순)</div>
+        ${stockWatch.length === 0 ? html`<div className="ivs-prod-empty">장기 · 악성재고가 없어요.</div>` : html`
+          <div className="ivs-table-wrap">
+            <table className="ivs-table ivs-table-fit">
+              <thead><tr><th>재고상태</th><th>구분</th><th>Lot 번호</th><th>품목명</th><th>현재공정</th>
+                <th className="ivs-right">중량(kg)</th><th className="ivs-right">재고연령</th><th className="ivs-right">무이동</th><th>입고일</th></tr></thead>
+              <tbody>
+                ${stockWatch.slice(0, 10).map((x) => html`<tr key=${x.lot.id}>
+                  <td><span className="ivs-stock" style=${{ "--c": x.st.status.color }}><i />${x.st.status.label}</span></td>
+                  <td><span className="ivs-lotcls" style=${{ "--c": x.st.cls.color }}>${x.st.cls.label}</span></td>
+                  <td className="ivs-mono">${x.lot.lotNo}</td>
+                  <td>${x.lot.name}</td>
+                  <td><span className="ivs-badge" style=${{ "--c": getStage(x.lot.stage).color }}>${getStage(x.lot.stage).label}</span></td>
+                  <td className="ivs-right ivs-mono">${Number(x.kg).toLocaleString("ko-KR")}</td>
+                  <td className="ivs-right ivs-mono">${x.st.age}일</td>
+                  <td className="ivs-right ivs-mono">${x.st.idle}일</td>
+                  <td className="ivs-mono">${x.lot.receivedDate}</td>
+                </tr>`)}
+              </tbody>
+            </table>
+          </div>
+          ${stockWatch.length > 10 ? html`<div className="ivs-section-hint" style=${{ marginTop: 8 }}>위 10건만 보여요 — 전체는 재고현황에서 재고상태로 걸러 보세요.</div>` : null}`}
+      </div>
 
       <div className="ivs-card">
         <div className="ivs-card-head-row">
@@ -15162,7 +15786,7 @@ function ConfirmModal({ icon, title, body, confirmLabel, danger, onCancel, onCon
   if (PREVIEW_MODE) {
     // 샘플 화면 — 실제 팀 데이터(Firebase)는 읽지도 쓰지도 않아요. 잠금 PIN도 없이 바로 보여줘요.
     LIVE_DOC = liveToDoc({
-      lots: seedData(), moves: moveSeedData(), runs: runSeedData(), downs: downSeedData(), master: {},
+      lots: seedData().concat(agedSeedLots()), moves: moveSeedData(), runs: runSeedData(), downs: downSeedData(), master: {},
       settings: { title: "DRT · 재고관리", subtitle: "로트 단위 공정 흐름 관리", editPin: "", viewPin: "" },
       mes: {},
     });

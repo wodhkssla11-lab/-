@@ -175,10 +175,8 @@
   .ivs-pipe-card.empty { opacity: .62; }
 
   /* ---------- 재고 구분 · 재고상태 ---------- */
-  /* 구분 — 왼쪽 색 띠가 붙은 이름표 (원재료 · 반제품 · 제품 · 폐유기용제) */
-  .ivs-lotcls { display: inline-flex; align-items: center; padding: 2px 8px 2px 7px; border-radius: 4px; white-space: nowrap;
-    font-size: 12px; font-weight: 700; color: var(--text); background: color-mix(in srgb, var(--c) 12%, transparent);
-    box-shadow: inset 3px 0 0 var(--c); }
+  /* 구분 (원재료 · 반제품 · 제품 · 폐유기용제) — 색 · 음영 없이 품목명과 같은 보통 글자로 */
+  .ivs-lotcls { white-space: nowrap; font: inherit; color: inherit; }
   /* 재고상태 — 색 점 + 문구 + 재고연령. 색만으로 구분하지 않게 글자를 늘 같이 써요 */
   .ivs-stock { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px; white-space: nowrap;
     font-size: 12px; font-weight: 700; color: color-mix(in srgb, var(--c) 70%, var(--text));
@@ -187,7 +185,7 @@
   .ivs-stock em { font-style: normal; font-weight: 500; color: var(--text-dim); font-variant-numeric: tabular-nums; }
   .ivs-stockgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
   .ivs-stock-card { min-width: 0; }
-  .ivs-stock-card .ivs-pipe-name { font-size: 15px; font-weight: 700; color: color-mix(in srgb, var(--c) 72%, var(--text)); }
+  .ivs-stock-card .ivs-pipe-name { font-size: 13.5px; font-weight: 700; color: color-mix(in srgb, var(--c) 72%, var(--text)); }
   .ivs-stock-card .ivs-pipe-dot { width: 10px; height: 10px; }
   .ivs-stock-card-cls { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 6px; font-size: 11.5px; color: var(--text-dim); min-height: 17px; }
   .ivs-stock-card-cls span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
@@ -204,7 +202,7 @@
   .ivs-stock-kpis { display: flex; flex-direction: column; gap: 8px; }
   .ivs-stock-kpi { display: flex; flex-direction: column; gap: 2px; padding: 11px 14px; border-radius: var(--radius-sm, 6px);
     background: var(--surface-2); border: 1px solid var(--border); }
-  .ivs-stock-kpi > span { font-size: 14px; font-weight: 600; color: var(--text-dim); }
+  .ivs-stock-kpi > span { font-size: 13.5px; font-weight: 600; color: var(--text-dim); }
   .ivs-stock-kpi > b { font-size: 20px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
   .ivs-stock-kpi > b em { font-size: 12px; font-style: normal; font-weight: 500; color: var(--text-dim); margin-left: 2px; }
   .ivs-stock-kpi > b.ivs-stock-kpi-lot { font-size: 15px; word-break: break-all; }
@@ -1449,7 +1447,7 @@
   .ivs-week-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .ivs-week-stat { display: flex; flex-direction: column; gap: 3px; padding: 12px 14px; border-radius: var(--radius-sm);
     background: var(--surface-2); border: 1px solid var(--border); }
-  .ivs-week-stat > span { font-size: 14px; font-weight: 600; color: var(--text-dim); }
+  .ivs-week-stat > span { font-size: 13.5px; font-weight: 600; color: var(--text-dim); }
   .ivs-week-stat > b { font-size: 19px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
   .ivs-week-stat > b em { font-size: 12px; font-style: normal; font-weight: 500; color: var(--text-dim); margin-left: 2px; }
   .ivs-week-stat > small { font-size: 11.5px; color: var(--text-dim); }
@@ -1639,7 +1637,7 @@
   .ivs-kpis { gap: 12px; margin-bottom: 14px; }
   .ivs-kpi { border-radius: var(--radius-sm); padding: 15px 18px; box-shadow: none; }
   .ivs-kpi.accent::before { inset: 0 0 auto 0; width: auto; height: 3px; background: var(--accent); }
-  .ivs-kpi-label { font-size: 14px; font-weight: 600; color: var(--text-dim); letter-spacing: -0.01em; }
+  .ivs-kpi-label { font-size: 13.5px; font-weight: 600; color: var(--text-dim); letter-spacing: -0.01em; }
   .ivs-kpi-value { font-size: 28px; font-weight: 600; letter-spacing: -0.03em; }
   .ivs-kpi-value em { font-size: 13px; font-weight: 500; }
 
@@ -6707,6 +6705,20 @@ function stockSummary(items) {
     avgAge: kg > 0 ? ageKg / kg : 0,          // 중량 가중 평균 재고연령(일)
   };
 }
+// 거래처_카테고리 — 재고 요약에서 로트를 사람이 알아보는 이름으로 부를 때
+const lotVendorCat = (l) => `${(l && l.vendor) || "-"}_${((l && categoryById[l.categoryId]) || {}).label || "-"}`;
+// 장기 · 악성 중 중량이 가장 많은 거래처_카테고리 { key, kg }
+function topRiskGroup(items) {
+  const m = new Map();
+  items.forEach(({ lot, kg, st }) => {
+    if (!st || (st.status.key !== "long" && st.status.key !== "obsolete")) return;
+    const k = lotVendorCat(lot);
+    m.set(k, (m.get(k) || 0) + (Number(kg) || 0));
+  });
+  let best = null;
+  m.forEach((kg, key) => { if (!best || kg > best.kg) best = { key, kg }; });
+  return best;
+}
 // 지금 재고(살아 있는 로트)의 재고상태 목록
 const liveStockItems = (lots, refDate) => lots.filter(isLiveLot)
   .map((l) => ({ lot: l, kg: Number(l.qtyKg) || 0, st: lotStockState(l, refDate) }))
@@ -8262,8 +8274,10 @@ function InventorySystem() {
     lots.forEach((l) => { const st = lotStockState(l, stockRef); if (st) m.set(l.id, st); });
     return m;
   }, [lots, stockRef]);
-  const stockSum = useMemo(() => stockSummary(lots.filter(isLiveLot)
-    .map((l) => ({ lot: l, kg: Number(l.qtyKg) || 0, st: stockById.get(l.id) }))), [lots, stockById]);
+  const stockItems = useMemo(() => lots.filter(isLiveLot)
+    .map((l) => ({ lot: l, kg: Number(l.qtyKg) || 0, st: stockById.get(l.id) })), [lots, stockById]);
+  const stockSum = useMemo(() => stockSummary(stockItems), [stockItems]);
+  const stockTopRisk = useMemo(() => topRiskGroup(stockItems), [stockItems]);
 
   const filtered = useMemo(() => {
     const words = filters.search.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -8654,7 +8668,7 @@ function InventorySystem() {
                   <div className="ivs-pipe-sub">${b.count} lot · 재고의 ${pct.toFixed(1)}%</div>
                   <div className="ivs-stock-card-cls">
                     ${parts.length === 0 ? html`<span className="ivs-dim">해당 로트 없음</span>`
-                      : parts.map((c) => html`<span key=${c.key}><i style=${{ background: c.color }} />${c.label} ${fmtTon(b.byCls[c.key].kg)}</span>`)}
+                      : parts.map((c) => html`<span key=${c.key}>${c.label} ${fmtTon(b.byCls[c.key].kg)}</span>`)}
                   </div>
                   <div className="ivs-pipe-bar"><i style=${{ width: `${pct}%` }} /></div>
                 </button>`;
@@ -8665,7 +8679,7 @@ function InventorySystem() {
               <div className=${`ivs-stock-kpi ${stockSum.riskKg > 0 ? "warn" : ""}`}>
                 <span>장기 · 악성 비중</span>
                 <b>${stockSum.riskPct.toFixed(1)}<em>%</em></b>
-                <small>${fmtTon(stockSum.riskKg)}톤 · ${stockSum.riskCount} lot</small>
+                <small>${fmtTon(stockSum.riskKg)}톤 · ${stockSum.riskCount} lot${stockTopRisk ? ` (${stockTopRisk.key})` : ""}</small>
               </div>
               <div className="ivs-stock-kpi">
                 <span>평균 재고연령</span>
@@ -8675,8 +8689,8 @@ function InventorySystem() {
               <div className="ivs-stock-kpi">
                 <span>가장 오래된 Lot</span>
                 ${stockSum.oldest ? html`
-                  <b className="ivs-stock-kpi-lot" title=${stockSum.oldest.lot.lotNo}>${stockSum.oldest.lot.vendor || "-"}</b>
-                  <small>${(categoryById[stockSum.oldest.lot.categoryId] || {}).label || "-"} · ${stockSum.oldest.st.cls.label} · ${stockSum.oldest.st.age}일 ·
+                  <b className="ivs-stock-kpi-lot" title=${stockSum.oldest.lot.lotNo}>${lotVendorCat(stockSum.oldest.lot)}</b>
+                  <small>${stockSum.oldest.st.cls.label} · ${stockSum.oldest.st.age}일 ·
                     <span style=${{ color: stockSum.oldest.st.status.color, fontWeight: 700 }}>${stockSum.oldest.st.status.label}</span></small>`
                   : html`<b>-</b><small>재고가 없어요</small>`}
               </div>
@@ -15159,6 +15173,7 @@ function DashboardTab({ lots, moves, dayDelta, stockSrc }) {
   const stockToday = localDateStr();
   const stockNow = useMemo(() => liveStockItems((stockSrc && stockSrc.lots) || lots, stockToday), [stockSrc, lots, stockToday]);
   const stockNowSum = useMemo(() => stockSummary(stockNow), [stockNow]);
+  const stockTopRisk = useMemo(() => topRiskGroup(stockNow), [stockNow]);
   const stockTrend = useMemo(() => {
     if (!stockSrc) return [];
     const idx = stockMoveIndex(stockSrc.moves);
@@ -15378,7 +15393,8 @@ function DashboardTab({ lots, moves, dayDelta, stockSrc }) {
         <div className="ivs-kpis ivs-stockdash-kpis">
           <${SummaryCard} label="현재 재고" value=${fmtTon(stockNowSum.kg)} unit="톤"
             sub=${`${stockNowSum.count} lot · 원재료 ${fmtTon(stockNowSum.byCls.raw.kg)} · 반제품 ${fmtTon(stockNowSum.byCls.wip.kg)} · 제품 ${fmtTon(stockNowSum.byCls.product.kg)} · 폐유기용제 ${fmtTon(stockNowSum.byCls.waste.kg)}`} />
-          <${SummaryCard} label="장기 · 악성 비중" value=${stockNowSum.riskPct.toFixed(1)} unit="%" sub=${`${stockNowSum.riskCount} lot · ${fmtTon(stockNowSum.riskKg)} 톤`} />
+          <${SummaryCard} label="장기 · 악성 비중" value=${stockNowSum.riskPct.toFixed(1)} unit="%"
+            sub=${`${fmtTon(stockNowSum.riskKg)}톤 · ${stockNowSum.riskCount} lot${stockTopRisk ? ` (${stockTopRisk.key})` : ""}`} />
           <${SummaryCard} label="악성재고" value=${fmtTon(stockNowSum.byStatus.obsolete.kg)} unit="톤" sub=${`${stockNowSum.byStatus.obsolete.count} lot · 처분 · 재투입 검토 대상`} />
           <${SummaryCard} label="평균 재고연령" value=${stockNowSum.avgAge.toFixed(0)} unit="일" sub="중량 가중 평균" />
         </div>

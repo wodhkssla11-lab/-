@@ -618,6 +618,14 @@
   .ivs-half-grid > * { min-width: 0; }
   .ivs-half-grid > .ivs-card { margin-bottom: 0; height: 100%; }
   .ivs-chart-split { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: 26px; align-items: start; }
+  /* 나란히 놓인 두 카드의 높이를 맞춰요 (3개월 월별 계획 · 월별 상세) */
+  .ivs-chart-split.ivs-split-eq { align-items: stretch; }
+  .ivs-chart-split.ivs-split-eq > .ivs-card { margin-bottom: 0; }
+  .ivs-chart-split.ivs-split-eq { margin-bottom: 14px; }
+  /* 좁은 카드 안의 표 — 기본 표의 최소 너비(1080px)를 풀어서 가로 스크롤 없이 카드에 맞춰요 */
+  .ivs-table.ivs-table-fit { min-width: 0; }
+  .ivs-table.ivs-table-fit th, .ivs-table.ivs-table-fit td { padding-left: 10px; padding-right: 10px; white-space: nowrap; }
+  .ivs-table.ivs-table-fit td:first-child { white-space: normal; }
   .ivs-chart-split > * { min-width: 0; }
 
   .ivs-donut-wrap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
@@ -1062,13 +1070,13 @@
 
   /* ---------- 생산계획 : 로드맵 · 기준 ---------- */
   .ivs-roadmap { display: flex; gap: 8px; align-items: stretch; }
-  .ivs-rm-seg { flex: 1 1 0; min-width: 178px; padding: 13px 14px 12px; border-radius: 11px;
+  .ivs-rm-seg { flex: 1 1 0; min-width: 0; padding: 13px 14px 12px; border-radius: 11px;
     background: var(--surface-2); border: 1px solid var(--border); border-top: 3px solid var(--c);
     display: flex; flex-direction: column; gap: 6px; }
-  .ivs-rm-name { font-size: 13px; font-weight: 700; color: var(--text); }
-  .ivs-rm-range { font-size: 11px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
-  .ivs-rm-kg { font-size: 17px; font-weight: 700; color: var(--c); font-variant-numeric: tabular-nums; }
-  .ivs-rm-sub { font-size: 10.5px; color: var(--text-faint); }
+  .ivs-rm-name { font-size: 15.5px; font-weight: 700; color: var(--text); }
+  .ivs-rm-range { font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .ivs-rm-kg { font-size: 19px; font-weight: 700; color: var(--c); font-variant-numeric: tabular-nums; }
+  .ivs-rm-sub { font-size: 12px; color: var(--text-dim); }
   .ivs-ph-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: 0; }
   .ivs-basis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 26px; }
   .ivs-basis-row { display: grid; grid-template-columns: minmax(140px, 1fr) auto; gap: 8px 12px;
@@ -1365,7 +1373,24 @@
   }
 
   /* ---------- 당월 주별 요약 : 그래프는 작게, 요약은 오른쪽에 ---------- */
-  .ivs-week-split { display: grid; grid-template-columns: minmax(240px, 0.85fr) 1.15fr; gap: 26px; align-items: start; }
+  .ivs-week-split { display: grid; grid-template-columns: minmax(240px, 0.85fr) 1.15fr; gap: 26px; align-items: stretch; }
+  /* 왼쪽 — 그래프가 오른쪽 주별 목록 높이만큼 늘어나고, 그 아래 요약 숫자 넷 */
+  .ivs-week-left { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .ivs-week-left > div:first-child { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+  .ivs-week-left .ivs-wchart { flex: 1 1 auto; align-items: stretch; }
+  .ivs-week-left .ivs-wchart-col { justify-content: flex-end; }
+  .ivs-week-left .ivs-wchart-plot { flex: 1 1 auto; height: auto; min-height: 150px; }
+  .ivs-week-left .ivs-legend { flex: 0 0 auto; }
+  .ivs-week-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .ivs-week-stat { display: flex; flex-direction: column; gap: 3px; padding: 12px 14px; border-radius: var(--radius-sm);
+    background: var(--surface-2); border: 1px solid var(--border); }
+  .ivs-week-stat > span { font-size: 12.5px; font-weight: 600; color: var(--text-dim); }
+  .ivs-week-stat > b { font-size: 19px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .ivs-week-stat > b em { font-size: 12px; font-style: normal; font-weight: 500; color: var(--text-dim); margin-left: 2px; }
+  .ivs-week-stat > small { font-size: 11.5px; color: var(--text-dim); }
+  .ivs-week-stat.ok > b { color: var(--good); }
+  .ivs-week-stat.warn > b { color: var(--warn); }
+  .ivs-week-stat.bad > b { color: var(--bad); }
   /* 당월은 주가 서너 개뿐이라, 폭을 안 잡아두면 막대가 멋대로 넓어져요 */
   .ivs-wchart.compact { gap: 14px; justify-content: center; }
   .ivs-wchart.compact .ivs-wchart-plot { height: 150px; }
@@ -12825,7 +12850,7 @@ function PlanTab({ mes, canEdit, onSave }) {
               const kg = ds.reduce((a, d) => a + d.totalKg, 0);
               const op = ds.filter((d) => !d.isStop).length;
               return html`
-                <div className="ivs-rm-seg" key=${p.id} style=${{ flexGrow: Math.max(2, Math.min(6, ds.length / 4)), "--c": p.color }}>
+                <div className="ivs-rm-seg" key=${p.id} style=${{ "--c": p.color }}>
                   <div className="ivs-rm-name">${p.name}</div>
                   <div className="ivs-rm-range">${ds[0].date.slice(5).replace("-", "/")} ~ ${ds[ds.length - 1].date.slice(5).replace("-", "/")}</div>
                   <div className="ivs-rm-kg">${kgTon(kg)} 톤</div>
@@ -12873,8 +12898,8 @@ function PlanTab({ mes, canEdit, onSave }) {
           </div>
         </div>
       ` : html`
-        <!-- 3개월 : 월별 생산계획 + 월별 상세 -->
-        <div className="ivs-chart-split">
+        <!-- 3개월 : 월별 생산계획 + 월별 상세 (두 카드 높이를 맞춰요) -->
+        <div className="ivs-chart-split ivs-split-eq">
           <div className="ivs-card">
             <div className="ivs-card-head-row">
               <h2 className="ivs-section-title">${winLabel} 월별 생산계획</h2>
@@ -12894,7 +12919,7 @@ function PlanTab({ mes, canEdit, onSave }) {
               }}><${Icon} name="download" size=${13} /> 엑셀</button>
             </div>
             <div className="ivs-table-wrap">
-              <table className="ivs-table">
+              <table className="ivs-table ivs-table-fit">
                 <thead><tr><th>구분</th><th className="ivs-right">조업일</th><th className="ivs-right">계획(kg)</th>
                   <th className="ivs-right">일평균</th><th className="ivs-right">BM 계획(kg)</th></tr></thead>
                 <tbody>
@@ -12936,7 +12961,39 @@ function PlanTab({ mes, canEdit, onSave }) {
         ${scope === "month" ? html`
           <!-- 당월은 주가 넷뿐이라 그래프를 크게 그릴 이유가 없어요. 옆에 요약을 세웁니다. -->
           <div className="ivs-week-split">
-            <${PlanWeekChart} rows=${view.weeks} compact=${true} />
+            <div className="ivs-week-left">
+              <${PlanWeekChart} rows=${view.weeks} compact=${true} />
+              ${(() => {
+                // 그래프 아래 — 주 단위로 한 번 더 짚어볼 숫자 넷
+                const wk = view.weeks.filter((w) => w.opDays > 0);
+                const top = wk.reduce((a, w) => (!a || w.kg > a.kg ? w : a), null);
+                const hMax = view.weeks.reduce((a, w) => (!a || w.personHours > a.personHours ? w : a), null);
+                const stopDays = view.days.filter((d) => d.isStop).length;
+                const hv = hMax && hMax.personHours > 0 ? hourVerdict(hMax.personHours) : null;
+                return html`<div className="ivs-week-stats">
+                  <div className="ivs-week-stat">
+                    <span>주 평균 계획</span>
+                    <b>${kgTon(wk.length ? view.kg / wk.length : 0)}<em>톤</em></b>
+                    <small>조업한 ${wk.length}주 기준</small>
+                  </div>
+                  <div className="ivs-week-stat">
+                    <span>가장 많은 주</span>
+                    <b>${top ? html`${top.week} · ${kgTon(top.kg)}<em>톤</em>` : "-"}</b>
+                    <small>${top ? `${top.label} · 월 대비 ${view.kg > 0 ? ((top.kg / view.kg) * 100).toFixed(0) : 0}%` : "조업한 주가 없어요"}</small>
+                  </div>
+                  <div className=${`ivs-week-stat ${hv ? hv.c : ""}`}>
+                    <span>1인 주 근로 최대</span>
+                    <b>${hv ? html`${hMax.personHours.toFixed(1)}<em>h</em>` : "-"}</b>
+                    <small>${hv ? `${hMax.week} · ${hv.t} (52h 기준)` : "근무 계획이 없어요"}</small>
+                  </div>
+                  <div className="ivs-week-stat">
+                    <span>조업일 · 쉬는 날</span>
+                    <b>${view.opDays}<em>일</em> · ${stopDays}<em>일</em></b>
+                    <small>쉬는 날 = 휴일 · 비조업일</small>
+                  </div>
+                </div>`;
+              })()}
+            </div>
             <div className="ivs-week-side">
               ${view.weeks.map((w) => {
                 const v = hourVerdict(w.personHours);

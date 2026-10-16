@@ -1701,6 +1701,99 @@
   .ivs-root[data-theme="dark"] .ivs-slide-banner.insight b { color: var(--pt-10B981); }
   .ivs-root[data-theme="dark"] :is(.ivs-slide-table th, .ivs-slide-table td, .ivs-slide .ivs-table-wrap) { border-color: var(--border); }
   .ivs-root[data-theme="dark"] .ivs-slide-table th { background: var(--surface-2); }
+
+  /* ---------- 회수율현황 ---------- */
+  .ivs-rc .ivs-periodbar { flex-wrap: wrap; gap: 10px; }
+  .ivs-rc-split { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr); gap: 14px; align-items: start; margin-bottom: 14px; }
+  .ivs-rc-split > .ivs-card { margin-bottom: 0; }
+  .ivs-rc-svg { width: 100%; height: auto; display: block; }
+  .ivs-rc-grid { stroke: var(--border); stroke-width: 1; }
+  .ivs-rc-ax { fill: var(--text-dim); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .ivs-rc-line { fill: none; stroke: var(--c); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+  .ivs-rc-dot { fill: var(--surface); stroke: var(--c); stroke-width: 2; }
+  .ivs-rc-rank { display: flex; flex-direction: column; gap: 9px; }
+  .ivs-rc-rank-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(60px, 1fr) 52px 74px; gap: 9px; align-items: center; font-size: 12.5px; }
+  .ivs-rc-rank-name { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; color: var(--text); }
+  .ivs-rc-rank-name b, .ivs-rc-rank-name small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ivs-rc-rank-name b { font-weight: 600; }
+  .ivs-rc-rank-name small { font-size: 11.5px; color: var(--text-dim); }
+  .ivs-rc-rank-track { height: 10px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+  .ivs-rc-rank-track i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+  .ivs-rc-rank-row > b { text-align: right; font-variant-numeric: tabular-nums; }
+  .ivs-rc-rank-row > em { font-style: normal; font-size: 11.5px; color: var(--text-dim); text-align: right; font-variant-numeric: tabular-nums; }
+  /* 표 — 왼쪽 이름 칸은 가로로 넘겨도 붙어 있어요 */
+  .ivs-rc-wrap { max-height: 70vh; overflow: auto; }
+  .ivs-rc-table th, .ivs-rc-table td { padding-top: 7px; padding-bottom: 7px; }
+  /* 회수율 집계 표 — 재료 색을 그대로: 투입 = 흑연(차분한 회색), 배출 = 구리(가는 선 · 글자만),
+     회수율 = 코발트(옅은 띠 + 코발트 숫자). 강조는 회수율 한 곳에만 두고, 칸을 꽉 채우는 색은 쓰지 않아요. */
+  .ivs-rc-table { --rc-in: var(--text-faint); --rc-out: var(--tag); --rc-rate: var(--accent);
+    --rc-band: color-mix(in srgb, var(--accent) 7%, var(--surface)); --rc-band-2: color-mix(in srgb, var(--accent) 13%, var(--surface));
+    border-collapse: separate; border-spacing: 0; }
+  .ivs-rc-table thead th { position: sticky; top: 0; z-index: 2; background: var(--surface-2); border-bottom: 1px solid var(--border-strong); }
+  .ivs-rc-table thead th.ivs-rc-sticky { z-index: 4; }
+  .ivs-rc-table td { border-bottom: 1px solid var(--border); }
+  .ivs-rc-sticky { position: sticky; z-index: 1; background: var(--surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box; }
+  .ivs-rc-table td.ivs-rc-name, .ivs-rc-table td.ivs-rc-proc { white-space: normal; font-weight: 700; z-index: 2; line-height: 1.35; color: var(--text); }
+  .ivs-rc-table td.ivs-rc-sub { font-weight: 600; }
+  .ivs-rc-table td.ivs-rc-proc, .ivs-rc-table td.ivs-rc-name:not(.ivs-rc-totname) { vertical-align: top; padding-top: 12px; }
+  .ivs-rc-proc-in { display: block; }
+  .ivs-rc-table td.ivs-rc-proc { background: var(--surface-2); }
+  .ivs-rc-table td.ivs-rc-proc .ivs-rc-proc-in::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px;
+    background: var(--c); margin-right: 7px; vertical-align: 1px; }
+  .ivs-rc-table td.ivs-rc-totname { text-align: center; vertical-align: middle; background: var(--surface-2); }
+  /* 구분 칸 — 왼쪽 3px 선 + 같은 색 글자 */
+  .ivs-rc-table td.ivs-rc-tag { vertical-align: middle; font-weight: 700; font-size: 12px; z-index: 2; padding-left: 12px;
+    color: var(--c); box-shadow: inset 3px 0 0 var(--c); }
+  .ivs-rc-tag.in { --c: var(--rc-in); color: var(--text-dim); }
+  .ivs-rc-tag.out { --c: var(--rc-out); }
+  .ivs-rc-tag.rate { --c: var(--rc-rate); background: var(--rc-band) !important; }
+  /* 줄 — 투입 · 배출은 바탕 없이, 회수율만 옅은 코발트 띠 */
+  .ivs-rc-table tr.sec-in td.ivs-rc-line, .ivs-rc-table tr.sec-out td.ivs-rc-line { color: var(--text-dim); }
+  .ivs-rc-table tr.sec-in td.ivs-mono { color: var(--text); font-weight: 600; }
+  .ivs-rc-table tr.sec-out td.ivs-mono { color: var(--text); }
+  .ivs-rc-table tr.sec-rate td:not(.ivs-rc-name):not(.ivs-rc-proc):not(.ivs-rc-tag) { background: var(--rc-band); }
+  .ivs-rc-table tr.sec-rate td.ivs-rc-line { color: var(--rc-rate); font-weight: 600; }
+  .ivs-rc-table tr.sec-rate td.ivs-mono { color: var(--rc-rate); font-weight: 700; }
+  .ivs-rc-table tr.ivs-rc-total td.ivs-mono { font-weight: 700; }
+  /* 합계 칸 */
+  .ivs-rc-table td.ivs-rc-sumc { font-weight: 700; background: var(--surface-2); border-left: 1px solid var(--border-strong); }
+  .ivs-rc-table tr.sec-rate td.ivs-rc-sumc { background: var(--rc-band-2); }
+  .ivs-rc-table th.ivs-rc-sumh { border-left: 1px solid var(--border-strong); }
+  /* 묶음 경계 — 업체 · 품목 사이는 진한 선, 공정 사이는 더 굵게 */
+  .ivs-rc-table tr.ivs-rc-first > td { border-top: 1px solid var(--border-strong); }
+  .ivs-rc-table tr.ivs-rc-blk > td { border-top: 2px solid var(--text-faint); }
+  .ivs-rc-table thead th.ivs-right { min-width: 66px; box-sizing: border-box; }
+  /* 표 머리의 색 설명 */
+  .ivs-rc-keys { display: inline-flex; gap: 14px; font-size: 12px; font-weight: 600; }
+  .ivs-rc-keys i { font-style: normal; padding-left: 9px; box-shadow: inset 3px 0 0 var(--c); line-height: 1.3; }
+  .ivs-rc-keys .in { --c: var(--text-faint); color: var(--text-dim); }
+  .ivs-rc-keys .out { --c: var(--tag); color: var(--tag); }
+  .ivs-rc-keys .rate { --c: var(--accent); color: var(--accent); }
+  /* 순위 — 추이 아래에 공정별로 나란히 */
+  .ivs-rc-rank.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px 28px; max-height: none; overflow: visible; padding-right: 0; }
+  .ivs-rc-rank.grid .ivs-rc-rank-sec + .ivs-rc-rank-sec { border-top: 0; padding-top: 0; }
+  .ivs-rc-rank-items { display: flex; flex-direction: column; gap: 8px; }
+  .ivs-rc-rank.single .ivs-rc-rank-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 9px 28px; }
+  /* 생산실적 입력 — 전기방전 Lot 표 · 해체 회수율 연동 표시 */
+  .ivs-dc-table { min-width: 0; }
+  .ivs-dc-link { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 22px; margin: 4px 0 12px; padding: 10px 14px;
+    border-radius: var(--radius-sm); background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); font-size: 13px; color: var(--text-dim); }
+  .ivs-dc-link b { color: var(--text); font-weight: 700; }
+  .ivs-dc-link .ivs-dc-rate { color: var(--accent); font-size: 15px; }
+  .ivs-dc-link em { font-style: normal; font-size: 12px; color: var(--text-faint); margin-left: auto; }
+  .ivs-rc-kpi { cursor: pointer; border-radius: 12px; }
+  .ivs-rc-kpi.static { cursor: default; }
+  .ivs-rc-kpi > .ivs-kpi { height: 100%; box-sizing: border-box; }
+  .ivs-rc-kpi.on > .ivs-kpi { box-shadow: 0 0 0 2px var(--accent); }
+  .ivs-rc-rank-sec { display: flex; flex-direction: column; gap: 8px; }
+  .ivs-rc-rank-sec + .ivs-rc-rank-sec { border-top: 1px solid var(--border); padding-top: 10px; }
+  .ivs-rc-rank-head { display: flex; align-items: center; gap: 7px; font-weight: 800; font-size: 13px; color: var(--text); }
+  .ivs-rc-rank-head i { width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
+  .ivs-rc-rank-head small { font-weight: 600; font-size: 11.5px; color: var(--text-dim); }
+  .ivs-rc-rank-sec .ivs-rc-rank-track i, .ivs-rc-rank > .ivs-rc-rank-row .ivs-rc-rank-track i { background: var(--c, var(--accent)); }
+  @media (max-width: 1100px) { .ivs-rc-split { grid-template-columns: 1fr; } }
+  /* 화이트 — 단계 색(노랑 · 주황)으로 쓴 글자는 흰 바탕에서 흐려서 본문색과 섞어 진하게 */
+  .ivs-root[data-theme="light"] :is(.ivs-rm-kg, .ivs-week-wk) { color: color-mix(in srgb, var(--c) 62%, var(--text)); }
 </style>
 
 </head>
@@ -4359,6 +4452,7 @@ const html = window.htmReact.html;
 
 // ---------- 아이콘: lucide 아이콘을 인라인 SVG로 내장 (lucide-react 대체) ----------
 const ICON_DEFS = {
+  percent: '<line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
   truck: '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
   search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
   plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
@@ -4574,6 +4668,7 @@ const MENU_GROUPS = [
   { title: "생산관리", items: [
     { key: "plan", label: "생산계획", icon: "calendar" },
     { key: "act", label: "생산실적", icon: "file-text" },
+    { key: "recovery", label: "회수율현황", icon: "percent" },
     { key: "inventory", label: "재고현황", icon: "layers" },
     { key: "dashboard", label: "재고집계", icon: "package" },
     { key: "production", label: "공정이동 현황", icon: "arrow-right-circle" },
@@ -4636,7 +4731,7 @@ const SEED_RUNS = [
     outputs: [["s18", "HVC0001", "전기차 셀", "hv_cell", null, "CELL-260905-1", "crush_wait", 7100]] },
   { id: "r2", off: -3, shift: "night", workers: 8, process: "crush",
     inputs: ["s15"],
-    outputs: [["s19", "DRBM0001", "전기차 셀", "mixed_powder", "bm", "DRBM0001-260907-1", "usable", 1190],
+    outputs: [["s19", "DRBM0001", "전기차 셀", "mixed_powder", "bm", "DRBM0001-260907-1", "usable", 880],
               ["s20", "DRCC0001", "혼합 Cu-chip", "mixed_cu_chip", "cu", "DRCC0001-260907-1", "usable", 190],
               ["s21", "DRAC0001", "혼합 Al-chip", "mixed_al_chip", "al", "DRAC0001-260907-1", "usable", 140]] , rework: true },
   { id: "r3", off: -4, shift: "day", workers: 4, process: "calcine",
@@ -4700,6 +4795,88 @@ function agedSeedLots() {
     mk("a5", "DRCC0001", "혼합 Cu-chip", "mixed_cu_chip", 5, "DRCC0001-260619-1", 110, "usable", 860, made(110, "crush")), // 제품 · 장기
     mk("a6", "CD0001", "응축액", "condensate", 3, "CD0001-260828-1", 40, "usable", 1250, made(40, "calcine")),        // 폐유기용제 · 장기
   ];
+}
+
+// 회수율 미리보기용 — 올해 1월부터 지난주까지 파쇄 · 열분해 실적을 날마다 만들어 둬요 (미리보기 화면에서만 쓰여요).
+// 숫자는 고정된 난수로 만들어서 열 때마다 같아요. 투입 Lot은 실적 날 바로 닫혀서 재고 화면에는 나오지 않습니다.
+function historySeed() {
+  let st = 20260101;
+  const rnd = () => { st = (st * 1664525 + 1013904223) % 4294967296; return st / 4294967296; };
+  const between = (a, b) => a + (b - a) * rnd();
+  let st2 = 20260202;
+  const rnd2 = () => { st2 = (st2 * 1664525 + 1013904223) % 4294967296; return st2 / 4294967296; };
+  const between2 = (a, b) => a + (b - a) * rnd2();
+  const kgR = (v) => Math.round(v / 10) * 10;
+  const cellCats = ["hv_cell", "cylindrical_cell", "pouch_cell", "mid_large_cell"];
+  const lots = [], runs = [];
+  let calcineWeek = 0, n = 0;
+  const end = dayOffset(-8);
+  dateRange(`${end.slice(0, 4)}-01-05`, end).forEach((date) => {
+    const dow = new Date(`${date}T00:00:00Z`).getUTCDay();
+    if (dow === 0 || dow === 6) return;
+    const mk = (cat, vIdx, kg, stage) => {
+      const v = VENDORS[vIdx];
+      const c = categoryById[cat];
+      const l = { id: `lot-hist-${++n}`, code: c.code, name: c.label, categoryId: cat, vendor: v.name, shipLoc: v.loc,
+        lotNo: `H${date.slice(2).replace(/-/g, "")}-${pad2(n % 100)}`, receivedDate: date, stage, qtyKg: kg,
+        waterKg: null, excludeKg: null, tolling: false, carriedOver: false, closed: true, closedDate: date, lastMove: date };
+      lots.push(l);
+      return l;
+    };
+    const inputsOf = (ls) => ls.map((l) => ({ lotId: l.id, lotNo: l.lotNo, code: l.code, name: l.name, stage: l.stage, qtyKg: l.qtyKg }));
+    // 모듈 · 팩 — 이틀에 한 번꼴로 전기방전 → 해체 (파쇄 · 열분해 숫자가 흔들리지 않게 난수를 따로 써요)
+    if (rnd2() < 0.45) {
+      const isPack = rnd2() < 0.55;
+      const vI = Math.floor(rnd2() * 4);
+      const pk = mk(isPack ? "ev_pack" : "ev_module", vI, kgR(between2(2400, 5200)), "discharge");
+      const ins = inputsOf([pk]).map((x) => ({ ...x, stage: "raw_in" }));
+      const crewD = shiftCrews(date, DEFAULT_MES.shiftAnchor).day || "A";
+      runs.push({ id: `run-hist-${runs.length + 1}`, date, shift: "day", crew: crewD, workers: 3, process: "discharge", processLabel: "전기방전",
+        route: "module", vendor: pk.vendor, note: "", rework: false, inputs: ins, inputKg: pk.qtyKg, outputs: [] });
+      const vb2 = { 0: 0.02, 1: -0.015, 2: 0.01, 3: -0.03 }[vI] || 0;
+      const cellKg = kgR(pk.qtyKg * ((isPack ? 0.7 : 0.84) + vb2 + between2(-0.02, 0.02)));
+      runs.push({ id: `run-hist-${runs.length + 1}`, date, shift: "day", crew: crewD, workers: 6, process: "disassemble", processLabel: "해체",
+        route: "module", vendor: pk.vendor, note: "", rework: false, inputs: ins.map((x) => ({ ...x, stage: "discharge" })), inputKg: pk.qtyKg,
+        outputs: [{ kind: null, lotId: `lot-hist-cell-${runs.length}`, lotNo: `HVC0001-${date.slice(2).replace(/-/g, "")}-${pad2(n % 100)}`, code: "HVC0001",
+          name: "전기차 셀", categoryId: "hv_cell", vendor: pk.vendor, stage: "crush_wait", qtyKg: cellKg }] });
+    }
+    // 파쇄 — 하루 1~2건, 가끔 두 업체를 섞어 넣어요
+    const crushN = rnd() < 0.35 ? 2 : 1;
+    for (let i = 0; i < crushN; i++) {
+      const vA = Math.floor(rnd() * 4), cat = cellCats[Math.floor(rnd() * cellCats.length)];
+      const ins = [mk(cat, vA, kgR(between(1800, 4200)), "crush_wait")];
+      if (rnd() < 0.25) ins.push(mk(cellCats[Math.floor(rnd() * cellCats.length)], (vA + 1) % 4, kgR(between(800, 1800)), "crush_wait"));
+      const inKg = ins.reduce((a, l) => a + l.qtyKg, 0);
+      const vb = { 0: 0.03, 1: -0.02, 2: 0.01, 3: -0.04 }[vA] || 0; // 업체마다 조금씩 다른 회수율
+      runs.push({ id: `run-hist-${runs.length + 1}`, date, shift: i === 0 ? "day" : "night", crew: shiftCrews(date, DEFAULT_MES.shiftAnchor)[i === 0 ? "day" : "night"] || "A",
+        workers: 6, process: "crush", processLabel: "파쇄", route: "cell", vendor: ins[0].vendor, note: "", rework: false,
+        inputs: inputsOf(ins), inputKg: inKg,
+        outputs: [["bm", 0.56 + vb, "mixed_powder"], ["cu", 0.12, "mixed_cu_chip"], ["al", 0.10, "mixed_al_chip"]].map(([kind, r, cat], j) => ({
+          kind, lotId: `lot-hist-out-${runs.length}-${j}`, lotNo: `${categoryById[cat].code}-${date.slice(2).replace(/-/g, "")}-${j + 1}`,
+          code: categoryById[cat].code, name: categoryById[cat].label, categoryId: cat, vendor: kind === "bm" ? ins[0].vendor : MIXED_VENDOR,
+          stage: "shipped", qtyKg: kgR(inKg * (r + between(-0.025, 0.025))) })) });
+    }
+    // 열분해 — 주 2~3건, 블랙매스를 데워 BM으로
+    if (rnd() < 0.55) {
+      const v = Math.floor(rnd() * 3);
+      const l = mk("blackmass", v, kgR(between(2500, 5000)), "calcine_needed");
+      calcineWeek += l.qtyKg;
+      runs.push({ id: `run-hist-${runs.length + 1}`, date, shift: "day", crew: shiftCrews(date, DEFAULT_MES.shiftAnchor).day || "A",
+        workers: 4, process: "calcine", processLabel: "열분해", route: "powder", vendor: l.vendor, note: "", rework: false,
+        inputs: inputsOf([l]), inputKg: l.qtyKg,
+        outputs: [{ kind: "bm", lotId: `lot-hist-out-${runs.length}-c`, lotNo: `BM0001-${date.slice(2).replace(/-/g, "")}-9`, code: "BM0001",
+          name: "블랙매스", categoryId: "blackmass", vendor: l.vendor, stage: "shipped", qtyKg: kgR(l.qtyKg * between(0.74, 0.8)) }] });
+    }
+    // 응축액 — 금요일마다 탱크를 비워요 (그 주 열분해 투입의 4~6%)
+    if (dow === 5 && calcineWeek > 0) {
+      runs.push({ id: `run-hist-${runs.length + 1}`, date, shift: "day", crew: shiftCrews(date, DEFAULT_MES.shiftAnchor).day || "A",
+        workers: 2, process: "cdout", processLabel: "응축액 출고", route: "powder", vendor: "", note: "", rework: false, inputs: [], inputKg: 0,
+        outputs: [{ kind: "cd", lotId: `lot-hist-cd-${runs.length}`, lotNo: `CD0001-${date.slice(2).replace(/-/g, "")}-1`, code: "CD0001", name: "응축액",
+          categoryId: "condensate", stage: "shipped", qtyKg: kgR(calcineWeek * between(0.04, 0.06)) }] });
+      calcineWeek = 0;
+    }
+  });
+  return { lots, runs };
 }
 
 // 공정이동(생산) 이력 샘플 — 생산실적을 넣을 때마다 여기에 한 건씩 쌓여요.
@@ -4909,7 +5086,6 @@ const DEFAULT_MES = {
   holidays: DEFAULT_HOLIDAYS,    // 공휴일
   hiring: DEFAULT_HIRING,        // 인원 충원 시점
   targetUtil: 90,    // 목표 가동율(%) — 가동율 현황에서 초록/노랑/빨강 판정 기준
-  targetRates: { bm: 55, cu: 12, al: 10, cd: 5 }, // 목표 회수율(%)
 };
 
 // 날짜 문자열(YYYY-MM-DD) 사이의 날 수. 둘 다 UTC 자정으로 읽어서 시간대 · 서머타임 영향이 없어요.
@@ -5527,7 +5703,6 @@ function normalizeMes(raw) {
     headcount: Number(m.headcount ?? DEFAULT_MES.headcount) || DEFAULT_MES.headcount,
     dayOnlyHours: Number(m.dayOnlyHours ?? DEFAULT_MES.dayOnlyHours) || DEFAULT_MES.dayOnlyHours,
     targetUtil: Number(m.targetUtil ?? DEFAULT_MES.targetUtil) || DEFAULT_MES.targetUtil,
-    targetRates: { ...DEFAULT_MES.targetRates, ...(m.targetRates && typeof m.targetRates === "object" ? m.targetRates : {}) },
   };
 }
 // Firebase는 배열을 가끔 {0:…, 1:…} 형태의 객체로 돌려줘요. 어느 쪽이 와도 배열로 맞춰줘요.
@@ -6801,6 +6976,378 @@ function groupLots(list, keyOf, lotNoOf, kgOf) {
 }
 const lotCell = (g) => `<span class="mono">${g.nos.map(esc).join("<br>")}</span>${g.count > 1 ? ` <span class="cnt">${g.count}개</span>` : ""}`;
 
+// ---------- 생산실적 → 투입 · 배출 줄 (제조일보 · 엑셀 공통) ----------
+// 실적 한 건을 "투입 업체·품목 묶음"과 "배출 업체·품목 묶음"으로 나눠 나란히 적어요.
+// 품목 칸은 "거래처_카테고리" (예: 에코프로_전기차셀) — 엑셀에서 걸러 보기 좋게 한 칸에 둡니다.
+// 단계만 옮기는 공정(전기방전 · 해체)은 따로 나오는 Lot이 없어서, 넣은 Lot이 그대로 배출로 적혀요.
+function runIoRows(runs, lots) {
+  const byId = new Map((lots || []).map((l) => [l.id, l]));
+  const sideOf = (x, run, isOut) => {
+    const l = byId.get(x.lotId) || {};
+    const k = isOut && x.kind ? outputKindByKey[x.kind] : null;
+    const c = categoryById[l.categoryId] || categoryById[x.categoryId] || (k ? categoryById[k.categoryId] : null);
+    const vendor = l.vendor || x.vendor || run.vendor || (k && MIXED_KINDS.includes(x.kind) ? MIXED_VENDOR : "") || "-";
+    const cat = (c && c.label) || x.name || (k && k.label) || x.code || "-";
+    return { vendor, cat, item: `${vendor}_${cat}` };
+  };
+  const group = (list, run, isOut) => {
+    const m = new Map();
+    list.forEach((x) => {
+      const s = sideOf(x, run, isOut);
+      const g = m.get(s.item) || { ...s, kg: 0, n: 0 };
+      g.kg += Number(x.qtyKg) || 0; g.n += 1;
+      m.set(s.item, g);
+    });
+    return Array.from(m.values());
+  };
+  const out = [];
+  [...(runs || [])].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.shift === "night") - (b.shift === "night")))
+    .forEach((r) => {
+      const proc = processByKey[r.process] || {};
+      const ins = r.inputs || [];
+      const outs = (r.outputs || []).length > 0 ? r.outputs : (proc.to ? ins.map((x) => ({ ...x, stage: proc.to })) : []);
+      const gi = group(ins, r, false), go = group(outs, r, (r.outputs || []).length > 0);
+      const n = Math.max(gi.length, go.length, 1);
+      const label = `${r.processLabel || proc.label || r.process || "-"}${r.rework ? " (재작업)" : ""}`;
+      for (let i = 0; i < n; i++) {
+        out.push({ date: r.date, runId: r.id, first: i === 0, process: label, shift: r.shift, crew: r.crew,
+          inVendor: gi[i] ? gi[i].vendor : "", inItem: gi[i] ? gi[i].item : "", inKg: gi[i] ? gi[i].kg : null,
+          outVendor: go[i] ? go[i].vendor : "", outItem: go[i] ? go[i].item : "", outKg: go[i] ? go[i].kg : null });
+      }
+    });
+  return out;
+}
+
+// ---------- 회수율 엔진 ----------
+// 제조일보는 "넣어서 뽑아낸" 공정(파쇄 · 열분해)만 셉니다 — 단계만 옮기는 공정과 섞으면 분모가 부풀어요.
+// 회수율현황은 { all: true }로 해체까지 받아, 공정마다 따로 묶어서 봅니다.
+//   해체 = 셀 ÷ 투입(전기방전을 마친 모듈 · 팩 Lot의 입고 중량).
+//   전기방전은 무게를 다시 재지 않고 Lot을 그대로 넘기는 공정이라 회수율이 없어요.
+//   BM · Cu · Al 회수율 = 그 품목 배출 ÷ 투입,  총 회수율 = (BM+Cu+Al) ÷ 투입
+//   응축액은 저장탱크를 비울 때 잰 값이라 Lot · 업체로 나눌 수 없어서, 기간 전체의 열분해 투입 대비로만 봐요.
+// 한 실적에 여러 업체 · 품목을 섞어 넣었으면, 배출을 투입 중량 비율로 나눠 각자에게 돌려요
+// (그래야 업체별 · 품목별 숫자를 더하면 전체와 딱 맞습니다).
+const RECOVERY_KINDS = ["bm", "cu", "al"];
+function recoveryRecords(runs, lots, opts) {
+  const withFlow = !!(opts && opts.all);
+  const byId = new Map((lots || []).map((l) => [l.id, l]));
+  const recs = [], cd = [];
+  (runs || []).forEach((r) => {
+    const proc = processByKey[r.process] || {};
+    if (r.process === "cdout") {
+      const kg = (r.outputs || []).filter((o) => o.kind === "cd").reduce((a, o) => a + (Number(o.qtyKg) || 0), 0);
+      if (kg > 0) cd.push({ date: r.date, kg });
+      return;
+    }
+    if (proc.mode !== "produce" && !(withFlow && proc.mode === "split")) return;
+    const ins = (r.inputs || []).filter((x) => (Number(x.qtyKg) || 0) > 0);
+    const inKg = ins.reduce((a, x) => a + (Number(x.qtyKg) || 0), 0);
+    if (inKg <= 0) return;
+    const outBy = { cell: 0, bm: 0, cu: 0, al: 0 };
+    if (proc.mode === "split") outBy.cell = (r.outputs || []).reduce((a, o) => a + (Number(o.qtyKg) || 0), 0);
+    else (r.outputs || []).forEach((o) => { if (RECOVERY_KINDS.includes(o.kind)) outBy[o.kind] += Number(o.qtyKg) || 0; });
+    const groups = new Map();
+    ins.forEach((x) => {
+      const l = byId.get(x.lotId) || {};
+      const c = categoryById[l.categoryId] || categoryById[x.categoryId];
+      const vendor = l.vendor || x.vendor || r.vendor || "-";
+      const cat = (c && c.label) || x.name || x.code || "-";
+      const key = `${vendor}\u0001${cat}`;
+      const g = groups.get(key) || { vendor, cat, kg: 0 };
+      g.kg += Number(x.qtyKg) || 0;
+      groups.set(key, g);
+    });
+    groups.forEach((g) => {
+      const share = g.kg / inKg;
+      recs.push({ date: r.date, runId: r.id, process: r.process, processLabel: proc.label || r.process,
+        vendor: g.vendor, cat: g.cat, inKg: g.kg,
+        cell: outBy.cell * share,
+        bm: outBy.bm * share, cu: outBy.cu * share, al: outBy.al * share });
+    });
+  });
+  return { recs, cd };
+}
+// 기간 칸 열쇠 — 일 · 주(ISO 주차) · 월 · 연
+const periodKeyOf = (date, gran) => (gran === "day" ? date : gran === "week" ? isoWeekKey(date)
+  : gran === "month" ? date.slice(0, 7) : date.slice(0, 4));
+// 합계 칸 하나 — 투입 · 배출 · 회수율
+const recCell = () => ({ inKg: 0, cell: 0, bm: 0, cu: 0, al: 0, cd: 0, calcineIn: 0 });
+function recAdd(c, r) {
+  c.inKg += r.inKg; c.bm += r.bm; c.cu += r.cu; c.al += r.al;
+  c.cell += r.cell || 0;
+  if (r.process === "calcine") c.calcineIn += r.inKg;
+}
+function recRates(c) {
+  const p = (v, d) => (d > 0 ? (v / d) * 100 : null);
+  return { cell: p(c.cell, c.inKg), bm: p(c.bm, c.inKg), cu: p(c.cu, c.inKg), al: p(c.al, c.inKg),
+    total: p(c.bm + c.cu + c.al, c.inKg), cd: p(c.cd, c.calcineIn) };
+}
+// 피벗 — 묶음(업체 · 품목 · 공정 · 업체×품목)별로, 기간 칸마다 합계를 냅니다.
+const RECOVERY_DIMS = {
+  vendorCat: { label: "업체 · 품목별", heads: ["업체", "품목"], keyOf: (r) => `${r.vendor}\u0001${r.cat}`, cols: (r) => [r.vendor, r.cat] },
+  vendor: { label: "업체별", heads: ["업체"], keyOf: (r) => r.vendor, cols: (r) => [r.vendor] },
+  cat: { label: "품목별", heads: ["품목"], keyOf: (r) => r.cat, cols: (r) => [r.cat] },
+  process: { label: "공정 합계만", heads: [], keyOf: () => "", cols: () => [] },
+};
+// 공정마다 투입 · 배출 · 회수율 줄이 달라요. main = 그 공정의 대표 회수율.
+const REC_PROCS = ["disassemble", "crush", "calcine"];
+const REC_SPEC = {
+  disassemble: { outs: [["cell", "셀"]], rates: [["cell", "셀"]], main: "cell", mainLabel: "셀 회수율", basis: "셀 ÷ 투입(모듈 · 팩)" },
+  crush: { outs: [["bm", "BM"], ["cu", "Cu-chip"], ["al", "Al-chip"]],
+    rates: [["bm", "BM"], ["cu", "Cu-chip"], ["al", "Al-chip"], ["total", "합계 (BM+Cu+Al)"]], main: "total", mainLabel: "총 회수율", basis: "(BM + Cu + Al) ÷ 투입" },
+  calcine: { outs: [["bm", "BM"]], rates: [["bm", "BM"]], main: "bm", mainLabel: "BM 회수율", basis: "BM ÷ 투입" },
+};
+const recMain = (proc, cell) => recRates(cell)[REC_SPEC[proc].main];
+// 표 한 묶음의 줄 — 투입 · 배출 · 회수율 세 칸. 응축액은 열분해 "공정 합계"에만 붙어요 (업체로 나눌 수 없어서).
+function recSections(proc, isTotal, gran, g) {
+  const sp = REC_SPEC[proc];
+  const withCd = proc === "calcine" && isTotal && g && g.sum.cd > 0;
+  return [
+    { sec: "in", label: "투입", lines: [{ key: "inKg", label: proc === "disassemble" ? "투입중량 (방전 완료)" : "투입중량", kind: "kg" }] },
+    { sec: "out", label: "배출", lines: sp.outs.map(([k, t]) => ({ key: k, label: t, kind: "kg" }))
+      .concat(withCd ? [{ key: "cd", label: "응축액 (탱크 실측)", kind: "kg" }] : []) },
+    { sec: "rate", label: "회수율", lines: sp.rates.map(([k, t]) => ({ key: `r.${k}`, label: t, kind: "pct" }))
+      .concat(withCd && gran !== "day" ? [{ key: "r.cd", label: "응축액 (열분해 대비)", kind: "pct" }] : []) },
+  ];
+}
+// 공정 묶음 — 공정마다 "공정 합계" + 업체 · 품목 묶음. 공정끼리는 더하지 않아요 (같은 물건이 다음 공정에 다시 들어가니까요).
+function recoveryBlocks(recs, cdList, periods, gran, dim, procKeys) {
+  const inP = new Set(periods);
+  const D = RECOVERY_DIMS[dim] || RECOVERY_DIMS.vendorCat;
+  const mk = (key, cols) => ({ key, cols, byP: Object.fromEntries(periods.map((p) => [p, recCell()])), sum: recCell() });
+  const blocks = new Map(procKeys.map((k) => [k, { proc: k, label: (processByKey[k] || {}).label || k, total: mk(`${k}-total`, []), groups: new Map() }]));
+  recs.forEach((r) => {
+    const b = blocks.get(r.process);
+    if (!b) return;
+    const p = periodKeyOf(r.date, gran);
+    if (!inP.has(p)) return;
+    recAdd(b.total.byP[p], r); recAdd(b.total.sum, r);
+    if (!D.heads.length) return;
+    const k = D.keyOf(r);
+    if (!b.groups.has(k)) b.groups.set(k, mk(`${r.process}-${k}`, D.cols(r)));
+    const g = b.groups.get(k);
+    recAdd(g.byP[p], r); recAdd(g.sum, r);
+  });
+  const cb = blocks.get("calcine");
+  if (cb) (cdList || []).forEach((c) => {
+    const p = periodKeyOf(c.date, gran);
+    if (!inP.has(p)) return;
+    cb.total.byP[p].cd += c.kg; cb.total.sum.cd += c.kg;
+  });
+  return Array.from(blocks.values()).filter((b) => b.total.sum.inKg > 0 || b.total.sum.cd > 0).map((b) => {
+    const rows = Array.from(b.groups.values());
+    if (D.heads.length === 2) {
+      // 같은 업체끼리 붙여 둬야 업체 칸을 합칠 수 있어요 — 업체 투입량 순, 그 안에서 품목 투입량 순.
+      const vt = new Map();
+      rows.forEach((g) => vt.set(g.cols[0], (vt.get(g.cols[0]) || 0) + g.sum.inKg));
+      rows.sort((a, c) => (vt.get(c.cols[0]) - vt.get(a.cols[0])) || String(a.cols[0]).localeCompare(String(c.cols[0])) || (c.sum.inKg - a.sum.inKg));
+    } else rows.sort((a, c) => c.sum.inKg - a.sum.inKg);
+    return { proc: b.proc, label: b.label, total: b.total, rows };
+  });
+}
+// 화면 표 · 엑셀이 같이 쓰는 줄 목록 — 합칠 칸(공정 · 업체 · 품목 · 구분)의 줄 수를 미리 계산해 둡니다.
+function recoveryTableRows(blocks, D, gran) {
+  const out = [];
+  blocks.forEach((b) => {
+    const ents = [{ g: b.total, isTotal: true }].concat(D.heads.length ? b.rows.map((g) => ({ g, isTotal: false })) : [])
+      .map((e) => ({ ...e, secs: recSections(b.proc, e.isTotal, gran, e.g) }));
+    ents.forEach((e) => { e.n = e.secs.reduce((a, s) => a + s.lines.length, 0); });
+    const blockN = ents.reduce((a, e) => a + e.n, 0);
+    ents.forEach((e, ei) => {
+      let vendorSpan = 0;
+      if (D.heads.length === 2 && !e.isTotal) {
+        const prev = ents[ei - 1];
+        if (prev.isTotal || prev.g.cols[0] !== e.g.cols[0]) {
+          for (let j = ei; j < ents.length && !ents[j].isTotal && ents[j].g.cols[0] === e.g.cols[0]; j++) vendorSpan += ents[j].n;
+        }
+      }
+      let li = 0;
+      e.secs.forEach((s) => s.lines.forEach((ln, si) => {
+        out.push({ b, g: e.g, isTotal: e.isTotal, ln, sec: s.sec, secLabel: s.label,
+          blockFirst: ei === 0 && li === 0, groupFirst: li === 0,
+          procSpan: ei === 0 && li === 0 ? blockN : 0, nameSpan: li === 0 ? e.n : 0,
+          vendorSpan: li === 0 ? vendorSpan : 0, secSpan: si === 0 ? s.lines.length : 0 });
+        li++;
+      }));
+    });
+  });
+  return out;
+}
+function recoveryPivot(recs, cdList, periods, gran, dim) {
+  const inP = new Set(periods);
+  const D = RECOVERY_DIMS[dim] || RECOVERY_DIMS.vendorCat;
+  const total = { key: "__total", cols: D.heads.map((_, i) => (i === 0 ? "전체" : "")), byP: Object.fromEntries(periods.map((p) => [p, recCell()])), sum: recCell() };
+  const groups = new Map();
+  recs.forEach((r) => {
+    const p = periodKeyOf(r.date, gran);
+    if (!inP.has(p)) return;
+    const k = D.keyOf(r);
+    if (!groups.has(k)) groups.set(k, { key: k, cols: D.cols(r), byP: Object.fromEntries(periods.map((q) => [q, recCell()])), sum: recCell() });
+    const g = groups.get(k);
+    recAdd(g.byP[p], r); recAdd(g.sum, r); recAdd(total.byP[p], r); recAdd(total.sum, r);
+  });
+  (cdList || []).forEach((c) => {
+    const p = periodKeyOf(c.date, gran);
+    if (!inP.has(p)) return;
+    total.byP[p].cd += c.kg; total.sum.cd += c.kg;
+  });
+  const rows = Array.from(groups.values()).sort((a, b) => b.sum.inKg - a.sum.inKg);
+  return { total, rows };
+}
+// 기간 칸 목록 — 일별: 고른 달의 날짜 · 주별: 고른 해의 주차 · 월별: 고른 해 1~12월 · 연간: 기록이 있는 해
+function recoveryPeriods(gran, ref, years) {
+  if (gran === "day") {
+    const [y, m] = ref.split("-").map(Number);
+    const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    return Array.from({ length: last }, (_, i) => `${ref}-${pad2(i + 1)}`);
+  }
+  if (gran === "week") {
+    const keys = [];
+    dateRange(`${ref}-01-01`, `${ref}-12-31`).forEach((d) => { const k = isoWeekKey(d); if (!keys.includes(k)) keys.push(k); });
+    return keys;
+  }
+  if (gran === "month") return Array.from({ length: 12 }, (_, i) => `${ref}-${pad2(i + 1)}`);
+  return (years || []).slice().sort();
+}
+const recoveryPeriodLabel = (p, gran) => (gran === "day" ? `${Number(p.slice(8))}일` : gran === "week" ? p.slice(5)
+  : gran === "month" ? `${Number(p.slice(5))}월` : `${p}년`);
+
+// ---------- 엑셀 통합문서 (여러 장 · 색 · 숫자 서식) ----------
+// 셀 = 값 또는 { v: 값, s: 서식 이름 }. 숫자는 숫자 셀로 넣어 엑셀에서 바로 합계 · 정렬이 돼요.
+const XB_STYLES = ["", "hdr", "title", "hdrNavy", "hdrOrange", "txt", "num", "pct", "totTxt", "totNum", "totPct", "hdrGray", "note", "sumNum", "sumPct", "txtC", "grpTxt",
+  "tagIn", "tagOut", "tagRate", "nameC", "procC", "inLbl", "inNum", "inSum", "outLbl", "outNum", "outSum", "rateLbl", "ratePct", "rateSum", "totName", "inNumB", "outNumB", "hdrBand"];
+const XB_STYLE_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+  `<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
+  `<numFmts count="1"><numFmt numFmtId="164" formatCode="0.0%"/></numFmts>` +
+  `<fonts count="9"><font><sz val="10"/><name val="맑은 고딕"/></font>` +
+  `<font><b/><sz val="10"/><name val="맑은 고딕"/></font>` +
+  `<font><b/><sz val="14"/><name val="맑은 고딕"/></font>` +
+  `<font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="맑은 고딕"/></font>` +
+  `<font><i/><sz val="9"/><color rgb="FF666666"/><name val="맑은 고딕"/></font>` +
+  // 5~8 회수율 집계 — 흑연 · 구리 · 코발트 글자 (화면 B안 색과 같음)
+  `<font><sz val="10"/><color rgb="FF48525C"/><name val="맑은 고딕"/></font>` +
+  `<font><b/><sz val="10"/><color rgb="FFA85A27"/><name val="맑은 고딕"/></font>` +
+  `<font><b/><sz val="10"/><color rgb="FF2448A8"/><name val="맑은 고딕"/></font>` +
+  `<font><b/><sz val="10"/><color rgb="FF48525C"/><name val="맑은 고딕"/></font></fonts>` +
+  `<fills count="12"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>` +
+  `<fill><patternFill patternType="solid"><fgColor rgb="FFEDF1F7"/><bgColor indexed="64"/></patternFill></fill>` +
+  `<fill><patternFill patternType="solid"><fgColor rgb="FF1F2D5C"/><bgColor indexed="64"/></patternFill></fill>` +
+  `<fill><patternFill patternType="solid"><fgColor rgb="FFED7D31"/><bgColor indexed="64"/></patternFill></fill>` +
+  `<fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill>` +
+  `<fill><patternFill patternType="solid"><fgColor rgb="FFE2EFDA"/><bgColor indexed="64"/></patternFill></fill>` +
+  `<fill><patternFill patternType="solid"><fgColor rgb="FFD9D9D9"/><bgColor indexed="64"/></patternFill></fill>` +
+  ["F4F6F8", "F6ECE5", "E6EBF7", "F0F3FA"].map((c) => `<fill><patternFill patternType="solid"><fgColor rgb="FF${c}"/><bgColor indexed="64"/></patternFill></fill>`).join("") +
+  `</fills>` +
+  `<borders count="2"><border/><border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right>` +
+  `<top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom></border></borders>` +
+  `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
+  `<cellXfs count="35">` +
+  `<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>` +                                               // 0 기본
+  `<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/>` +                     // 1 hdr
+  `<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>` +                                   // 2 title
+  `<xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>` + // 3 hdrNavy
+  `<xf numFmtId="0" fontId="3" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>` + // 4 hdrOrange
+  `<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>` +                                 // 5 txt
+  `<xf numFmtId="3" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>` +           // 6 num
+  `<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>` +         // 7 pct
+  `<xf numFmtId="0" fontId="1" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/>` +     // 8 totTxt
+  `<xf numFmtId="3" fontId="1" fillId="5" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>` + // 9 totNum
+  `<xf numFmtId="164" fontId="1" fillId="5" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>` + // 10 totPct
+  `<xf numFmtId="0" fontId="1" fillId="7" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>` + // 11 hdrGray
+  `<xf numFmtId="0" fontId="4" fillId="0" borderId="0" xfId="0" applyFont="1"/>` +                                   // 12 note
+  `<xf numFmtId="3" fontId="1" fillId="6" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>` + // 13 sumNum (연간 합계)
+  `<xf numFmtId="164" fontId="1" fillId="6" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>` + // 14 sumPct
+  `<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>` + // 15 txtC
+  `<xf numFmtId="0" fontId="1" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"/>` +                   // 16 grpTxt
+  // 17~ 회수율 집계 — 투입 흑연 · 배출 구리 · 회수율 코발트. 꽉 찬 진한 색 없이 옅은 띠와 글자색으로만 갈라요
+  `<xf numFmtId="0" fontId="8" fillId="8" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>` + // 17 tagIn
+  `<xf numFmtId="0" fontId="6" fillId="9" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>` + // 18 tagOut
+  `<xf numFmtId="0" fontId="7" fillId="10" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>` + // 19 tagRate
+  `<xf numFmtId="0" fontId="1" fillId="0" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf>` + // 20 nameC
+  `<xf numFmtId="0" fontId="1" fillId="8" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>` + // 21 procC
+  `<xf numFmtId="0" fontId="5" fillId="0" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/>` + // 22 inLbl
+  `<xf numFmtId="3" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>` + // 23 inNum
+  `<xf numFmtId="3" fontId="1" fillId="8" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>` + // 24 inSum
+  `<xf numFmtId="0" fontId="5" fillId="0" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/>` + // 25 outLbl
+  `<xf numFmtId="3" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>` + // 26 outNum
+  `<xf numFmtId="3" fontId="1" fillId="8" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>` + // 27 outSum
+  `<xf numFmtId="0" fontId="7" fillId="11" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/>` + // 28 rateLbl
+  `<xf numFmtId="164" fontId="7" fillId="11" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>` + // 29 ratePct
+  `<xf numFmtId="164" fontId="7" fillId="10" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>` + // 30 rateSum
+  `<xf numFmtId="0" fontId="1" fillId="8" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>` + // 31 totName
+  `<xf numFmtId="3" fontId="1" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>` + // 32 inNumB
+  `<xf numFmtId="3" fontId="1" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>` + // 33 outNumB
+  `<xf numFmtId="0" fontId="7" fillId="10" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>` + // 34 hdrBand
+  `</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+function xbSheetXml(sh) {
+  const sIdx = (s) => Math.max(0, XB_STYLES.indexOf(s || ""));
+  const cols = sh.widths && sh.widths.length
+    ? `<cols>${sh.widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols>` : "";
+  const body = sh.rows.map((cells, r) => {
+    const rn = r + 1;
+    const cs = (cells || []).map((cell, c) => {
+      const o = cell !== null && typeof cell === "object" ? cell : { v: cell };
+      const ref = `${colLetter(c)}${rn}`;
+      const st = sIdx(o.s) ? ` s="${sIdx(o.s)}"` : "";
+      const v = o.v;
+      if (v === null || v === undefined || v === "") return `<c r="${ref}"${st}/>`;
+      if (typeof v === "number" && isFinite(v)) return `<c r="${ref}"${st}><v>${v}</v></c>`;
+      return `<c r="${ref}"${st} t="inlineStr"><is><t xml:space="preserve">${xmlEsc(v)}</t></is></c>`;
+    }).join("");
+    return `<row r="${rn}">${cs}</row>`;
+  }).join("");
+  const fr = sh.freezeRow || 0, fc = sh.freezeCol || 0;
+  const pane = fr || fc
+    ? `<pane${fc ? ` xSplit="${fc}"` : ""}${fr ? ` ySplit="${fr}"` : ""} topLeftCell="${colLetter(fc)}${fr + 1}" activePane="${fr && fc ? "bottomRight" : fr ? "bottomLeft" : "topRight"}" state="frozen"/>` : "";
+  const merges = sh.merges && sh.merges.length
+    ? `<mergeCells count="${sh.merges.length}">${sh.merges.map((m) => `<mergeCell ref="${m}"/>`).join("")}</mergeCells>` : "";
+  const filter = sh.autoFilter ? `<autoFilter ref="${sh.autoFilter}"/>` : "";
+  // 가로 · 폭 맞춤 인쇄 (넓은 표) — 세로는 이어서 여러 장
+  const fit = sh.landscapeFit;
+  const page = fit ? `<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/>` : "";
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+    `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
+    (fit ? `<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>` : "") +
+    `<sheetViews><sheetView workbookViewId="0">${pane}</sheetView></sheetViews>` +
+    `${cols}<sheetData>${body}</sheetData>${filter}${merges}${page}</worksheet>`;
+}
+function buildXlsxBook(sheets) {
+  const names = sheets.map((sh, i) => (String(sh.name || `Sheet${i + 1}`).replace(/[\\\/\?\*\[\]:]/g, " ").slice(0, 31) || `Sheet${i + 1}`));
+  return makeZip([
+    { name: "[Content_Types].xml", content:
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+      `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+      `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+      `<Default Extension="xml" ContentType="application/xml"/>` +
+      `<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>` +
+      sheets.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("") +
+      `<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>` +
+      `</Types>` },
+    { name: "_rels/.rels", content:
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+      `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+      `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>` +
+      `</Relationships>` },
+    { name: "xl/workbook.xml", content:
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+      `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ` +
+      `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>` +
+      names.map((n, i) => `<sheet name="${xmlEsc(n)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("") +
+      `</sheets></workbook>` },
+    { name: "xl/_rels/workbook.xml.rels", content:
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+      `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+      sheets.map((_, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join("") +
+      `<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+      `</Relationships>` },
+    { name: "xl/styles.xml", content: XB_STYLE_XML },
+    ...sheets.map((sh, i) => ({ name: `xl/worksheets/sheet${i + 1}.xml`, content: xbSheetXml(sh) })),
+  ]);
+}
+function downloadXlsxBook(filename, sheets) {
+  downloadFile(filename, buildXlsxBook(sheets), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+}
+
 // ---------- 일일 제조일보 ----------
 // 고른 날짜 하루치를 A4 한 장으로 묶어요 — 생산실적, 신규 입고, 공정이동, 비가동, 확인란.
 function dailyReportHtml({ date, runs, lots, moves, downs, settings, mes }) {
@@ -6928,6 +7475,176 @@ function dailyReportHtml({ date, runs, lots, moves, downs, settings, mes }) {
 <div class="sec"><h2>신규 입고 (${dayIn.length}건)</h2>${inRows}</div>
 <div class="sec"><h2>공정이동 (${dayMoves.length}건)</h2>${moveRows}</div>
 <div class="sec"><h2>비가동 (${dayDowns.length}건)</h2>${dtRows}</div>`;
+}
+
+// ---------- 월간 제조일보 ----------
+// 고른 달 전체를 묶어요 — 일자별 요약 · 공정별 요약 · 업체 · 품목별 회수율 · 비가동 · 생산실적 상세(엑셀과 같은 칸).
+// 투입량 · 산출량은 일일 제조일보와 같은 기준이에요 (투입 = 모든 실적의 투입, 산출 = 배출 Lot · 단계만 옮긴 공정은 옮긴 양).
+function monthDaySummary(ym, runs, lots, downs) {
+  const { recs, cd } = recoveryRecords((runs || []).filter((r) => (r.date || "").startsWith(ym)), lots);
+  const days = recoveryPeriods("day", ym);
+  return days.map((date) => {
+    const rs = (runs || []).filter((r) => r.date === date);
+    const c = recCell();
+    recs.filter((r) => r.date === date).forEach((r) => recAdd(c, r));
+    c.cd = cd.filter((x) => x.date === date).reduce((a, x) => a + x.kg, 0);
+    const dt = (downs || []).filter((d) => d.date === date).reduce((a, d) => a + (Number(d.min) || 0), 0);
+    const inAll = rs.reduce((a, r) => a + (Number(r.inputKg) || 0), 0);
+    return { date, runs: rs.length, inAll, ...c, rates: recRates(c), dtMin: dt };
+  });
+}
+function monthlyReportHtml({ ym, runs, lots, downs, settings }) {
+  const kg = (v) => (v == null ? "-" : `${Math.round(Number(v) || 0).toLocaleString("ko-KR")}`);
+  const ton = (v) => ((Number(v) || 0) / 1000).toFixed(2);
+  const pct = (v) => (v == null ? "-" : `${v.toFixed(1)}%`);
+  const mRuns = (runs || []).filter((r) => (r.date || "").startsWith(ym));
+  const mDowns = (downs || []).filter((d) => (d.date || "").startsWith(ym));
+  const days = monthDaySummary(ym, runs, lots, downs);
+  const active = days.filter((d) => d.runs > 0 || d.dtMin > 0);
+  const { recs, cd } = recoveryRecords(mRuns, lots);
+  const tot = recCell();
+  recs.forEach((r) => recAdd(tot, r));
+  tot.cd = cd.reduce((a, x) => a + x.kg, 0);
+  const tr = recRates(tot);
+  const inAll = mRuns.reduce((a, r) => a + (Number(r.inputKg) || 0), 0);
+  const outAll = mRuns.reduce((a, r) => a + (r.outputs || []).reduce((b, o) => b + (Number(o.qtyKg) || 0), 0), 0);
+  const dtMin = mDowns.reduce((a, d) => a + (Number(d.min) || 0), 0);
+  const [y, m] = ym.split("-").map(Number);
+  const table = (head, body, foot, cls) => `<table class="t ${cls || ""}"><thead><tr>${head.map((h) => `<th${h[1] ? ` class="${h[1]}"` : ""}>${esc(h[0])}</th>`).join("")}</tr></thead>`
+    + `<tbody>${body.map((row) => `<tr>${row.map((c) => `<td${c[1] ? ` class="${c[1]}"` : ""}>${c[0]}</td>`).join("")}</tr>`).join("")}</tbody>`
+    + (foot ? `<tfoot><tr>${foot.map((c) => `<td${c[1] ? ` class="${c[1]}"` : ""}>${c[0]}</td>`).join("")}</tr></tfoot>` : "") + `</table>`;
+  const daySum = (k) => active.reduce((a, d) => a + (Number(d[k]) || 0), 0);
+  const dayT = active.length === 0 ? `<div class="empty">이 달에 등록된 생산실적이 없습니다.</div>` : table(
+    [["날짜", ""], ["실적", "n"], ["투입(Kg)", "n"], ["BM", "n"], ["Cu-chip", "n"], ["Al-chip", "n"], ["응축액", "n"], ["BM 회수율", "n"], ["총 회수율", "n"], ["비가동(분)", "n"]],
+    active.map((d) => [[`${mmdd(d.date)} (${dowOf(d.date)})`, ""], [d.runs, "n"], [kg(d.inAll), "n"], [kg(d.bm), "n"], [kg(d.cu), "n"], [kg(d.al), "n"],
+      [d.cd ? kg(d.cd) : "-", "n"], [pct(d.rates.bm), "n"], [pct(d.rates.total), "n"], [d.dtMin || "-", "n"]]),
+    [["합계", ""], [mRuns.length, "n"], [kg(inAll), "n"], [kg(tot.bm), "n"], [kg(tot.cu), "n"], [kg(tot.al), "n"], [kg(tot.cd), "n"],
+      [pct(tr.bm), "n"], [pct(tr.total), "n"], [kg(daySum("dtMin")), "n"]]);
+  const byProc = new Map();
+  mRuns.forEach((r) => {
+    const proc = processByKey[r.process] || {};
+    const k = proc.label || r.process;
+    const g = byProc.get(k) || { n: 0, inKg: 0, outKg: 0 };
+    g.n += 1; g.inKg += Number(r.inputKg) || 0;
+    g.outKg += (r.outputs || []).reduce((a, o) => a + (Number(o.qtyKg) || 0), 0);
+    g.key = r.process;
+    byProc.set(k, g);
+  });
+  // 공정 회수율 — 회수율현황과 같은 기준 (공정마다 대표 회수율)
+  const procRec = new Map();
+  recoveryRecords(mRuns, lots, { all: true }).recs.forEach((r) => { const c = procRec.get(r.process) || recCell(); recAdd(c, r); procRec.set(r.process, c); });
+  const procT = byProc.size === 0 ? "" : table(
+    [["공정", ""], ["실적", "n"], ["투입(Kg)", "n"], ["배출(Kg)", "n"], ["공정 회수율", "n"], ["기준", ""]],
+    Array.from(byProc.entries()).map(([k, g]) => {
+      const c = procRec.get(g.key);
+      const sp = REC_SPEC[g.key];
+      return [[esc(k), ""], [g.n, "n"], [g.inKg ? kg(g.inKg) : "-", "n"], [g.outKg ? kg(g.outKg) : "-", "n"],
+        [c && sp ? pct(recMain(g.key, c)) : "-", "n"], [sp ? `${sp.mainLabel} = ${sp.basis}` : "-", ""]];
+    }));
+  const piv = recoveryPivot(recs, cd, [ym], "month", "vendorCat");
+  const vcT = piv.rows.length === 0 ? `<div class="empty">회수율을 낼 실적(파쇄 · 열분해)이 없습니다.</div>` : table(
+    [["업체", ""], ["품목", ""], ["투입(Kg)", "n"], ["BM", "n"], ["Cu-chip", "n"], ["Al-chip", "n"], ["BM 회수율", "n"], ["총 회수율", "n"]],
+    piv.rows.map((g) => { const r = recRates(g.sum);
+      return [[esc(g.cols[0]), ""], [esc(g.cols[1]), ""], [kg(g.sum.inKg), "n"], [kg(g.sum.bm), "n"], [kg(g.sum.cu), "n"], [kg(g.sum.al), "n"], [pct(r.bm), "n"], [pct(r.total), "n"]]; }),
+    [["합계", ""], ["", ""], [kg(tot.inKg), "n"], [kg(tot.bm), "n"], [kg(tot.cu), "n"], [kg(tot.al), "n"], [pct(tr.bm), "n"], [pct(tr.total), "n"]]);
+  const dtBy = new Map();
+  mDowns.forEach((d) => { const g = dtBy.get(d.major || "-") || { n: 0, min: 0 }; g.n += 1; g.min += Number(d.min) || 0; dtBy.set(d.major || "-", g); });
+  const dtT = dtBy.size === 0 ? `<div class="empty">이 달 비가동 기록이 없습니다.</div>` : table(
+    [["대분류", ""], ["건수", "n"], ["정지(분)", "n"], ["비중", "n"]],
+    Array.from(dtBy.entries()).sort((a, b) => b[1].min - a[1].min).map(([k, g]) => [[esc(k), ""], [g.n, "n"], [kg(g.min), "n"], [pct(dtMin > 0 ? (g.min / dtMin) * 100 : null), "n"]]),
+    [["합계", ""], [mDowns.length, "n"], [kg(dtMin), "n"], ["100%", "n"]]);
+  const io = runIoRows(mRuns, lots);
+  const ioT = io.length === 0 ? `<div class="empty">이 달에 등록된 생산실적이 없습니다.</div>`
+    : `<table class="t run"><colgroup>${[9, 10, 12, 19, 9, 12, 20, 9].map((w) => `<col style="width:${w}%">`).join("")}</colgroup><thead><tr>`
+      + `<th class="in">날짜</th><th class="in">공정</th><th class="in">투입업체</th><th class="in">투입품목</th><th class="in n">투입중량<br>(Kg)</th>`
+      + `<th class="out io">배출업체</th><th class="out">배출품명</th><th class="out n">배출중량<br>(Kg)</th></tr></thead><tbody>`
+      + io.map((r) => `<tr${r.first ? ' class="first"' : ""}><td>${r.first ? mmdd(r.date) : ""}</td><td>${r.first ? esc(r.process) : ""}</td>`
+        + `<td>${esc(r.inVendor)}</td><td>${esc(r.inItem)}</td><td class="n">${r.inKg == null ? "" : kg(r.inKg)}</td>`
+        + `<td class="io">${esc(r.outVendor)}</td><td>${esc(r.outItem)}</td><td class="n">${r.outKg == null ? "" : kg(r.outKg)}</td></tr>`).join("")
+      + `</tbody><tfoot><tr><td colspan="4">합계 ${mRuns.length}건</td><td class="n">${kg(io.reduce((a, r) => a + (r.inKg || 0), 0))}</td>`
+      + `<td class="io" colspan="2"></td><td class="n">${kg(io.reduce((a, r) => a + (r.outKg || 0), 0))}</td></tr></tfoot></table>`;
+  return `
+<div class="head">
+  <div>
+    <h1>월간 제조일보</h1>
+    <p class="sub">${esc(settings && settings.title || "리사이클링팀")} · ${y}년 ${m}월 · 실적 있는 날 ${days.filter((d) => d.runs > 0).length}일</p>
+  </div>
+  <table class="sign"><tr><td class="h">작성</td><td class="h">검토</td><td class="h">승인</td></tr><tr><td></td><td></td><td></td></tr></table>
+</div>
+<div class="kpis">
+  <div class="kpi"><span>투입량</span><b>${ton(inAll)} 톤</b></div>
+  <div class="kpi"><span>산출량</span><b>${ton(outAll)} 톤</b></div>
+  <div class="kpi"><span>BM 회수율 · 총 회수율</span><b>${pct(tr.bm)} · ${pct(tr.total)}</b></div>
+  <div class="kpi"><span>비가동</span><b>${Math.floor(dtMin / 60)}시간 ${dtMin % 60}분</b></div>
+</div>
+<div class="sec"><h2>일자별 요약</h2>${dayT}</div>
+<div class="sec"><h2>공정별 요약</h2>${procT || `<div class="empty">이 달에 등록된 생산실적이 없습니다.</div>`}</div>
+<div class="sec"><h2>업체 · 품목별 회수율 (파쇄 · 열분해)</h2>${vcT}
+  <p class="foot">회수율 = 배출 ÷ 투입 (파쇄 · 열분해 실적만) · 여러 업체를 섞어 넣은 실적은 투입 중량 비율로 나눔 · 응축액 ${kg(tot.cd)}Kg은 열분해 투입 대비 ${pct(tr.cd)}</p></div>
+<div class="sec"><h2>비가동 (대분류별)</h2>${dtT}</div>
+<h2>생산실적 상세 (${mRuns.length}건)</h2>${ioT}`;
+}
+
+// ---------- 제조일보 엑셀 (일일 · 월간) ----------
+// 첫 장 = 생산실적 상세: 날짜 · 공정 · 투입업체 · 투입품목 · 투입중량 | 배출업체 · 배출품명 · 배출중량
+// (머리줄 색 — 투입은 남색, 배출은 주황. 날짜 · 공정을 줄마다 채워 두어 엑셀 필터로 바로 걸러 볼 수 있어요.)
+function ioSheet(name, title, sub, rows) {
+  const H = (v, s) => ({ v, s });
+  const head = [H("날짜", "hdrNavy"), H("공정", "hdrNavy"), H("투입업체", "hdrNavy"), H("투입품목", "hdrNavy"), H("투입중량(kg)", "hdrNavy"),
+    H("배출업체", "hdrOrange"), H("배출품명", "hdrOrange"), H("배출중량(kg)", "hdrOrange")];
+  const data = rows.map((r) => [H(r.date, "txtC"), H(r.process, "txt"), H(r.inVendor, "txt"), H(r.inItem, "txt"), H(r.inKg == null ? "" : Math.round(r.inKg * 10) / 10, "num"),
+    H(r.outVendor, "txt"), H(r.outItem, "txt"), H(r.outKg == null ? "" : Math.round(r.outKg * 10) / 10, "num")]);
+  const sum = (k) => Math.round(rows.reduce((a, r) => a + (Number(r[k]) || 0), 0) * 10) / 10;
+  const foot = [H(`합계 ${new Set(rows.map((r) => r.runId)).size}건`, "totTxt"), H("", "totTxt"), H("", "totTxt"), H("", "totTxt"), H(sum("inKg"), "totNum"),
+    H("", "totTxt"), H("", "totTxt"), H(sum("outKg"), "totNum")];
+  return { name, rows: [[H(title, "title")], [H(sub, "note")], [], head, ...data, foot],
+    widths: [11, 14, 18, 30, 13, 18, 30, 13], freezeRow: 4, autoFilter: data.length ? `A4:H${4 + data.length}` : null, merges: ["A1:H1", "A2:H2"] };
+}
+function dailyReportXlsx({ date, runs, lots, settings }) {
+  const rs = (runs || []).filter((r) => r.date === date);
+  const { recs } = recoveryRecords(rs, lots);
+  const c = recCell(); recs.forEach((r) => recAdd(c, r));
+  const rr = recRates(c);
+  const p = (v) => (v == null ? "-" : `${v.toFixed(1)}%`);
+  const sub = `${(settings && settings.title) || "리사이클링팀"} · ${date} (${dowOf(date)}) · 실적 ${rs.length}건 · BM 회수율 ${p(rr.bm)} · 총 회수율 ${p(rr.total)}`;
+  return [ioSheet("일일 제조일보", `일일 제조일보 — ${date}`, sub, runIoRows(rs, lots))];
+}
+function monthlyReportXlsx({ ym, runs, lots, downs, settings }) {
+  const mRuns = (runs || []).filter((r) => (r.date || "").startsWith(ym));
+  const H = (v, s) => ({ v, s });
+  const r1 = (v) => Math.round((Number(v) || 0) * 10) / 10;
+  const frac = (v) => (v == null ? "" : Math.round(v * 10) / 1000); // % → 0.0% 서식용 소수
+  const [y, m] = ym.split("-").map(Number);
+  const org = (settings && settings.title) || "리사이클링팀";
+  // ① 상세
+  const s1 = ioSheet("생산실적 상세", `월간 제조일보 — ${y}년 ${m}월`, `${org} · 생산실적 ${mRuns.length}건`, runIoRows(mRuns, lots));
+  // ② 일자별 요약
+  const days = monthDaySummary(ym, runs, lots, downs).filter((d) => d.runs > 0 || d.dtMin > 0);
+  const hd = ["날짜", "요일", "실적(건)", "투입(kg)", "BM(kg)", "Cu-chip(kg)", "Al-chip(kg)", "응축액(kg)", "BM 회수율", "Cu 회수율", "Al 회수율", "총 회수율", "비가동(분)"].map((v) => H(v, "hdrNavy"));
+  const tot = recCell(); let inAll = 0, nRuns = 0, dt = 0;
+  const drows = days.map((d) => {
+    recAdd(tot, d); tot.calcineIn += d.calcineIn; tot.cd += d.cd; inAll += d.inAll; nRuns += d.runs; dt += d.dtMin;
+    return [H(d.date, "txtC"), H(dowOf(d.date), "txtC"), H(d.runs, "num"), H(r1(d.inAll), "num"), H(r1(d.bm), "num"), H(r1(d.cu), "num"), H(r1(d.al), "num"), H(r1(d.cd), "num"),
+      H(frac(d.rates.bm), "pct"), H(frac(d.rates.cu), "pct"), H(frac(d.rates.al), "pct"), H(frac(d.rates.total), "pct"), H(d.dtMin, "num")];
+  });
+  const tr = recRates(tot);
+  const s2 = { name: "일자별 요약", widths: [11, 6, 9, 12, 11, 11, 11, 11, 10, 10, 10, 10, 10], freezeRow: 4,
+    rows: [[H(`일자별 요약 — ${y}년 ${m}월`, "title")], [H("회수율 = 배출 ÷ 투입 (파쇄 · 열분해 실적만). 투입(kg)은 그날 모든 실적의 투입 합계예요.", "note")], [], hd, ...drows,
+      [H("합계", "totTxt"), H("", "totTxt"), H(nRuns, "totNum"), H(r1(inAll), "totNum"), H(r1(tot.bm), "totNum"), H(r1(tot.cu), "totNum"), H(r1(tot.al), "totNum"), H(r1(tot.cd), "totNum"),
+        H(frac(tr.bm), "totPct"), H(frac(tr.cu), "totPct"), H(frac(tr.al), "totPct"), H(frac(tr.total), "totPct"), H(dt, "totNum")]], merges: ["A1:M1", "A2:M2"] };
+  // ③ 업체 · 품목별 회수율
+  const { recs, cd } = recoveryRecords(mRuns, lots);
+  const piv = recoveryPivot(recs, cd, [ym], "month", "vendorCat");
+  const hv = ["업체", "품목", "투입(kg)", "BM(kg)", "Cu-chip(kg)", "Al-chip(kg)", "BM 회수율", "Cu 회수율", "Al 회수율", "총 회수율"].map((v) => H(v, "hdrNavy"));
+  const vrows = piv.rows.map((g) => { const r = recRates(g.sum);
+    return [H(g.cols[0], "txt"), H(g.cols[1], "txt"), H(r1(g.sum.inKg), "num"), H(r1(g.sum.bm), "num"), H(r1(g.sum.cu), "num"), H(r1(g.sum.al), "num"),
+      H(frac(r.bm), "pct"), H(frac(r.cu), "pct"), H(frac(r.al), "pct"), H(frac(r.total), "pct")]; });
+  const pr = recRates(piv.total.sum);
+  const s3 = { name: "업체·품목 회수율", widths: [20, 18, 12, 11, 11, 11, 10, 10, 10, 10], freezeRow: 4,
+    rows: [[H(`업체 · 품목별 회수율 — ${y}년 ${m}월`, "title")], [H("여러 업체를 섞어 넣은 실적은 투입 중량 비율로 나눠요.", "note")], [], hv, ...vrows,
+      [H("합계", "totTxt"), H("", "totTxt"), H(r1(piv.total.sum.inKg), "totNum"), H(r1(piv.total.sum.bm), "totNum"), H(r1(piv.total.sum.cu), "totNum"), H(r1(piv.total.sum.al), "totNum"),
+        H(frac(pr.bm), "totPct"), H(frac(pr.cu), "totPct"), H(frac(pr.al), "totPct"), H(frac(pr.total), "totPct")]], merges: ["A1:J1", "A2:J2"] };
+  return [s1, s2, s3];
 }
 
 // ---------- 일일 공정이동 현황 ----------
@@ -8993,6 +9710,7 @@ function InventorySystem() {
         : activeTab === "tolling" ? html`<${TollingTab} lots=${openLots} />`
         : activeTab === "dashboard" ? html`<${DashboardTab} lots=${openLots} moves=${moves} dayDelta=${dayDelta} stockSrc=${stockSrc} />`
         : activeTab === "plan" ? html`<${PlanTab} mes=${mes} canEdit=${canEdit} onSave=${persistMes} />`
+        : activeTab === "recovery" ? html`<${RecoveryTab} runs=${runsAll} lots=${lotsAll} />`
         : activeTab === "act" ? html`<${ActualTab} lots=${lotsAll} runs=${runsAll} moves=${movesAll} downs=${downsAll}
             settings=${settings} mes=${mes} master=${master} canEdit=${canEdit} onSaveSettings=${persistSettings}
             ym=${actYm} onYm=${setActYm}
@@ -10988,7 +11706,6 @@ const dtMeta = (k) => DT_META[k] || DT_META["외부요인"];
 function buildReport(kind, from, to, mes, runs, downs, lots, settings, stockSrc) {
   const isMonth = kind === "month";
   const target = Number(mes.targetUtil) || 90;
-  const tr = mes.targetRates || { bm: 55, cu: 12, al: 10, cd: 5 };
   const recs = recordsFor(from, to, mes, runs, downs);
   const tot = rollupDays(recs);
   const days = dateRange(from, to).length;
@@ -11048,7 +11765,7 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings, stockSrc)
   points.push({ label: byMajor[0] ? "제약" : "회수", color: byMajor[0] ? PT.red : PT.blue,
     text: byMajor[0]
       ? `${execTerm(byMajor[0].key)} ${fmtMin(byMajor[0].min)} 발생 · 총 정지시간의 ${((byMajor[0].min / totMin) * 100).toFixed(0)}% 점유`
-      : `BM 회수율 ${fmtPct(rateBm)} · 목표 ${tr.bm}% 대비 ${pp(dPt(rateBm, tr.bm))}` });
+      : `BM 회수율 ${fmtPct(rateBm)} · BM ${fmtTon(tot.out.bm)}톤 회수` });
 
   S.push({
     kicker: "요약", accent: okAch && okUtil ? PT.green : PT.red,
@@ -11063,12 +11780,10 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings, stockSrc)
         bar: { pct: tot.planKg > 0 ? Math.min(120, (tot.inputKg / tot.planKg) * 100) : 0, max: 120, mark: 100,
           color: okAch ? PT.green : PT.amber } },
       { label: "BM 생산량 · 회수율", value: fmtTon(tot.out.bm), unit: "톤",
-        color: rateBm != null && rateBm >= tr.bm ? PT.green : PT.amber,
-        delta: `회수율 ${fmtPct(rateBm)} · 목표 ${tr.bm}%`,
-        deltaColor: rateBm != null && rateBm >= tr.bm ? PT.green : PT.amber,
-        deltaDir: rateBm != null && rateBm >= tr.bm ? "up" : "down",
-        bar: { pct: rateBm || 0, max: Math.max(tr.bm * 1.2, rateBm || 0), mark: tr.bm,
-          color: rateBm != null && rateBm >= tr.bm ? PT.green : PT.amber } },
+        color: PT.text,
+        delta: `회수율 ${fmtPct(rateBm)} · 투입 ${fmtTon(tot.inputKg)}톤 대비`,
+        deltaColor: PT.dim, deltaDir: "flat",
+        bar: { pct: rateBm || 0, max: 100, color: PT.blue } },
       { label: "설비종합효율 (OEE)", value: utilAll == null ? "-" : utilAll.toFixed(1), unit: "%",
         color: okUtil ? PT.green : PT.red,
         delta: `비가동 ${fmtMin(totMin)} ${dtRows.length}건 · 목표 ${target}%`,
@@ -11076,7 +11791,7 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings, stockSrc)
         bar: { pct: utilAll || 0, max: 100, mark: target, color: okUtil ? PT.green : PT.red } },
       { label: "응축수 회수", value: fmtTon(tot.out.cd), unit: "톤", color: PT.text,
         delta: `투입 대비 ${fmtPct(tot.rate.cd)} · 탱크 실측`, deltaColor: PT.dim, deltaDir: "flat",
-        bar: { pct: tot.rate.cd || 0, max: Math.max(tr.cd * 1.5, tot.rate.cd || 0), mark: tr.cd, color: PT.blue } },
+        bar: { pct: tot.rate.cd || 0, max: Math.max(10, (tot.rate.cd || 0) * 1.5), color: PT.blue } },
     ] },
   });
 
@@ -11145,7 +11860,6 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings, stockSrc)
   const perfRows = [
     { key: "계획 대비 달성율", v: achieve, t: 100, note: `계획 ${fmtTon(tot.planKg)}톤 · 실적 ${fmtTon(tot.inputKg)}톤` },
     { key: "설비종합효율", v: utilAll, t: target, note: `시간 ${fmtPct(tot.utilTime)} × 성능 ${fmtPct(tot.utilPerf)} × 양품 ${fmtPct(tot.utilQual)}` },
-    { key: "BM 회수율", v: rateBm, t: tr.bm, note: `BM ${fmtTon(tot.out.bm)}톤 회수` },
   ];
   const worstPerf = perfRows.filter((r) => r.v != null).sort((a, b) => (a.v - a.t) - (b.v - b.t))[0];
   S.push({
@@ -11192,27 +11906,23 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings, stockSrc)
   // 응축액은 Lot마다 계량할 수 없어서, 저장탱크를 탱크로리로 비운 날짜의 실측 중량으로 잡혀요.
   // 그래서 주 단위로는 들쭉날쭉할 수 있고, 그 사실을 배너에 적어둡니다.
   {
-    const under = OUTPUT_KINDS.filter((k) => tot.rate[k.key] != null && tot.rate[k.key] < tr[k.key]);
     const bmKg = tot.out.bm, cdKg = tot.out.cd;
-    const okBm = tot.rate.bm != null && tot.rate.bm >= tr.bm;
     S.push({
-      kicker: "분석", accent: under.length ? PT.amber : PT.green,
+      kicker: "분석", accent: PT.blue,
       title: tot.inputKg === 0 ? "투입 실적 없음, 회수율 산출 불가"
         : `투입 ${fmtTon(tot.inputKg)}톤 대비 BM ${fmtTon(bmKg)}톤 회수 (${fmtPct(tot.rate.bm)}),\n응축액 ${fmtTon(cdKg)}톤 (${fmtPct(tot.rate.cd)})`,
       subtitle: `투입 대비 회수율 · ${label} (막대 = 회수율 %, 위 = 회수량)`,
       visual: { type: "columns",
         rows: OUTPUT_KINDS.map((k) => {
           const v = tot.rate[k.key];
-          const met = v != null && v >= tr[k.key];
-          const worst = under[0] && k.key === under[0].key;
-          return { label: `${k.label}\n목표 ${tr[k.key]}%`, value: v || 0,
+          return { label: k.label, value: v || 0,
             text: `${fmtPct(v)} · ${fmtTon(tot.out[k.key])}톤`,
-            color: worst ? PT.red : met ? PT.green : PT.faint, strong: worst };
+            color: k.key === "bm" ? PT.blue : PT.faint, strong: k.key === "bm" };
         }) },
       banner: tot.inputKg === 0 ? null : {
-        kind: okBm ? "insight" : "action",
-        label: okBm ? "Insight" : "Action Required",
-        text: `BM ${fmtTon(bmKg)}톤 (목표 ${tr.bm}% 대비 ${pp(dPt(tot.rate.bm, tr.bm))}) · 응축액 ${fmtTon(cdKg)}톤 — 응축액은 저장탱크 배출 시 실측이라 기간별 편차 발생`,
+        kind: "insight",
+        label: "Insight",
+        text: `BM ${fmtTon(bmKg)}톤 (투입 대비 ${fmtPct(tot.rate.bm)}) · 응축액 ${fmtTon(cdKg)}톤 — 응축액은 저장탱크 배출 시 실측이라 기간별 편차 발생`,
       },
     });
   }
@@ -11275,16 +11985,6 @@ function buildReport(kind, from, to, mes, runs, downs, lots, settings, stockSrc)
         cur: `종합 ${fmtPct(utilAll)} (시간 ${fmtPct(tot.utilTime)} × 성능 ${fmtPct(tot.utilPerf)}) · 목표 ${target}%`,
         why: totMin > 0 ? `비가동 ${fmtMin(totMin)} 발생` : "설비 성능 저하 및 조업 조건 미정착",
         act: "표준작업 재정립 및 성능가동율 저해 구간 집중 점검" },
-      { on: rateBm != null && rateBm < tr.bm, color: PT.amber, icon: "cycle",
-        title: "BM 회수율 목표 미달",
-        cur: `회수율 ${fmtPct(rateBm)} · ${fmtTon(tot.out.bm)}톤 · 목표 ${tr.bm}%`,
-        why: "열분해 · 파쇄 공정조건 미최적화",
-        act: "공정조건(온도 · 체류시간 · 분급) 재설정 및 회수율 일 단위 추적" },
-      { on: tot.rate.cd != null && tot.rate.cd < tr.cd, color: PT.blue, icon: "truck",
-        title: "응축수 회수율 목표 미달",
-        cur: `투입 대비 ${fmtPct(tot.rate.cd)} · ${fmtTon(tot.out.cd)}톤 · 목표 ${tr.cd}%`,
-        why: "저장탱크 배출 주기가 길어 기간별 편차 발생",
-        act: "탱크 배출 주기 단축 및 배출 시 실측 중량 당일 등록" },
       { on: noPlan, color: PT.blue, icon: "flag",
         title: "조업 계획 미수립",
         cur: `${label} 구간 계획 0톤`,
@@ -11828,6 +12528,248 @@ function SlideVisual({ v }) {
   return null;
 }
 
+// ---------- 회수율현황 ----------
+// 생산실적에서 바로 계산해요 — 따로 입력하는 칸이 없습니다.
+// 공정(전기방전 · 해체 · 파쇄 · 열분해)마다 따로 묶고, 그 안을 업체 · 품목으로 나눠요.
+// 표는 예전 관리 시트처럼 "묶음 × 항목" 줄에 기간을 칸으로 두되, 투입 · 배출 · 회수율을 색으로 갈라 둡니다.
+// 응축액 회수율은 탱크를 비운 기간에만 의미가 있어서, 그 기간에 잰 값이 없으면 "-"로 둬요.
+const recLineVal = (cell, key) => (key === "r.cd" && !(cell.cd > 0) ? null
+  : key.startsWith("r.") ? recRates(cell)[key.slice(2)] : cell[key]);
+const REC_SEC_TAG = { in: "tagIn", out: "tagOut", rate: "tagRate" };
+
+function RecoveryTrend({ periods, labels, series }) {
+  const W = 1200, H = 320, L = 46, R = 28, T = 14, B = 32;
+  const n = periods.length;
+  const x = (i) => (n <= 1 ? L + (W - L - R) / 2 : L + ((W - L - R) * i) / (n - 1));
+  const y = (v) => T + (H - T - B) * (1 - Math.max(0, Math.min(100, v)) / 100);
+  const step = Math.max(1, Math.ceil(n / 18));
+  return html`
+    <svg viewBox=${`0 0 ${W} ${H}`} className="ivs-rc-svg" role="img" aria-label="기간별 회수율 추이">
+      ${[0, 20, 40, 60, 80, 100].map((v) => html`<g key=${v}>
+        <line x1=${L} x2=${W - R} y1=${y(v)} y2=${y(v)} className="ivs-rc-grid" />
+        <text x=${L - 6} y=${y(v) + 4} className="ivs-rc-ax" textAnchor="end">${v}%</text></g>`)}
+      ${series.map((s) => {
+        // 실적이 없는 칸은 선을 끊어요 (0%로 떨어진 것처럼 보이지 않게)
+        const segs = []; let cur = [];
+        s.values.forEach((v, i) => { if (v == null) { if (cur.length) segs.push(cur); cur = []; } else cur.push([x(i), y(v), v, i]); });
+        if (cur.length) segs.push(cur);
+        return html`<g key=${s.key} style=${{ "--c": s.color }}>
+          ${segs.map((sg, j) => html`<polyline key=${j} className="ivs-rc-line" points=${sg.map((p) => `${p[0]},${p[1]}`).join(" ")} />`)}
+          ${segs.flat().map((p) => html`<circle key=${p[3]} cx=${p[0]} cy=${p[1]} r=${n > 40 ? 2 : 3.2} className="ivs-rc-dot">
+            <title>${labels[p[3]]} · ${s.label} ${p[2].toFixed(1)}%</title></circle>`)}
+        </g>`;
+      })}
+      ${periods.map((p, i) => (i % step === 0 || i === n - 1) ? html`<text key=${p} x=${x(i)} y=${H - 10} className="ivs-rc-ax" textAnchor="middle">${labels[i]}</text>` : null)}
+    </svg>`;
+}
+
+// 표의 왼쪽 이름 칸 — 공정 · (업체 · 품목) · 구분 · 항목. 너비는 화면 고정 칸(sticky) 위치 계산에도 씁니다.
+const recLabelCols = (D, showProc) => [
+  ...(showProc ? [{ k: "proc", h: "공정", w: 78, xw: 9 }] : []),
+  ...D.heads.map((h) => ({ k: h, h, w: h === "업체" ? 118 : 140, xw: h === "업체" ? 16 : 20 })),
+  { k: "sec", h: "구분", w: 64, xw: 8 },
+  { k: "line", h: "항목", w: 150, xw: 22 },
+];
+
+function recoveryXlsx({ blocks, periods, gran, dim, showProc, title, sub }) {
+  const H = (v, s) => ({ v, s });
+  const D = RECOVERY_DIMS[dim] || RECOVERY_DIMS.vendorCat;
+  const lc = recLabelCols(D, showProc);
+  const nL = lc.length;
+  const lastCol = nL + periods.length;
+  const head = [...lc.map((c) => H(c.h, "hdrBand")), ...periods.map((p) => H(recoveryPeriodLabel(p, gran), "hdrBand")), H("합계", "hdrBand")];
+  const rows = [[H(title, "title")], [H(sub, "note")], [H("(단위: kg · 회수율 %)", "note")], head];
+  const merges = [`A1:${colLetter(lastCol)}1`, `A2:${colLetter(lastCol)}2`];
+  const val = (cell, ln) => { const v = recLineVal(cell, ln.key); return v == null || (ln.kind === "kg" && !v) ? "" : ln.kind === "pct" ? Math.round(v * 10) / 1000 : Math.round(v * 10) / 10; };
+  const mergeDown = (c, r, n, c2) => { if (n > 1 || (c2 != null && c2 > c)) merges.push(`${colLetter(c)}${r}:${colLetter(c2 != null ? c2 : c)}${r + n - 1}`); };
+  recoveryTableRows(blocks, D, gran).forEach((t) => {
+    const rn = rows.length + 1;
+    const row = [];
+    let c = 0;
+    if (showProc) { row.push(H(t.procSpan ? t.b.label : "", "procC")); if (t.procSpan) mergeDown(c, rn, t.procSpan); c++; }
+    if (D.heads.length) {
+      if (t.isTotal) {
+        D.heads.forEach((_, i) => row.push(H(i === 0 && t.nameSpan ? "공정 합계" : "", "totName")));
+        if (t.nameSpan) mergeDown(c, rn, t.nameSpan, c + D.heads.length - 1);
+      } else if (D.heads.length === 2) {
+        row.push(H(t.vendorSpan ? t.g.cols[0] : "", "nameC")); if (t.vendorSpan) mergeDown(c, rn, t.vendorSpan);
+        row.push(H(t.nameSpan ? t.g.cols[1] : "", "nameC")); if (t.nameSpan) mergeDown(c + 1, rn, t.nameSpan);
+      } else { row.push(H(t.nameSpan ? t.g.cols[0] : "", "nameC")); if (t.nameSpan) mergeDown(c, rn, t.nameSpan); }
+      c += D.heads.length;
+    }
+    row.push(H(t.secSpan ? t.secLabel : "", REC_SEC_TAG[t.sec])); if (t.secSpan) mergeDown(c, rn, t.secSpan);
+    const st = t.sec === "in" ? ["inLbl", t.isTotal ? "inNumB" : "inNum", "inSum"] : t.sec === "out" ? ["outLbl", t.isTotal ? "outNumB" : "outNum", "outSum"] : ["rateLbl", "ratePct", "rateSum"];
+    row.push(H(t.ln.label, st[0]));
+    periods.forEach((p) => row.push(H(val(t.g.byP[p], t.ln), st[1])));
+    row.push(H(val(t.g.sum, t.ln), st[2]));
+    rows.push(row);
+  });
+  return [{ name: "회수율 집계", rows, freezeRow: 4, freezeCol: nL, merges, landscapeFit: true,
+    widths: [...lc.map((c) => c.xw), ...periods.map(() => (gran === "day" ? 8 : 10)), 12] }];
+}
+
+function RecoveryTab({ runs, lots }) {
+  const today = localDateStr();
+  const [gran, setGran] = useState("month");
+  const [ym, setYm] = useState(today.slice(0, 7));
+  const [year, setYear] = useState(today.slice(0, 4));
+  const [dim, setDim] = useState("vendorCat");
+  const [procSel, setProcSel] = useState("all");
+  const { recs, cd } = useMemo(() => recoveryRecords(runs, lots, { all: true }), [runs, lots]);
+  const years = useMemo(() => Array.from(new Set([...recs.map((r) => r.date.slice(0, 4)), ...cd.map((c) => c.date.slice(0, 4)), today.slice(0, 4)])).sort(), [recs, cd, today]);
+  const periods = useMemo(() => recoveryPeriods(gran, gran === "day" ? ym : year, years), [gran, ym, year, years]);
+  const labels = periods.map((p) => recoveryPeriodLabel(p, gran));
+  const procKeys = procSel === "all" ? REC_PROCS : [procSel];
+  const showProc = procSel === "all";
+  const blocks = useMemo(() => recoveryBlocks(recs, cd, periods, gran, dim, procKeys), [recs, cd, periods, gran, dim, procSel]);
+  // 위쪽 카드는 고른 공정과 상관없이 네 공정을 늘 같이 보여줘요.
+  const kb = useMemo(() => Object.fromEntries(recoveryBlocks(recs, cd, periods, gran, "process", REC_PROCS).map((b) => [b.proc, b.total.sum])), [recs, cd, periods, gran]);
+  const D = RECOVERY_DIMS[dim];
+  const lc = recLabelCols(D, showProc);
+  const lefts = lc.reduce((a, c, i) => a.concat(i === 0 ? 0 : a[i - 1] + lc[i - 1].w), []);
+  const stick = (i) => ({ left: lefts[i], minWidth: lc[i].w, maxWidth: lc[i].w });
+  const rangeLabel = gran === "day" ? `${ym.slice(0, 4)}년 ${Number(ym.slice(5))}월 · 일별` : gran === "year" ? `${years[0]}~${years[years.length - 1]}년 · 연간`
+    : `${year}년 · ${gran === "week" ? "주별" : "월별"}`;
+  const kgN = (v) => (v ? Math.round(v).toLocaleString("ko-KR") : "-");
+  const pctN = (v) => (v == null ? "-" : `${v.toFixed(1)}%`);
+  const num1 = (v) => (v == null ? "-" : v.toFixed(1));
+  const series = procSel === "crush"
+    ? [{ key: "total", label: "총 회수율", color: PROC_COLOR.crush }, { key: "bm", label: "BM", color: "#65A30D" },
+       { key: "cu", label: "Cu-chip", color: "#B45309" }, { key: "al", label: "Al-chip", color: "#64748B" }]
+      .map((s) => ({ ...s, values: periods.map((p) => (blocks[0] ? recRates(blocks[0].total.byP[p])[s.key] : null)) }))
+    : blocks.map((b) => ({ key: b.proc, label: `${b.label} · ${REC_SPEC[b.proc].mainLabel}`, color: PROC_COLOR[b.proc],
+        values: periods.map((p) => recMain(b.proc, b.total.byP[p])) }));
+  const rankSecs = blocks.filter((b) => b.rows.length).map((b) => ({ b,
+    items: b.rows.filter((g) => g.sum.inKg > 0).map((g) => ({ g, v: recMain(b.proc, g.sum) })).sort((a, c) => (c.v || 0) - (a.v || 0)) }));
+  const rankLimit = rankSecs.length > 1 ? 6 : 18;
+  const exportX = () => downloadXlsxBook(`회수율집계_${gran === "day" ? ym : gran === "year" ? "연간" : year}_${procSel === "all" ? "전체공정" : processByKey[procSel].label}_${D.label.replace(/[ ·]/g, "")}.xlsx`,
+    recoveryXlsx({ blocks, periods, gran, dim, showProc, title: `회수율 집계 — ${rangeLabel}`,
+      sub: `${procSel === "all" ? "전체 공정" : processByKey[procSel].label} · ${D.label} · 회수율 = 배출 ÷ 투입 (공정마다 따로) · 여러 업체를 섞어 넣은 실적은 투입 중량 비율로 나눔` }));
+  const empty = blocks.length === 0;
+  const k = (p) => kb[p] || recCell();
+  const kr = (p) => recRates(k(p));
+  const cardOn = (p) => (procSel === p ? "ivs-rc-kpi on" : "ivs-rc-kpi");
+  return html`
+    <div className="ivs-rc">
+      <div className="ivs-periodbar">
+        <div className="ivs-seg">
+          ${[["day", "일별"], ["week", "주별"], ["month", "월별"], ["year", "연간"]].map(([kk, t]) => html`
+            <button key=${kk} className=${`ivs-seg-btn ${gran === kk ? "on" : ""}`} onClick=${() => setGran(kk)}>${t}</button>`)}
+        </div>
+        ${gran === "day" ? html`<input type="month" className="ivs-input" value=${ym} onChange=${(e) => e.target.value && setYm(e.target.value)} />`
+          : gran === "year" ? null : html`<select className="ivs-select" value=${year} onChange=${(e) => setYear(e.target.value)}>
+            ${years.slice().reverse().map((y) => html`<option key=${y} value=${y}>${y}년</option>`)}</select>`}
+        <div className="ivs-seg">
+          ${[["all", "전체 공정"], ...REC_PROCS.map((p) => [p, processByKey[p].label])].map(([kk, t]) => html`
+            <button key=${kk} className=${`ivs-seg-btn ${procSel === kk ? "on" : ""}`} onClick=${() => setProcSel(kk)}>${t}</button>`)}
+        </div>
+        <div className="ivs-seg">
+          ${Object.entries(RECOVERY_DIMS).map(([kk, d]) => html`
+            <button key=${kk} className=${`ivs-seg-btn ${dim === kk ? "on" : ""}`} onClick=${() => setDim(kk)}>${d.label}</button>`)}
+        </div>
+        <span className="ivs-spacer" />
+        <button className="ivs-btn" onClick=${exportX} disabled=${empty}><${Icon} name="download" size=${13} /> 엑셀</button>
+      </div>
+
+      <div className="ivs-kpis">
+        <div className=${cardOn("disassemble")} onClick=${() => setProcSel(procSel === "disassemble" ? "all" : "disassemble")}>
+          <${SummaryCard} label="해체 셀 회수율" value=${num1(kr("disassemble").cell)} unit="%" sub=${`투입 ${fmtTon(k("disassemble").inKg)} → 셀 ${fmtTon(k("disassemble").cell)} 톤`} /></div>
+        <div className=${cardOn("crush")} onClick=${() => setProcSel(procSel === "crush" ? "all" : "crush")}>
+          <${SummaryCard} label="파쇄 총 회수율" value=${num1(kr("crush").total)} unit="%" sub=${`BM ${pctN(kr("crush").bm)} · Cu ${pctN(kr("crush").cu)} · Al ${pctN(kr("crush").al)}`} /></div>
+        <div className=${cardOn("calcine")} onClick=${() => setProcSel(procSel === "calcine" ? "all" : "calcine")}>
+          <${SummaryCard} label="열분해 BM 회수율" value=${num1(kr("calcine").bm)} unit="%" sub=${`투입 ${fmtTon(k("calcine").inKg)} → BM ${fmtTon(k("calcine").bm)} 톤`} /></div>
+        <div className="ivs-rc-kpi static">
+          <${SummaryCard} label="응축액 (열분해 대비)" value=${num1(kr("calcine").cd)} unit="%" sub=${`${fmtTon(k("calcine").cd)} 톤 · 탱크 실측`} /></div>
+      </div>
+
+      ${empty ? html`<div className="ivs-card"><div className="ivs-prod-empty center">${rangeLabel}에 ${procSel === "all" ? "" : `${processByKey[procSel].label} `}실적이 없어요.</div></div>` : html`
+      <div className="ivs-card">
+          <div className="ivs-card-head-row">
+            <h2 className="ivs-section-title">기간별 회수율 추이</h2>
+            <span className="ivs-section-hint">${rangeLabel} · 실적 없는 칸은 선을 끊어요 · 점에 마우스를 올리면 값</span>
+          </div>
+          <${RecoveryTrend} periods=${periods} labels=${labels} series=${series} />
+          <div className="ivs-legend" style=${{ marginTop: 8 }}>
+            ${series.map((s) => html`<span className="ivs-legend-row" key=${s.key}><i className="ivs-legend-swatch" style=${{ background: s.color }}></i>${s.label}</span>`)}
+          </div>
+      </div>
+      <div className="ivs-card">
+          <div className="ivs-card-head-row">
+            <h2 className="ivs-section-title">${D.heads.length ? `${D.label} 회수율 순위` : "공정별 회수율"}</h2>
+            <span className="ivs-section-hint">공정마다 따로 · 높은 순 · 오른쪽 = 투입 톤</span>
+          </div>
+          <div className=${`ivs-rc-rank ${D.heads.length ? (rankSecs.length > 1 ? "grid" : "grid single") : ""}`}>
+            ${D.heads.length ? rankSecs.map(({ b, items }) => html`<div className="ivs-rc-rank-sec" key=${b.proc} style=${{ "--c": PROC_COLOR[b.proc] }}>
+              <div className="ivs-rc-rank-head"><i></i>${b.label}<small>${REC_SPEC[b.proc].mainLabel}</small></div>
+              <div className="ivs-rc-rank-items">
+              ${items.slice(0, rankLimit).map(({ g, v }) => html`<div className="ivs-rc-rank-row" key=${g.key}>
+                <span className="ivs-rc-rank-name" title=${g.cols.join(" · ")}><b>${g.cols[0]}</b>${g.cols[1] ? html`<small>${g.cols[1]}</small>` : null}</span>
+                <span className="ivs-rc-rank-track"><i style=${{ width: `${Math.min(100, v || 0)}%` }} /></span>
+                <b>${pctN(v)}</b>
+                <em>${fmtTon(g.sum.inKg)} 톤</em>
+              </div>`)}
+              </div>
+              ${items.length > rankLimit ? html`<div className="ivs-section-hint">외 ${items.length - rankLimit}개 — 아래 표와 엑셀에서</div>` : null}
+            </div>`) : blocks.map((b) => html`<div className="ivs-rc-rank-row" key=${b.proc} style=${{ "--c": PROC_COLOR[b.proc] }}>
+                <span className="ivs-rc-rank-name"><b>${b.label}</b><small>${REC_SPEC[b.proc].mainLabel}</small></span>
+                <span className="ivs-rc-rank-track"><i style=${{ width: `${Math.min(100, recMain(b.proc, b.total.sum) || 0)}%` }} /></span>
+                <b>${pctN(recMain(b.proc, b.total.sum))}</b>
+                <em>${fmtTon(b.total.sum.inKg)} 톤</em>
+              </div>`)}
+          </div>
+      </div>
+
+      <div className="ivs-card">
+        <div className="ivs-card-head-row">
+          <h2 className="ivs-section-title">회수율 집계</h2>
+          <span className="ivs-section-hint">${rangeLabel} · ${procSel === "all" ? "전체 공정" : processByKey[procSel].label} · ${D.label} · 단위 kg</span>
+          <span className="ivs-spacer" />
+          <span className="ivs-rc-keys"><i className="in">투입</i><i className="out">배출</i><i className="rate">회수율</i></span>
+        </div>
+        <div className="ivs-table-wrap ivs-rc-wrap">
+          <table className="ivs-table ivs-table-fit ivs-rc-table">
+            <thead><tr>
+              ${lc.map((c, i) => html`<th key=${c.k} className="ivs-rc-sticky" style=${stick(i)}>${c.h}</th>`)}
+              ${periods.map((p, i) => html`<th key=${p} className="ivs-right">${labels[i]}</th>`)}
+              <th className="ivs-right ivs-rc-sumh">합계</th>
+            </tr></thead>
+            <tbody>
+              ${recoveryTableRows(blocks, D, gran).map((t) => {
+                let ci = 0;
+                const cells = [];
+                if (showProc) { if (t.procSpan) cells.push(html`<td key="proc" rowSpan=${t.procSpan} className="ivs-rc-sticky ivs-rc-proc" style=${{ ...stick(ci), "--c": PROC_COLOR[t.b.proc] }}><span className="ivs-rc-proc-in">${t.b.label}</span></td>`); ci++; }
+                if (D.heads.length) {
+                  if (t.isTotal) {
+                    if (t.nameSpan) cells.push(html`<td key="tot" rowSpan=${t.nameSpan} colSpan=${D.heads.length} className="ivs-rc-sticky ivs-rc-name ivs-rc-totname" style=${stick(ci)}>공정 합계</td>`);
+                  } else if (D.heads.length === 2) {
+                    if (t.vendorSpan) cells.push(html`<td key="v" rowSpan=${t.vendorSpan} className="ivs-rc-sticky ivs-rc-name" style=${stick(ci)}><span className="ivs-rc-proc-in">${t.g.cols[0]}</span></td>`);
+                    if (t.nameSpan) cells.push(html`<td key="c" rowSpan=${t.nameSpan} className="ivs-rc-sticky ivs-rc-name ivs-rc-sub" style=${stick(ci + 1)}><span className="ivs-rc-proc-in">${t.g.cols[1]}</span></td>`);
+                  } else if (t.nameSpan) cells.push(html`<td key="n" rowSpan=${t.nameSpan} className="ivs-rc-sticky ivs-rc-name" style=${stick(ci)}><span className="ivs-rc-proc-in">${t.g.cols[0]}</span></td>`);
+                  ci += D.heads.length;
+                }
+                if (t.secSpan) cells.push(html`<td key="sec" rowSpan=${t.secSpan} className=${`ivs-rc-sticky ivs-rc-tag ${t.sec}`} style=${stick(ci)}>${t.secLabel}</td>`);
+                ci++;
+                const fmt = (v) => (t.ln.kind === "pct" ? pctN(v) : kgN(v));
+                return html`<tr key=${`${t.g.key}-${t.ln.key}`} className=${`sec-${t.sec}${t.isTotal ? " ivs-rc-total" : ""}${t.groupFirst ? " ivs-rc-first" : ""}${t.blockFirst ? " ivs-rc-blk" : ""}`}>
+                  ${cells}
+                  <td className="ivs-rc-sticky ivs-rc-line" style=${stick(ci)}>${t.ln.label}</td>
+                  ${periods.map((p) => html`<td key=${p} className="ivs-right ivs-mono">${fmt(recLineVal(t.g.byP[p], t.ln.key))}</td>`)}
+                  <td className="ivs-right ivs-mono ivs-rc-sumc">${fmt(recLineVal(t.g.sum, t.ln.key))}</td>
+                </tr>`;
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p className="ivs-stock-note">
+          회수율 = 배출 ÷ 투입, 공정마다 따로 봅니다 — 해체: 셀 ÷ 투입(전기방전을 마친 모듈 · 팩 Lot의 입고 중량) · 파쇄: BM · Cu · Al 각각과 합계 ÷ 투입 · 열분해: BM ÷ 투입.
+          전기방전은 무게를 다시 재지 않고 Lot을 그대로 해체로 넘기는 공정이라 회수율에서 뺐어요.
+          같은 물건이 다음 공정에 다시 들어가니 공정끼리는 더하지 않아요. 한 실적에 여러 업체 · 품목을 섞어 넣었으면 배출을 투입 중량 비율로 나눠서, 업체 · 품목 숫자를 더하면 "공정 합계"와 맞습니다.
+          응축액은 탱크를 비울 때 잰 값이라 업체로 나누지 않고, 열분해 공정 합계에만 열분해 투입 대비로 붙여요.
+        </p>
+      </div>`}
+    </div>`;
+}
+
 function SoonTab({ title, step, lines }) {
   return html`
     <div className="ivs-card">
@@ -12083,6 +13025,9 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
   const [procFilter, setProcFilter] = useState("all");
   const [cd, setCd] = useState({ date: today, kg: "", lotNo: "", note: "" }); // 응축액 출고
   const [logDate, setLogDate] = useState(today); // 일 작업일보로 뽑을 날짜
+  // 제조일보 — 일일(하루) / 월간(한 달) 중 무엇을 뽑을지
+  const [logMode, setLogMode] = useState("day");
+  const [logYm, setLogYm] = useState(() => localDateStr().slice(0, 7));
 
   const proc = processByKey[form.process] || FLOW_PROCESSES[0];
   // 저장 눌렀을 때 실제로 붙을 Lot 번호를 미리 그대로 계산해 보여줘요 (규칙은 저장 쪽과 같습니다).
@@ -12231,9 +13176,21 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
     moves: (moves || []).filter((m) => m.date === logDate).length,
     downs: (downs || []).filter((d) => d.date === logDate).length,
   }), [runs, lots, moves, downs, logDate]);
-  const printDayLog = () => printDocument(`일일 제조일보 ${logDate}`,
-    dailyReportHtml({ date: logDate, runs, lots, moves, downs, settings, mes }),
-    { hf: printHF(settings), vars: { 문서: "일일 제조일보", 날짜: logDate, 출력: nowStamp(), 담당: settings.manager || "" } });
+  const printDayLog = () => (logMode === "month"
+    ? printDocument(`월간 제조일보 ${logYm}`,
+      monthlyReportHtml({ ym: logYm, runs, lots, downs, settings }),
+      { hf: printHF(settings), vars: { 문서: "월간 제조일보", 날짜: logYm, 출력: nowStamp(), 담당: settings.manager || "" } })
+    : printDocument(`일일 제조일보 ${logDate}`,
+      dailyReportHtml({ date: logDate, runs, lots, moves, downs, settings, mes }),
+      { hf: printHF(settings), vars: { 문서: "일일 제조일보", 날짜: logDate, 출력: nowStamp(), 담당: settings.manager || "" } }));
+  // 엑셀 — 일일은 상세 한 장, 월간은 상세 · 일자별 요약 · 업체 · 품목별 회수율 세 장
+  const excelDayLog = () => (logMode === "month"
+    ? downloadXlsxBook(`월간제조일보_${logYm}.xlsx`, monthlyReportXlsx({ ym: logYm, runs, lots, downs, settings }))
+    : downloadXlsxBook(`일일제조일보_${logDate}.xlsx`, dailyReportXlsx({ date: logDate, runs, lots, settings })));
+  const monthCount = useMemo(() => ({
+    runs: (runs || []).filter((r) => (r.date || "").startsWith(logYm)).length,
+    days: new Set((runs || []).filter((r) => (r.date || "").startsWith(logYm)).map((r) => r.date)).size,
+  }), [runs, logYm]);
 
   // 고른 Lot 가운데 이 공정을 이미 한 번 거쳐 나온 게 있으면 재작업으로 봐요 (예: 파쇄에서 나온 Lot을 다시 파쇄).
   const reworkHint = chosen.filter((l) => l.stage === "usable" || l.process === proc.key);
@@ -12264,27 +13221,42 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
 
       <div className="ivs-daylog">
         <div className="ivs-daylog-txt">
-          <b><${Printer} size=${13} /> 일일 제조일보</b>
+          <b><${Printer} size=${13} /> ${logMode === "month" ? "월간 제조일보" : "일일 제조일보"}</b>
           <span>
-            고른 날 하루치를 A4 한 장으로 뽑아요 — 생산실적 · 신규 입고 · 공정이동 · 비가동과 결재란까지 들어갑니다.
-            ${logCount.runs + logCount.ins + logCount.moves + logCount.downs === 0
-              ? " 고른 날에는 아직 기록이 없어요."
-              : ` ${logDate}: 생산실적 ${logCount.runs}건 · 신규 입고 ${logCount.ins}건 · 공정이동 ${logCount.moves}건 · 비가동 ${logCount.downs}건.`}
+            ${logMode === "month"
+              ? html`고른 달 전체를 묶어요 — 일자별 요약 · 공정별 요약 · 업체 · 품목별 회수율 · 비가동 · 생산실적 상세.
+                ${monthCount.runs === 0 ? " 고른 달에는 아직 생산실적이 없어요." : ` ${logYm}: 생산실적 ${monthCount.runs}건 (${monthCount.days}일).`}`
+              : html`고른 날 하루치를 A4 한 장으로 뽑아요 — 생산실적 · 신규 입고 · 공정이동 · 비가동과 결재란까지 들어갑니다.
+                ${logCount.runs + logCount.ins + logCount.moves + logCount.downs === 0
+                  ? " 고른 날에는 아직 기록이 없어요."
+                  : ` ${logDate}: 생산실적 ${logCount.runs}건 · 신규 입고 ${logCount.ins}건 · 공정이동 ${logCount.moves}건 · 비가동 ${logCount.downs}건.`}`}
           </span>
         </div>
         <div className="ivs-daylog-act">
-          <button className="ivs-btn ivs-btn-sm" onClick=${() => setLogDate(shiftDay(logDate, -1))} title="하루 전">◀</button>
-          <input type="date" className="ivs-input ivs-input-cell" value=${logDate}
-            onChange=${(e) => setLogDate(e.target.value)} />
-          <button className="ivs-btn ivs-btn-sm" onClick=${() => setLogDate(shiftDay(logDate, 1))} title="하루 뒤">▶</button>
-          <button className="ivs-btn ivs-btn-sm" onClick=${() => setLogDate(today)}>오늘</button>
+          <div className="ivs-seg">
+            ${[["day", "일일"], ["month", "월간"]].map(([k, t]) => html`
+              <button key=${k} className=${`ivs-seg-btn ${logMode === k ? "on" : ""}`} onClick=${() => setLogMode(k)}>${t}</button>`)}
+          </div>
+          ${logMode === "month" ? html`
+            <input type="month" className="ivs-input ivs-input-cell" value=${logYm}
+              onChange=${(e) => e.target.value && setLogYm(e.target.value)} />
+          ` : html`
+            <button className="ivs-btn ivs-btn-sm" onClick=${() => setLogDate(shiftDay(logDate, -1))} title="하루 전">◀</button>
+            <input type="date" className="ivs-input ivs-input-cell" value=${logDate}
+              onChange=${(e) => setLogDate(e.target.value)} />
+            <button className="ivs-btn ivs-btn-sm" onClick=${() => setLogDate(shiftDay(logDate, 1))} title="하루 뒤">▶</button>
+            <button className="ivs-btn ivs-btn-sm" onClick=${() => setLogDate(today)}>오늘</button>
+          `}
           <button className="ivs-btn ivs-btn-sm" onClick=${() => setHfOpen(true)} title="종이 위 · 아래에 찍을 글자">머리글 · 바닥글</button>
+          <button className="ivs-btn" onClick=${excelDayLog} title="엑셀 파일로 내려받기">
+            <${Icon} name="download" size=${13} /> 엑셀
+          </button>
           <button className="ivs-btn ivs-btn-primary" onClick=${printDayLog}>
             <${Printer} size=${13} /> 인쇄 · PDF
           </button>
         </div>
       </div>
-      ${hfOpen ? html`<${PrintHFModal} settings=${settings} canEdit=${canEdit} docName="일일 제조일보" date=${logDate}
+      ${hfOpen ? html`<${PrintHFModal} settings=${settings} canEdit=${canEdit} docName=${logMode === "month" ? "월간 제조일보" : "일일 제조일보"} date=${logMode === "month" ? logYm : logDate}
         onSave=${(next) => onSaveSettings && onSaveSettings(next)} onClose=${() => setHfOpen(false)} />` : null}
 
       <div className="ivs-kpis cols-5">
@@ -12393,25 +13365,33 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
 
           ${proc.mode === "move" ? html`
             <div className="ivs-chart-label" style=${{ marginTop: 16 }}>
-              ③ 품목 · 업체 · 생산 Lot — ${proc.label}은 Lot을 그대로 다음 단계로 넘겨요
+              ③ ${getStage(proc.to).label} 처리 — 무게는 다시 재지 않고, 고른 입고 Lot이 그대로 넘어가요
             </div>
-            <div className="ivs-form-grid">
-              <${Field} label="품목">
-                <input className="ivs-input ivs-input-auto" readOnly tabIndex=${-1}
-                  value=${chosen.length === 0 ? "-" : Array.from(new Set(chosen.map((l) => l.name))).join(", ")} />
-              <//>
-              <${Field} label="업체">
-                <input className="ivs-input ivs-input-auto" readOnly tabIndex=${-1}
-                  value=${chosen.length === 0 ? "-" : Array.from(new Set(chosen.map((l) => l.vendor || "-"))).join(", ")} />
-              <//>
-              <${Field} label="생산 Lot">
-                <input className="ivs-input ivs-input-auto" readOnly tabIndex=${-1}
-                  value=${`새 Lot 없음 — ${getStage(proc.to).label}로 이동`} />
-              <//>
+            ${chosen.length === 0 ? html`<div className="ivs-prod-empty">위에서 전기방전할 모듈 · 팩 입고 Lot을 고르세요.</div>` : html`
+              <div className="ivs-table-wrap">
+                <table className="ivs-table ivs-table-fit ivs-dc-table">
+                  <thead><tr><th>Lot 번호</th><th>업체</th><th>품목</th><th className="ivs-right">입고 중량</th><th>처리 후</th></tr></thead>
+                  <tbody>
+                    ${chosen.map((l) => html`<tr key=${l.id}>
+                      <td className="ivs-mono"><b>${l.lotNo}</b></td><td>${l.vendor || "-"}</td><td>${l.name}</td>
+                      <td className="ivs-right ivs-mono">${fmtKg(l.qtyKg)}</td>
+                      <td><span className="ivs-badge-dot" style=${{ background: getStage(proc.to).color }} /> ${getStage(proc.to).label} → 해체에서 선택</td>
+                    </tr>`)}
+                  </tbody>
+                </table>
+              </div>`}
+            <div className="ivs-section-hint" style=${{ marginTop: 8 }}>
+              새 Lot은 만들지 않아요. 해체에서 이 Lot을 골라 나온 셀 무게를 넣으면, <b>셀 ÷ 입고 중량</b>으로 해체 회수율이 계산되어 회수율현황에 들어갑니다.
             </div>
           ` : proc.mode === "split" ? html`
             <div className="ivs-chart-label" style=${{ marginTop: 16 }}>
               ③ 해체 산출 — 셀이 새 재공 Lot이 되어 곧바로 ${getStage(proc.to).label}로 넘어가요
+            </div>
+            <div className="ivs-dc-link">
+              <span>투입 <b>${getStage("discharge").label} Lot ${chosen.length}건</b> · ${fmtKg(inputKg)}</span>
+              <span>셀 <b>${Number(form.cellKg) > 0 ? fmtKg(Number(form.cellKg)) : "-"}</b></span>
+              <span>해체 회수율 <b className="ivs-dc-rate">${inputKg > 0 && Number(form.cellKg) > 0 ? `${((Number(form.cellKg) / inputKg) * 100).toFixed(1)}%` : "-"}</b></span>
+              <em>셀 ÷ 투입 · 회수율현황 "해체"에 업체 · 품목별로 집계</em>
             </div>
             <div className="ivs-form-grid">
               <${Field} label="품목 (셀)">
@@ -15785,8 +16765,9 @@ function ConfirmModal({ icon, title, body, confirmLabel, danger, onCancel, onCon
   const rootEl = document.getElementById("ivs-app-root");
   if (PREVIEW_MODE) {
     // 샘플 화면 — 실제 팀 데이터(Firebase)는 읽지도 쓰지도 않아요. 잠금 PIN도 없이 바로 보여줘요.
+    const hist = historySeed();
     LIVE_DOC = liveToDoc({
-      lots: seedData().concat(agedSeedLots()), moves: moveSeedData(), runs: runSeedData(), downs: downSeedData(), master: {},
+      lots: seedData().concat(agedSeedLots(), hist.lots), moves: moveSeedData(), runs: runSeedData().concat(hist.runs), downs: downSeedData(), master: {},
       settings: { title: "DRT · 재고관리", subtitle: "로트 단위 공정 흐름 관리", editPin: "", viewPin: "" },
       mes: {},
     });

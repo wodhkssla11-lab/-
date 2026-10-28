@@ -624,26 +624,32 @@
   .ivs-label {
     --lw: 100mm; --lh: 100mm;
     width: var(--lw); height: var(--lh); background: #FFFFFF; color: #000000;
-    border: 1px solid #C9CFDA; border-radius: 3px; padding: 5mm 5.5mm;
-    display: flex; flex-direction: column; gap: 2.5mm;
+    border: 1px solid #C9CFDA; border-radius: 3px; padding: 4.4mm 5.5mm;
+    display: flex; flex-direction: column; gap: 1.7mm;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", sans-serif;
     box-sizing: border-box; overflow: hidden;
   }
-  .ivs-label-top { border-bottom: 0.45mm solid #111111; padding-bottom: 2.2mm; }
-  .ivs-label-lot { font-size: 7.6mm; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ivs-label-name { font-size: 4.4mm; font-weight: 600; line-height: 1.2; margin-top: 1mm; color: #1B2029;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ivs-label-kg { font-size: 11mm; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums;
+  /* 라벨 — 위: "Lot." 머리 + Lot 번호(폭에 맞춰 글자 크기 자동, 잘림 없음) · 중량 · QR(34mm) · 아래: 정보 3줄 표 */
+  .ivs-label-top { border-bottom: 0.45mm solid #111111; padding-bottom: 1.8mm; }
+  .ivs-label-cap { font-size: 3.75mm; font-weight: 600; color: #3A414C; line-height: 1.1; margin-bottom: 0.6mm; }
+  .ivs-label-lot { font-size: 8mm; font-weight: 800; letter-spacing: -0.01em; line-height: 1.12; white-space: nowrap; overflow: hidden; }
+  .ivs-label-lot.wrap { white-space: normal; word-break: break-all; }
+  .ivs-label-kg { font-size: 10mm; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em; }
-  .ivs-label-kg em { font-size: 5mm; font-weight: 600; font-style: normal; margin-left: 1.5mm; }
+  .ivs-label-kg em { font-size: 4.6mm; font-weight: 600; font-style: normal; margin-left: 1.5mm; }
   .ivs-label-qr { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
-  .ivs-label-qr svg { display: block; width: 42mm; height: 42mm; }
-  .ivs-label-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4mm 4mm;
-    border-top: 0.3mm solid #C3CAD6; padding-top: 2.6mm; font-size: 3.2mm; line-height: 1.3; }
-  .ivs-label-meta > div { display: flex; gap: 1.6mm; min-width: 0; white-space: nowrap; }
-  .ivs-label-meta span { color: #5A6270; flex-shrink: 0; }
-  .ivs-label-meta b { font-weight: 700; color: #000000; overflow: hidden; text-overflow: ellipsis; }
+  .ivs-label-qr svg { display: block; height: 34mm; max-height: 100%; width: auto; aspect-ratio: 1 / 1; } /* Lot 번호가 두 줄이면 QR이 조금 줄어요 */
+  .ivs-label-meta { display: grid; grid-template-columns: 14mm minmax(0, 1.15fr) 14mm minmax(0, 1fr);
+    border-top: 0.45mm solid #111111; font-size: 4.1mm; line-height: 1.2; }
+  .ivs-label-meta > * { padding: 1.35mm 0; border-bottom: 0.2mm solid #C3CAD6; min-width: 0; display: block; overflow: hidden; box-sizing: border-box; }
+  .ivs-label-meta .k { font-weight: 800; color: #000000; white-space: nowrap; }
+  .ivs-label-meta .k:nth-child(4n+3) { padding-left: 1.8mm; border-left: 0.2mm solid #C3CAD6; } /* 왼쪽 묶음 | 오른쪽 묶음 — 가로줄과 같은 색 */
+  .ivs-label-meta .v { font-weight: 600; color: #000000; white-space: nowrap; padding-left: 1.8mm; border-left: 0.2mm solid #C3CAD6; } /* 제목 | 내용 사이 세로선 */
+  .ivs-label-meta .v.wrap { white-space: normal; word-break: keep-all; overflow-wrap: anywhere; }
+  .ivs-label-meta > *:nth-last-child(-n+4) { border-bottom: 0; }
+  .ivs-label-meta .v2 { padding-top: 0.9mm; padding-bottom: 0.9mm; }
+  .ivs-label-meta .v2 > span, .ivs-label-meta .v2 > small { display: block; white-space: nowrap; overflow: hidden; line-height: 1.15; }
+  .ivs-label-meta .v2 > small { font-weight: 600; color: #3A414C; }
 
   @media print {
     body { background: #FFFFFF !important; }
@@ -1794,6 +1800,14 @@
   @media (max-width: 1100px) { .ivs-rc-split { grid-template-columns: 1fr; } }
   /* 화이트 — 단계 색(노랑 · 주황)으로 쓴 글자는 흰 바탕에서 흐려서 본문색과 섞어 진하게 */
   .ivs-root[data-theme="light"] :is(.ivs-rm-kg, .ivs-week-wk) { color: color-mix(in srgb, var(--c) 62%, var(--text)); }
+  /* 보관장소 — 기준정보 편집 목록 · 재고현황 칸 */
+  .ivs-loc-edit { display: flex; flex-direction: column; gap: 6px; }
+  .ivs-loc-edit-head, .ivs-loc-edit-row { display: grid; grid-template-columns: 84px minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+  .ivs-loc-edit-head { font-size: 12px; font-weight: 600; color: var(--text-dim); }
+  .ivs-loc-edit-btns { display: inline-flex; gap: 2px; }
+  .ivs-loc-table td { white-space: nowrap; }
+  .ivs-table td.ivs-storage { white-space: nowrap; }
+  .ivs-storage-code { font-variant-numeric: tabular-nums; }
 </style>
 
 </head>
@@ -4447,7 +4461,7 @@ var qrcode = function() {
    브라우저 기능이라 외부 스크립트 로드가 필요 없어요).
    ============================================================ */
 
-const { useState, useEffect, useMemo, useCallback, useRef, Fragment } = React;
+const { useState, useEffect, useMemo, useCallback, useRef, useLayoutEffect, Fragment } = React;
 const html = window.htmReact.html;
 
 // ---------- 아이콘: lucide 아이콘을 인라인 SVG로 내장 (lucide-react 대체) ----------
@@ -4463,6 +4477,7 @@ const ICON_DEFS = {
   "trash-2": '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
   "arrow-right-circle": '<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="m12 16 4-4-4-4"/>',
   "chevron-down": '<path d="m6 9 6 6 6-6"/>',
+  "chevron-up": '<path d="m18 15-6-6-6 6"/>',
   "loader-2": '<path d="M21 12a9 9 0 1 1-6.219-8.56"/>',
   check: '<path d="M20 6 9 17l-5-5"/>',
   "alert-triangle": '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
@@ -4527,13 +4542,16 @@ const Layers = mkIcon("layers");
 
 // ---------- 공정 단계 정의: 원자재(따뜻한 색) -> 처리 진행(차가운 색)으로 색이 흘러가도록 설계 ----------
 // key 값은 저장된 데이터가 참조하므로 절대 바꾸지 않아요. 화면에 보이는 label만 변경 가능해요.
+// 단계 색 — 여섯 색이 서로 확실히 달라 보이도록 색차(CIEDE2000)로 골랐어요. 가장 가까운 두 색도 28 이상 떨어져 있고
+// (예전 주황 모듈/팩입고 ↔ 빨강 열분해대기는 16이라 재고집계에서 헷갈렸어요), 다크 · 화이트 바탕 모두에서 보여요.
+//   자두 = 아직 손대지 않은 모듈/팩 · 파랑 = 전기(방전) · 청록 = 기계(파쇄) · 빨강 = 열(열분해) · 호박 = 나갈 준비 · 초록 = 끝
 const STAGES = [
-  { key: "raw_in", label: "모듈/팩입고", color: "#E9692F" },       // 주황
-  { key: "discharge", label: "전기방전완료", color: "#4C8DFF" },   // 파랑
-  { key: "crush_wait", label: "파쇄대기", color: "#17C1D9" },      // 청록
-  { key: "calcine_needed", label: "열분해대기", color: "#F0555C" }, // 빨강
-  { key: "usable", label: "출하대기", color: "#EDC22E" },          // 노랑
-  { key: "shipped", label: "출하완료", color: "#2FBF71" },         // 초록
+  { key: "raw_in", label: "모듈/팩입고", color: "#BE3FAE" },       // 자두
+  { key: "discharge", label: "전기방전완료", color: "#3A6EE4" },   // 파랑
+  { key: "crush_wait", label: "파쇄대기", color: "#13AEC3" },      // 청록
+  { key: "calcine_needed", label: "열분해대기", color: "#E5484D" }, // 빨강
+  { key: "usable", label: "출하대기", color: "#E3A51B" },          // 호박
+  { key: "shipped", label: "출하완료", color: "#2FAA67" },         // 초록
 ];
 // 재공(현재고)에서 빠지는 "최종" 단계 — 팔려나가서 우리 손을 떠난 것.
 const FINAL_STAGE_KEYS = ["shipped"];
@@ -4646,8 +4664,41 @@ const DEFAULT_VENDORS = [
   { name: "새빗켐", loc: "", code: "SB" },
 ];
 const VENDORS = DEFAULT_VENDORS; // 샘플 데이터 생성용
+// 이월 배지에 마우스를 올리면 뜨는 설명
+const CARRY_TIP = "이월재고 — 시스템 기록 전부터 있던 기초재고 (전년도·이전 장부에서 넘어옴)\n표시용이라 수량·재고연령 계산에는 영향 없음";
+// 보관장소 — 기준정보에서 추가 · 수정 · 순서 변경. code = 현장 구역 번호, name = 장소 이름.
+// Lot에는 장소의 id(storageId)만 적어요. 그래야 이름을 고쳐도 모든 Lot에 그대로 반영됩니다.
+const DEFAULT_LOCATIONS = [
+  { id: "loc-2-1", code: "2-1", name: "일반제품 보관소 (B.M)" },
+  { id: "loc-2-2", code: "2-2", name: "일반제품 보관소 (B.M)" },
+  { id: "loc-7-1", code: "7-1", name: "분말제품 보관소" },
+  { id: "loc-7-2", code: "7-2", name: "지정폐기물 보관소" },
+  { id: "loc-7-3", code: "7-3", name: "일반폐기물 보관소" },
+  { id: "loc-7-4", code: "7-4", name: "구리·알루미늄칩 보관소" },
+  { id: "loc-7-5", code: "7-5", name: "일반제품 보관소" },
+  { id: "loc-7-6", code: "7-6", name: "지정제품 보관소" },
+];
+let LOCATIONS = DEFAULT_LOCATIONS.map((x) => ({ ...x }));
+let locationById = Object.fromEntries(LOCATIONS.map((x) => [x.id, x]));
+function setLocations(list) {
+  LOCATIONS = list;
+  locationById = Object.fromEntries(LOCATIONS.map((x) => [x.id, x]));
+}
+const locLabel = (x) => (x ? [x.code, x.name].filter(Boolean).join(" ") : "");
+// Lot의 보관장소 이름 — 지정 안 했으면 빈 칸, 지운 장소면 그렇다고 알려요.
+const storageLabel = (id) => (!id ? "" : locationById[id] ? locLabel(locationById[id]) : "(삭제된 장소)");
+// 표에는 구역 번호만 (구역이 없는 장소면 이름), 엑셀에는 구역 · 이름을 따로 적어요.
+const storageCode = (id) => (!id ? "" : locationById[id] ? (locationById[id].code || locationById[id].name) : "?");
+const storageName = (id) => (!id ? "" : locationById[id] ? locationById[id].name : "(삭제된 장소)");
+function normalizeLocations(raw, configured) {
+  const list = Array.isArray(raw) ? raw : raw && typeof raw === "object" ? Object.values(raw) : [];
+  const out = list.filter((x) => x && (x.name || x.code))
+    .map((x, i) => ({ id: String(x.id || `loc-${i}`), code: String(x.code || "").trim(), name: String(x.name || "").trim() }));
+  if (out.length === 0 && !configured) return DEFAULT_LOCATIONS.map((x) => ({ ...x }));
+  return out;
+}
 
-const DEFAULT_MASTER = { configured: true, vendors: DEFAULT_VENDORS, categories: DEFAULT_CATEGORIES };
+const DEFAULT_MASTER = { configured: true, vendors: DEFAULT_VENDORS, categories: DEFAULT_CATEGORIES, locations: DEFAULT_LOCATIONS };
 const DEFAULT_SETTINGS = {
   title: "리사이클링팀 · 재고관리",
   subtitle: "입고부터 출하까지 — 생산실적으로 재고가 함께 움직이는 Lot 단위 공정 관리",
@@ -4743,6 +4794,14 @@ const SEED_RUNS = [
     inputs: ["s4"], outputs: [] },
 ];
 
+// 샘플 보관장소 — 분말은 7-1, 칩은 7-4, 셀 · 모듈 · 팩은 2-1 / 2-2, 나머지는 7-5
+function seedStorageOf(catId, i) {
+  if (["blackmass", "mixed_powder"].includes(catId)) return "loc-7-1";
+  if (["mixed_cu_chip", "mixed_al_chip"].includes(catId)) return "loc-7-4";
+  if (catId === "condensate") return "loc-7-2";
+  if (/cell|pack|module/.test(catId || "")) return i % 2 ? "loc-2-2" : "loc-2-1";
+  return "loc-7-5";
+}
 function seedData() {
   const byId = new Map();
   const lots = SEED_LOTS.map((r) => {
@@ -4751,6 +4810,7 @@ function seedData() {
       vendor: VENDORS[r[4]].name, shipLoc: VENDORS[r[4]].loc,
       lotNo: r[5], receivedDate: dayOffset(r[6]), stage: r[7], qtyKg: r[8],
       waterKg: null, excludeKg: null, tolling: r[9], carriedOver: r[10], lastMove: null,
+      storageId: seedStorageOf(r[3], byId.size),
     };
     if (r[11] === "closed") { l.closed = true; l.closedDate = dayOffset(r[6] + 2); l.lastMove = l.closedDate; }
     if (l.stage === "shipped") { l.shippedDate = dayOffset(-30); l.lastMove = l.shippedDate; }
@@ -4765,7 +4825,7 @@ function seedData() {
         id: `lot-seed-${o[0]}`, code: o[1], name: o[2], categoryId: o[3],
         vendor: parents[0] ? parents[0].vendor : VENDORS[3].name,
         shipLoc: parents[0] ? parents[0].shipLoc : VENDORS[3].loc,
-        lotNo: o[5], receivedDate: date, stage: o[6], qtyKg: o[7],
+        lotNo: o[5], receivedDate: date, stage: o[6], qtyKg: o[7], storageId: seedStorageOf(o[3], 0),
         waterKg: null, excludeKg: null, tolling: !!(parents[0] && parents[0].tolling), carriedOver: false,
         lastMove: date, origin: "production", runId: `run-seed-${run.id}`, process: run.process,
         parentLotIds: parents.map((p) => p.id), parentLotNos: parents.map((p) => p.lotNo),
@@ -4783,7 +4843,7 @@ function seedData() {
 function agedSeedLots() {
   const mk = (id, code, name, cat, v, lotNo, age, stage, kg, extra = {}) => ({
     id: `lot-seed-${id}`, code, name, categoryId: cat, vendor: VENDORS[v].name, shipLoc: VENDORS[v].loc,
-    lotNo, receivedDate: dayOffset(-age), stage, qtyKg: kg, waterKg: null, excludeKg: null,
+    lotNo, receivedDate: dayOffset(-age), stage, qtyKg: kg, waterKg: null, excludeKg: null, storageId: seedStorageOf(cat, age),
     tolling: false, carriedOver: false, lastMove: null, ...extra,
   });
   const made = (age, process) => ({ origin: "production", lastMove: dayOffset(-age), process });
@@ -5481,11 +5541,11 @@ const OUTPUT_KINDS = [
 // ---------- 원료 입고 타입별 공정 경로 ----------
 // 무엇이 들어오느냐에 따라 거치는 공정이 달라요. 생산실적을 넣을 때 이 표대로 이전 공정 Lot만 고를 수 있어요.
 const ROUTES = {
-  module: { key: "module", label: "모듈/팩 입고", entry: "raw_in", color: "#E9692F",
+  module: { key: "module", label: "모듈/팩 입고", entry: "raw_in", color: "#BE3FAE",
     steps: ["전기방전", "해체", "파쇄"], flow: "모듈/팩입고 → 전기방전완료 → 파쇄대기 → 출하대기" },
-  cell: { key: "cell", label: "셀 단위 입고", entry: "crush_wait", color: "#17C1D9",
+  cell: { key: "cell", label: "셀 단위 입고", entry: "crush_wait", color: "#13AEC3",
     steps: ["파쇄"], flow: "파쇄대기 → 출하대기" },
-  powder: { key: "powder", label: "BM(분말) 입고", entry: "calcine_needed", color: "#F0555C",
+  powder: { key: "powder", label: "BM(분말) 입고", entry: "calcine_needed", color: "#E5484D",
     steps: ["열분해"], flow: "열분해대기 → 출하대기" },
 };
 // mode
@@ -5517,9 +5577,10 @@ const PROCESSES = [
     warn: "응축액 출고는 이전 공정 Lot을 고르지 않아요. 실측 중량만 넣으면 그 날짜로 출하완료 Lot이 만들어져요." },
 ];
 const FLOW_PROCESSES = PROCESSES.filter((p) => !p.standalone);
-// 후속공정 버튼 색 — 입고 경로 색을 그대로 쓰면 전기방전·해체가 같은 색이 돼서, 공정마다 따로 정해요.
-// (재작업은 주황 #D97706이라 그와 겹치지 않게 골랐어요)
-const PROC_COLOR = { discharge: "#8B5CF6", disassemble: "#22A06B", crush: "#17C1D9", calcine: "#F0555C" };
+// 후속공정 색 — 공정은 "자기가 받아 처리하는 대기 단계"의 색을 써요 (전기방전 = 모듈/팩입고 자두, 해체 = 전기방전완료 파랑,
+// 파쇄 = 파쇄대기 청록, 열분해 = 열분해대기 빨강). 재고 표의 단계 배지와 공정 버튼이 같은 색으로 이어집니다.
+// (재작업은 주황 #D97706이라 그와 겹치지 않아요)
+const PROC_COLOR = { discharge: "#BE3FAE", disassemble: "#3A6EE4", crush: "#13AEC3", calcine: "#E5484D" };
 const procColor = (p) => (p && PROC_COLOR[p.key]) || (p && ROUTES[p.route] ? ROUTES[p.route].color : "#8494AC");
 const processByKey = Object.fromEntries(PROCESSES.map((p) => [p.key, p]));
 const outputKindByKey = Object.fromEntries(OUTPUT_KINDS.map((k) => [k.key, k]));
@@ -5723,9 +5784,11 @@ function normalizeMaster(raw) {
   // 품목 목록도 같은 규칙이에요. 화면 곳곳이 읽는 등록부를 여기서 바로 갈아끼웁니다.
   const categories = normalizeCategories(m && m.categories, !!(m && m.catConfigured));
   setCategories(categories);
-  return { configured: true, catConfigured: true,
+  const locations = normalizeLocations(m && m.locations, !!(m && m.locConfigured));
+  setLocations(locations);
+  return { configured: true, catConfigured: true, locConfigured: true,
     vendors: useDefaults ? DEFAULT_VENDORS.map((v) => ({ ...v })) : vendors,
-    categories };
+    categories, locations };
 }
 // 옛 "생산투입완료(consumed)" 단계로 저장된 로트는 closed 표시로 바꿔요 — 화면에서는 똑같이 재고에서 빠져요.
 function normalizeLots(raw) {
@@ -6653,7 +6716,7 @@ const XLSX_STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
   `<borders count="1"><border/></borders>` +
   `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
   `<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>` +
-  `<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/></cellXfs>` +
+  `<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf></cellXfs>` +
   `<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
 
 function buildXlsx(sheetName, rows, widths) {
@@ -7215,7 +7278,7 @@ const recoveryPeriodLabel = (p, gran) => (gran === "day" ? `${Number(p.slice(8))
 // ---------- 엑셀 통합문서 (여러 장 · 색 · 숫자 서식) ----------
 // 셀 = 값 또는 { v: 값, s: 서식 이름 }. 숫자는 숫자 셀로 넣어 엑셀에서 바로 합계 · 정렬이 돼요.
 const XB_STYLES = ["", "hdr", "title", "hdrNavy", "hdrOrange", "txt", "num", "pct", "totTxt", "totNum", "totPct", "hdrGray", "note", "sumNum", "sumPct", "txtC", "grpTxt",
-  "tagIn", "tagOut", "tagRate", "nameC", "procC", "inLbl", "inNum", "inSum", "outLbl", "outNum", "outSum", "rateLbl", "ratePct", "rateSum", "totName", "inNumB", "outNumB", "hdrBand"];
+  "tagIn", "tagOut", "tagRate", "nameC", "procC", "inLbl", "inNum", "inSum", "outLbl", "outNum", "outSum", "rateLbl", "ratePct", "rateSum", "totName", "inNumB", "outNumB", "hdrBand", "secTitle"];
 const XB_STYLE_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
   `<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
   `<numFmts count="1"><numFmt numFmtId="164" formatCode="0.0%"/></numFmts>` +
@@ -7241,9 +7304,9 @@ const XB_STYLE_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
   `<borders count="2"><border/><border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right>` +
   `<top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom></border></borders>` +
   `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
-  `<cellXfs count="35">` +
+  `<cellXfs count="36">` +
   `<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>` +                                               // 0 기본
-  `<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/>` +                     // 1 hdr
+  `<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>` + // 1 hdr
   `<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>` +                                   // 2 title
   `<xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>` + // 3 hdrNavy
   `<xf numFmtId="0" fontId="3" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>` + // 4 hdrOrange
@@ -7278,6 +7341,7 @@ const XB_STYLE_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
   `<xf numFmtId="3" fontId="1" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>` + // 32 inNumB
   `<xf numFmtId="3" fontId="1" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>` + // 33 outNumB
   `<xf numFmtId="0" fontId="7" fillId="10" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>` + // 34 hdrBand
+  `<xf numFmtId="0" fontId="7" fillId="0" borderId="0" xfId="0" applyFont="1"/>` + // 35 secTitle (코발트 굵게 · 집계 표 제목)
   `</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
 function xbSheetXml(sh) {
   const sIdx = (s) => Math.max(0, XB_STYLES.indexOf(s || ""));
@@ -7290,6 +7354,11 @@ function xbSheetXml(sh) {
       const ref = `${colLetter(c)}${rn}`;
       const st = sIdx(o.s) ? ` s="${sIdx(o.s)}"` : "";
       const v = o.v;
+      if (o.f) {
+        const fx = `<f>${xmlEsc(o.f)}</f>`;
+        if (typeof v === "number" && isFinite(v)) return `<c r="${ref}"${st}>${fx}<v>${v}</v></c>`;
+        return `<c r="${ref}"${st} t="str">${fx}<v>${xmlEsc(v == null ? "" : v)}</v></c>`;
+      }
       if (v === null || v === undefined || v === "") return `<c r="${ref}"${st}/>`;
       if (typeof v === "number" && isFinite(v)) return `<c r="${ref}"${st}><v>${v}</v></c>`;
       return `<c r="${ref}"${st} t="inlineStr"><is><t xml:space="preserve">${xmlEsc(v)}</t></is></c>`;
@@ -7311,6 +7380,88 @@ function xbSheetXml(sh) {
     `<sheetViews><sheetView workbookViewId="0">${pane}</sheetView></sheetViews>` +
     `${cols}<sheetData>${body}</sheetData>${filter}${merges}${page}</worksheet>`;
 }
+// 재고현황 장부의 "집계" 시트 — 8가지 기준으로 Lot 수 · 수량 · 총 중량 · 비중을 묶어요.
+// 숫자는 전부 장부 시트를 가리키는 수식(COUNTIF · SUMIF)이라, 엑셀에서 장부 줄을 고치면 집계도 따라 바뀌어요.
+// (수식을 계산하지 않는 미리보기 앱에서도 보이도록, 내려받는 순간의 값도 같이 담아둡니다.)
+// 두 표씩 나란히(왼쪽 A~E · 오른쪽 G~K) 놓아 한 화면에 많이 보이게 했어요.
+function stockSummarySheet(headers, rows, today) {
+  const SH = "'재고현황'";
+  const n = rows.length;
+  const col = (h) => headers.indexOf(h);
+  const rng = (h) => `${SH}!$${colLetter(col(h))}$2:$${colLetter(col(h))}$${Math.max(2, n + 1)}`;
+  const QTY = rng("수량(Kg)"), NET = rng("총 중량(Kg)");
+  const num = (x) => Number(x) || 0;
+  const totNet = rows.reduce((a, r) => a + num(r[col("총 중량(Kg)")]), 0);
+  const q = (t) => `"${String(t).replace(/"/g, '""').replace(/([~*?])/g, "~$1")}"`; // 조건 글자 (엑셀 와일드카드는 막아요)
+  // groups: [{ label, crit: 수식 조건, match: (row) => bool }]
+  const block = (title, head, h, groups) => {
+    const out = [[{ v: title, s: "secTitle" }], [head, "Lot 수", "수량(Kg)", "총 중량(Kg)", "비중"].map((x) => ({ v: x, s: "hdr" }))];
+    groups.forEach((g) => {
+      const list = rows.filter(g.match);
+      const net = list.reduce((a, r) => a + num(r[col("총 중량(Kg)")]), 0);
+      const R = rng(h);
+      out.push([{ v: g.label, s: "txt" },
+        { f: `COUNTIF(${R},${g.crit})`, v: list.length, s: "num" },
+        { f: `SUMIF(${R},${g.crit},${QTY})`, v: list.reduce((a, r) => a + num(r[col("수량(Kg)")]), 0), s: "num" },
+        { f: `SUMIF(${R},${g.crit},${NET})`, v: net, s: "num" },
+        { f: `IF(SUM(${NET})=0,0,SUMIF(${R},${g.crit},${NET})/SUM(${NET}))`, v: totNet ? net / totNet : 0, s: "pct" }]);
+    });
+    return out;
+  };
+  // 값 목록 — 총 중량이 큰 순 (입고월 · 단계 · 상태처럼 순서가 있는 건 그 순서)
+  const valuesOf = (h, order) => {
+    const m = new Map();
+    rows.forEach((r) => { const k = String(r[col(h)] ?? ""); m.set(k, (m.get(k) || 0) + num(r[col("총 중량(Kg)")])); });
+    const keys = Array.from(m.keys());
+    if (order === "asc") return keys.sort();
+    if (Array.isArray(order)) return order.filter((k) => m.has(k)).concat(keys.filter((k) => !order.includes(k)).sort());
+    return keys.sort((a, b) => m.get(b) - m.get(a));
+  };
+  const exact = (h, order, blankLabel = "(비어 있음)") => valuesOf(h, order).map((k) => ({
+    label: k === "" ? blankLabel : k, crit: k === "" ? '""' : q(k), match: (r) => String(r[col(h)] ?? "") === k }));
+  // 입고월 — 입고일 글자의 앞 7자리(YYYY-MM)로 묶어요. 수식은 "2026-10*" 처럼 그 달로 시작하는 칸을 셉니다.
+  const months = Array.from(new Set(rows.map((r) => String(r[col("입고일")] || "").slice(0, 7)))).sort();
+  const monthGroups = months.map((mth) => ({ label: mth ? `${mth.slice(0, 4)}년 ${Number(mth.slice(5))}월` : "(입고일 없음)",
+    crit: mth ? `"${mth}*"` : '""', match: (r) => String(r[col("입고일")] || "").slice(0, 7) === mth }));
+  const tolling = [
+    { label: "톨링품", crit: '"Y"', match: (r) => r[col("톨링품")] === "Y" },
+    { label: "일반 (톨링 아님)", crit: '"<>Y"', match: (r) => r[col("톨링품")] !== "Y" },
+  ];
+  const blocks = [
+    block("구분별", "구분", "구분", exact("구분", LOT_CLASSES.map((c) => c.label))),
+    block("현재 공정별", "현재공정", "현재공정", exact("현재공정", STAGES.map((st) => st.label))),
+    block("재고상태별", "재고상태", "재고상태", exact("재고상태", STOCK_STATUS.map((st) => st.label), "- (출하 · 투입 끝난 Lot)")),
+    block("톨링품별", "톨링 여부", "톨링품", tolling),
+    block("입고월별", "입고월", "입고일", monthGroups),
+    block("카테고리별", "카테고리", "카테고리", exact("카테고리")),
+    block("거래처별", "거래처", "거래처", exact("거래처")),
+    block("품목명별", "품목명", "품목명", exact("품목명")),
+  ];
+  // 표마다 합계 줄
+  blocks.forEach((bk) => {
+    bk.push([{ v: "합계", s: "totTxt" },
+      { v: n, f: `COUNTA(${rng("Lot 번호")})`, s: "totNum" },
+      { v: rows.reduce((a, r) => a + num(r[col("수량(Kg)")]), 0), f: `SUM(${QTY})`, s: "totNum" },
+      { v: totNet, f: `SUM(${NET})`, s: "totNum" },
+      { v: totNet ? 1 : 0, s: "totPct" }]);
+  });
+  const out = [[{ v: `재고 집계 — ${today}`, s: "title" }],
+    [{ v: `재고현황 시트의 ${n}건 기준 (화면에서 걸러 낸 그대로) · 숫자는 재고현황 시트를 가리키는 수식이라 장부를 고치면 함께 바뀌어요 · 비중 = 총 중량 기준`, s: "note" }],
+    []];
+  for (let i = 0; i < blocks.length; i += 2) {
+    const L = blocks[i], R = blocks[i + 1] || [];
+    const h = Math.max(L.length, R.length);
+    for (let j = 0; j < h; j++) {
+      const left = L[j] || [];
+      const right = R[j] || [];
+      out.push([...left, ...Array(5 - left.length).fill(""), "", ...right]);
+    }
+    out.push([]);
+  }
+  return { name: "집계", rows: out, widths: [24, 9, 13, 14, 9, 3, 24, 9, 13, 14, 9],
+    merges: ["A1:K1", "A2:K2"], landscapeFit: true };
+}
+
 function buildXlsxBook(sheets) {
   const names = sheets.map((sh, i) => (String(sh.name || `Sheet${i + 1}`).replace(/[\\\/\?\*\[\]:]/g, " ").slice(0, 31) || `Sheet${i + 1}`));
   return makeZip([
@@ -7333,7 +7484,7 @@ function buildXlsxBook(sheets) {
       `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ` +
       `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>` +
       names.map((n, i) => `<sheet name="${xmlEsc(n)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("") +
-      `</sheets></workbook>` },
+      `</sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>` },
     { name: "xl/_rels/workbook.xml.rels", content:
       `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
       `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
@@ -8431,7 +8582,7 @@ const newLotForm = (master) => {
     vendor: first ? first.name : "", shipLoc: first ? (first.loc || "") : "",
     lotNo: joinLotNo(first ? first.code : "", "", ""), srcLot: "",
     receivedDate: localDateStr(),
-    stage: "raw_in", qtyKg: "", waterKg: "", excludeKg: "", tolling: false, carriedOver: false,
+    stage: "raw_in", storageId: "", qtyKg: "", waterKg: "", excludeKg: "", tolling: false, carriedOver: false,
   };
 };
 
@@ -8476,6 +8627,7 @@ function InventorySystem() {
   // 화면 곳곳(품목 선택, Lot 번호 체번, 품목명 자동 채움)이 읽는 품목 등록부를 지금 값으로 맞춰둬요.
   // 등록·수정한 내용이 저장을 기다리지 않고 바로 반영됩니다.
   if (master && Array.isArray(master.categories) && master.categories.length > 0) setCategories(master.categories);
+  if (master && Array.isArray(master.locations)) setLocations(master.locations);
   const [mes, setMes] = useState(() => LIVE_DATA.mes); // 생산관리(계획·교대·설비) 설정
   // 설비 마스터도 같은 식으로 — 기준정보에서 순서를 바꾸거나 설비를 더하면 Flow · 비가동 등록에 바로 먹어요.
   if (mes) setEquipment(mes.equipment);
@@ -8575,6 +8727,20 @@ function InventorySystem() {
     await writeAll({ lots, moves, settings, master: nextMaster, mes, runs, downs });
     if (msg) showToast(msg, "success");
   }, [canEdit, lots, moves, settings, mes, runs, downs, writeAll, showToast]);
+
+  // 보관장소 저장 — 지운 장소에 있던 Lot은 "지정 안 함"으로 돌려놔요 (없는 장소를 가리키지 않게).
+  const persistLocations = useCallback(async (locations, msg) => {
+    if (!canEdit) return;
+    const nextMaster = { ...master, locConfigured: true, locations };
+    const keep = new Set(locations.map((x) => x.id));
+    const stale = lots.filter((l) => l.storageId && !keep.has(l.storageId));
+    const nextLots = stale.length ? lots.map((l) => (l.storageId && !keep.has(l.storageId) ? { ...l, storageId: "" } : l)) : lots;
+    setLocations(locations);
+    setMaster(nextMaster);
+    if (stale.length) setLots(nextLots);
+    await writeAll({ lots: nextLots, moves, settings, master: nextMaster, mes, runs, downs });
+    showToast(msg || `보관장소를 저장했어요${stale.length ? ` — Lot ${stale.length}건은 지운 장소에 있어서 "지정 안 함"으로 바꿨어요` : ""}.`, "success");
+  }, [canEdit, master, lots, moves, settings, mes, runs, downs, writeAll, showToast]);
 
   const persistMes = useCallback(async (nextMes, msg) => {
     if (!canEdit) return;
@@ -8761,11 +8927,11 @@ function InventorySystem() {
         lossQty: Math.max(0, (Number(l.qtyKg) || 0) - outQty), mixQty: 0, runId, process: proc.key,
       });
     };
-    const makeLot = ({ code, name, categoryId, lotNo, srcLot, qtyKg, stage, kind, vendor: v2, shipLoc: s2 }) => {
+    const makeLot = ({ code, name, categoryId, lotNo, srcLot, qtyKg, stage, kind, vendor: v2, shipLoc: s2, storageId }) => {
       const lot = {
         id: `lot-${Date.now()}-${created.length}-${Math.random().toString(36).slice(2, 6)}`,
         code, name, categoryId, vendor: v2 != null ? v2 : vendor, shipLoc: s2 != null ? s2 : shipLoc,
-        lotNo, srcLot: srcLot || "", receivedDate: date, stage, qtyKg,
+        lotNo, srcLot: srcLot || "", receivedDate: date, stage, qtyKg, storageId: storageId || "",
         waterKg: null, excludeKg: null, tolling: !!base.tolling, carriedOver: false,
         lastMove: date,
         origin: "production", // 밖에서 사온 게 아니라 우리 공정에서 나온 Lot
@@ -8790,7 +8956,7 @@ function InventorySystem() {
       if (!lotNo) { showToast(`이미 쓰고 있는 Lot 번호예요 — ${draft.cellLotNo}`, "error"); return; }
       inputLots.forEach((l) => addMove(l, l.stage, proc.to, Number(l.qtyKg) || 0));
       newLots.push(makeLot({ code: cat.code, name: draft.cellName || cat.label, categoryId: cat.id,
-        lotNo, qtyKg: cellKg, stage: proc.to }));
+        lotNo, qtyKg: cellKg, stage: proc.to, storageId: draft.storageId }));
     } else if (proc.mode === "cdout") {
       // 응축액 출고 — 이전 Lot 없이, 탱크로리로 빼낸 실측 중량만 기록해요.
       const kg = Number(draft.cdKg);
@@ -8810,7 +8976,7 @@ function InventorySystem() {
       // 몇 개를 뽑았느냐에 따라 행이 여러 개 나옵니다.
       const rows = (draft.outRows || [])
         .map((o) => ({ k: outputKindByKey[o.kind], qty: Number(o.qty), typed: o.lotNo,
-                       vendor: o.vendor, srcTag: o.srcTag }))
+                       vendor: o.vendor, srcTag: o.srcTag, loc: o.loc }))
         .filter((r) => r.k && Number.isFinite(r.qty) && r.qty > 0);
       if (rows.length === 0) { showToast("산출량을 하나 이상 입력해주세요.", "error"); return; }
       // 투입 Lot이 모두 같은 품목이면 그 품목을 그대로 들고 갈 수 있어요.
@@ -8843,7 +9009,7 @@ function InventorySystem() {
         const rvLoc = (master.vendors || []).find((v) => v.name === rv);
         newLots.push(makeLot({
           code: outCode, name: outName, categoryId: outCat ? outCat.id : r.k.categoryId,
-          lotNo, srcLot: srcTag, qtyKg: r.qty, stage: proc.to, kind: r.k.key,
+          lotNo, srcLot: srcTag, qtyKg: r.qty, stage: proc.to, kind: r.k.key, storageId: r.loc,
           vendor: mixed ? MIXED_VENDOR : (rv || vendor),
           shipLoc: mixed ? MIXED_VENDOR : (rv ? (rvLoc ? rvLoc.loc : shipLoc) : shipLoc),
         }));
@@ -8857,7 +9023,8 @@ function InventorySystem() {
       ...newLots,
       ...lots.map((l) => {
         if (!inputIdSet.has(l.id)) return l;
-        if (proc.mode === "move") return { ...l, stage: proc.to, lastMove: date, runId, process: proc.key };
+        if (proc.mode === "move") return { ...l, stage: proc.to, lastMove: date, runId, process: proc.key,
+          ...(draft.storageId ? { storageId: draft.storageId } : {}) }; // 방전하면서 다른 곳으로 옮겼으면 장소도 바꿔요
         return { ...l, stage: proc.to, lastMove: date, runId, process: proc.key,
           closed: true, closedDate: date, closedRunId: runId };
       }),
@@ -9128,7 +9295,8 @@ function InventorySystem() {
 
   // ---------- 엑셀(.xlsx)로 내보내기 ----------
   const exportCsv = () => {
-    const headers = ["구분", "품목코드", "품목명", "카테고리", "거래처", "출고지", "Lot 번호", "입고/생산", "직전 투입 Lot", "최초 입고 Lot", "최초 입고일", "생산공정", "주차", "현재공정", "수량(Kg)", "총 중량(Kg)", "재고상태", "재고연령(일)", "무이동(일)", "입고일", "출하일", "최근 이동일", "물중량(Kg)", "제외중량(Kg)", "톨링품", "이월"];
+    // 최근 처리 공정 = 이 Lot이 마지막으로 거친 생산실적의 공정 (생산 Lot이면 만든 공정, 입고 Lot이면 예: 전기방전)
+    const headers = ["구분", "품목코드", "품목명", "카테고리", "거래처", "출고지", "Lot 번호", "입고/생산", "직전 투입 Lot", "최초 입고 Lot", "최초 입고일", "최근 처리 공정", "주차", "현재공정", "수량(Kg)", "총 중량(Kg)", "재고상태", "재고연령(일)", "무이동(일)", "입고일", "출하일", "최근 이동일", "구역", "보관장소", "물중량(Kg)", "제외중량(Kg)", "톨링품", "이월"];
     const rows = filtered.map((l) => {
       // 우리가 만든 Lot이면 어떤 Lot에서 나왔는지 같이 적어요 (직전 투입 Lot → 최초 입고 Lot).
       const made = l.origin === "production";
@@ -9138,19 +9306,22 @@ function InventorySystem() {
       return [
         lotClassOf(l).label, l.code, l.name, categoryById[l.categoryId]?.label || "", l.vendor, l.shipLoc, l.lotNo, made ? "생산" : "입고",
         tr.direct.map((x) => x.lotNo).join(", "),
-        tr.roots.map((x) => x.lotNo).join(", "),
-        tr.roots.map((x) => x.receivedDate).join(", "),
+        // 입고 Lot은 자기 자신이 최초 입고 Lot이에요
+        made ? tr.roots.map((x) => x.lotNo).join(", ") : l.lotNo,
+        made ? tr.roots.map((x) => x.receivedDate).join(", ") : (l.receivedDate || ""),
         pr, weekLabel(l.receivedDate),
         getStage(l.stage).label, l.qtyKg, lotNetKg(l),
         st ? st.status.label : "", st ? st.age : "", st ? st.idle : "",
-        l.receivedDate, shipDateOf(l) || "", l.lastMove ?? "",
+        l.receivedDate, shipDateOf(l) || "", l.lastMove ?? "", l.storageId && locationById[l.storageId] ? locationById[l.storageId].code : "", storageName(l.storageId),
         l.waterKg ?? "", l.excludeKg ?? "",
         l.tolling ? "Y" : "", l.carriedOver ? "Y" : "",
       ];
     });
     const today = localDateStr();
-    const widths = [10, 11, 20, 14, 20, 11, 20, 9, 24, 24, 13, 11, 18, 13, 12, 13, 10, 11, 10, 12, 12, 13, 12, 13, 8, 7];
-    downloadXlsx(`재고현황_${today}.xlsx`, `재고현황 ${today}`, [headers, ...rows], widths);
+    const widths = [10, 11, 20, 14, 20, 11, 20, 9, 24, 24, 13, 13, 18, 13, 12, 13, 10, 11, 10, 12, 12, 13, 8, 22, 12, 13, 8, 7];
+    const ledger = { name: "재고현황", rows: [headers.map((h) => ({ v: h, s: "hdr" })), ...rows], widths, freezeRow: 1,
+      autoFilter: `A1:${colLetter(headers.length - 1)}${rows.length + 1}` };
+    downloadXlsxBook(`재고현황_${today}.xlsx`, [ledger, stockSummarySheet(headers, rows, today)]);
     showToast("엑셀 파일로 내보냈어요.", "success");
   };
 
@@ -9567,6 +9738,7 @@ function InventorySystem() {
                 <${Th} label="입고일" sortKey="receivedDate" sort=${sort} onSort=${toggleSort} />
                 <${Th} label="출하일" sortKey="shippedDate" sort=${sort} onSort=${toggleSort} />
                 <th className="ivs-hide-sm">최근 이동일</th>
+                <th className="ivs-hide-sm">보관장소</th>
                 <th className="ivs-hide-sm ivs-right">물중량</th>
                 <th className="ivs-hide-sm ivs-right">제외중량</th>
                 <th className="ivs-th-actions"></th>
@@ -9574,7 +9746,7 @@ function InventorySystem() {
             </thead>
             <tbody>
               ${filtered.length === 0 ? html`
-                <tr><td colSpan=${18} className="ivs-empty">조건에 맞는 로트가 없어요. 필터를 조정해보세요.</td></tr>
+                <tr><td colSpan=${19} className="ivs-empty">조건에 맞는 로트가 없어요. 필터를 조정해보세요.</td></tr>
               ` : paged.map((l) => {
                 const cat = categoryById[l.categoryId];
                 const stage = getStage(l.stage);
@@ -9601,7 +9773,7 @@ function InventorySystem() {
                         </button>
                         <span className="ivs-badge" style=${{ "--c": "#A855F7" }}>생산</span>
                       ` : l.lotNo}
-                      ${l.carriedOver ? html`<span className="ivs-badge ivs-badge-warn">이월</span>` : null}
+                      ${l.carriedOver ? html`<span className="ivs-badge ivs-badge-warn" title=${CARRY_TIP}>이월</span>` : null}
                     </td>
                     <td className="ivs-dim">${weekLabel(l.receivedDate)}</td>
                     <td><span className="ivs-badge" style=${{ "--c": stage.color }}>${stage.label}</span></td>
@@ -9613,6 +9785,7 @@ function InventorySystem() {
                     <td className="ivs-mono">${l.receivedDate}</td>
                     <td className="ivs-mono">${shipDateOf(l) || html`<span className="ivs-dim">-</span>`}</td>
                     <td className="ivs-dim ivs-hide-sm">${l.lastMove ?? "-"}</td>
+                    <td className="ivs-hide-sm ivs-storage">${l.storageId ? html`<span className="ivs-storage-code" title=${storageName(l.storageId)}>${storageCode(l.storageId)}</span>` : html`<span className="ivs-dim">-</span>`}</td>
                     <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.waterKg)}</td>
                     <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.excludeKg)}</td>
                     <td className="ivs-row-menu-cell">
@@ -9638,7 +9811,7 @@ function InventorySystem() {
                   </tr>
                   ${open && tr ? html`
                     <tr className="ivs-trace-row">
-                      <td colSpan=${18}>
+                      <td colSpan=${19}>
                         <div className="ivs-trace">
                           <div>
                             <div className="ivs-chart-label">최초 입고 Lot</div>
@@ -9647,7 +9820,7 @@ function InventorySystem() {
                                 ? html`<span className="ivs-dim">바로 앞 Lot이 곧 입고 Lot이에요.</span>`
                                 : tr.roots.map((rl) => html`
                                   <span className="ivs-lotchip" key=${rl.id}>
-                                    <span className="ivs-badge-dot" style=${{ background: "#E9692F" }} />
+                                    <span className="ivs-badge-dot" style=${{ background: getStage("raw_in").color }} />
                                     <b>${rl.lotNo}</b> ${rl.name} · ${fmtKg(rl.qtyKg)}
                                     <span className="ivs-dim"> · ${rl.vendor || "-"} · ${rl.receivedDate} 입고</span>
                                   </span>`)}
@@ -9716,6 +9889,7 @@ function InventorySystem() {
             ym=${actYm} onYm=${setActYm}
             onSave=${handleSaveRun} onDelete=${handleDeleteRun} />`
         : activeTab === "basis" ? html`<${BasisTab} mes=${mes} downs=${downsAll} canEdit=${canEdit} onSave=${persistMes}
+            master=${master} lots=${lots} onSaveLocations=${persistLocations}
             usage=${usage} onToast=${showToast} archOpen=${archOpen} onArchOpen=${setArchOpen}
             counts=${{ lots: lots.length, moves: moves.length, runs: runs.length, downs: downs.length }} />`
         : activeTab === "report" ? html`<${ReportTab} mes=${mes} runs=${runsAll} downs=${downsAll} lots=${openLots} settings=${settings}
@@ -9763,7 +9937,7 @@ function InventorySystem() {
           onConfirm=${async (date) => { await handleShip(selectedLots.map((l) => l.id), date); setBulkShipOpen(false); setSelected(new Set()); }} />
       ` : null}
       ${labelLots ? html`
-        <${LabelModal} lots=${labelLots} manager=${settings.manager || DEFAULT_SETTINGS.manager} onClose=${() => setLabelLots(null)} />
+        <${LabelModal} lots=${labelLots} runs=${runsAll} manager=${settings.manager || DEFAULT_SETTINGS.manager} onClose=${() => setLabelLots(null)} />
       ` : null}
       ${deleteTarget ? html`
         <${ConfirmModal}
@@ -9901,6 +10075,15 @@ function Field({ label, children }) {
   return html`<label className="ivs-field"><span>${label}</span>${children}</label>`;
 }
 
+// 보관장소 고르기 — 기준정보의 보관장소 목록이에요. 지운 장소를 가리키는 Lot이면 그 사실도 보여줘요.
+function StorageSelect({ value, onChange, emptyLabel = "지정 안 함", className = "ivs-select ivs-select-full" }) {
+  return html`<select className=${className} value=${value || ""} onChange=${(e) => onChange(e.target.value)}>
+    <option value="">${emptyLabel}</option>
+    ${value && !locationById[value] ? html`<option value=${value}>(삭제된 장소)</option>` : null}
+    ${LOCATIONS.map((x) => html`<option key=${x.id} value=${x.id}>${locLabel(x)}</option>`)}
+  </select>`;
+}
+
 function LotFormModal({ mode, initial, master, onCancel, onSave, onOpenMaster }) {
   const [v, setV] = useState(initial);
   const vendors = master.vendors || [];
@@ -9985,6 +10168,9 @@ function LotFormModal({ mode, initial, master, onCancel, onSave, onOpenMaster })
             <select className="ivs-select ivs-select-full" value=${v.stage} onChange=${set("stage")}>
               ${STAGES.map((s) => html`<option key=${s.key} value=${s.key}>${s.label}</option>`)}
             </select>
+          <//>
+          <${Field} label="보관장소">
+            <${StorageSelect} value=${v.storageId || ""} onChange=${(id) => setV((prev) => ({ ...prev, storageId: id }))} />
           <//>
           <${Field} label="입고일"><input type="date" className="ivs-input" value=${v.receivedDate} onChange=${set("receivedDate")} /><//>
           <${Field} label="중량(Kg) *"><input type="number" className="ivs-input" value=${v.qtyKg} onChange=${set("qtyKg")} /><//>
@@ -13008,13 +13194,13 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
   // Cu-chip · Al-chip은 섞어서 배출하니 거래처를 "혼합"으로 미리 잡아둡니다.
   const mkOutRow = (kind) => ({
     rid: `o${Date.now()}${Math.random().toString(36).slice(2, 6)}`,
-    kind, qty: "", lotNo: "", srcTag: null, vendor: MIXED_KINDS.includes(kind) ? MIXED_VENDOR : "",
+    kind, qty: "", lotNo: "", srcTag: null, vendor: MIXED_KINDS.includes(kind) ? MIXED_VENDOR : "", loc: "",
   });
   const outRowsFor = (pk) => procOutputs(processByKey[pk] || FLOW_PROCESSES[0]).map((k) => mkOutRow(k.key));
   const [form, setForm] = useState(() => ({
     date: today, shift: "day", process: "crush", workers: "", note: "",
     inputIds: [], vendor: "", categoryId: "hv_cell", cellName: "", rework: null,
-    cellKg: "", cellLotNo: "",
+    cellKg: "", cellLotNo: "", storageId: "",
     outRows: outRowsFor("crush"),
   }));
   const [pickOpen, setPickOpen] = useState(false);
@@ -13073,7 +13259,7 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
     const i = f.outRows.findIndex((o) => o.rid === rid);
     if (i < 0) return f;
     const next = f.outRows.slice();
-    next.splice(i + 1, 0, mkOutRow(f.outRows[i].kind));
+    next.splice(i + 1, 0, { ...mkOutRow(f.outRows[i].kind), loc: f.outRows[i].loc || "" }); // 같은 품목은 보통 같은 곳에 둬요
     return { ...f, outRows: next };
   });
   const delOutRow = (rid) => setForm((f) => {
@@ -13200,7 +13386,7 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
   const doSubmit = async () => {
     await onSave({ ...form, crew, rework: reworkOn });
     setOverride(false);
-    setForm((f) => ({ ...f, note: "", inputIds: [], cellKg: "", cellLotNo: "", cellName: "",
+    setForm((f) => ({ ...f, note: "", inputIds: [], cellKg: "", cellLotNo: "", cellName: "", storageId: "",
       outRows: outRowsFor(f.process), rework: null }));
   };
   const submit = async () => {
@@ -13370,16 +13556,22 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
             ${chosen.length === 0 ? html`<div className="ivs-prod-empty">위에서 전기방전할 모듈 · 팩 입고 Lot을 고르세요.</div>` : html`
               <div className="ivs-table-wrap">
                 <table className="ivs-table ivs-table-fit ivs-dc-table">
-                  <thead><tr><th>Lot 번호</th><th>업체</th><th>품목</th><th className="ivs-right">입고 중량</th><th>처리 후</th></tr></thead>
+                  <thead><tr><th>Lot 번호</th><th>업체</th><th>품목</th><th className="ivs-right">입고 중량</th><th>보관장소</th><th>처리 후</th></tr></thead>
                   <tbody>
                     ${chosen.map((l) => html`<tr key=${l.id}>
                       <td className="ivs-mono"><b>${l.lotNo}</b></td><td>${l.vendor || "-"}</td><td>${l.name}</td>
                       <td className="ivs-right ivs-mono">${fmtKg(l.qtyKg)}</td>
+                      <td>${storageLabel(l.storageId) || html`<span className="ivs-dim">-</span>`}</td>
                       <td><span className="ivs-badge-dot" style=${{ background: getStage(proc.to).color }} /> ${getStage(proc.to).label} → 해체에서 선택</td>
                     </tr>`)}
                   </tbody>
                 </table>
               </div>`}
+            <div className="ivs-form-grid" style=${{ marginTop: 10 }}>
+              <${Field} label="보관장소 (옮길 때만)">
+                <${StorageSelect} value=${form.storageId} emptyLabel="지금 장소 그대로" onChange=${(id) => setForm({ ...form, storageId: id })} />
+              <//>
+            </div>
             <div className="ivs-section-hint" style=${{ marginTop: 8 }}>
               새 Lot은 만들지 않아요. 해체에서 이 Lot을 골라 나온 셀 무게를 넣으면, <b>셀 ÷ 입고 중량</b>으로 해체 회수율이 계산되어 회수율현황에 들어갑니다.
             </div>
@@ -13412,6 +13604,9 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
                   ${vendors.map((v) => html`<option key=${v.name} value=${v.name}>${v.name}</option>`)}
                 </select>
               <//>
+              <${Field} label="보관장소">
+                <${StorageSelect} value=${form.storageId} onChange=${(id) => setForm({ ...form, storageId: id })} />
+              <//>
               <${Field} label="생산 Lot (비우면 자동)">
                 <input className="ivs-input" placeholder="예: HVC0001-260910-1" value=${form.cellLotNo}
                   onChange=${(e) => setForm({ ...form, cellLotNo: e.target.value })} />
@@ -13437,7 +13632,7 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
               <table className="ivs-table">
                 <thead>
                   <tr><th>산출 품목</th><th className="ivs-right">회수량 (Kg)</th><th>변화값</th><th>생산 Lot 번호</th><th>거래처</th>
-                    <th className="ivs-right">회수율</th><th className="ivs-th-actions"></th></tr>
+                    <th>보관장소</th><th className="ivs-right">회수율</th><th className="ivs-th-actions"></th></tr>
                 </thead>
                 <tbody>
                   ${(form.outRows || []).map((o, i) => {
@@ -13487,6 +13682,9 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
                             ${vendors.map((x) => html`<option key=${x.name} value=${x.name}>${x.name}</option>`)}
                           </select>
                         </td>
+                        <td>
+                          <${StorageSelect} className="ivs-select ivs-input-cell" value=${o.loc} onChange=${(id) => setOutRow(o.rid, { loc: id })} />
+                        </td>
                         <td className="ivs-mono ivs-right">${r == null ? "-" : `${r.toFixed(1)}%`}</td>
                         <td className="ivs-outrow-btns">
                           <button type="button" className="ivs-icon-btn" title=${`${k.label} 줄 추가`}
@@ -13502,7 +13700,7 @@ function ActualTab({ lots, runs, moves, downs, settings, mes, master, canEdit, o
                   <tfoot><tr className="ivs-tablefoot">
                     <td>합계 · 생산 Lot ${(form.outRows || []).filter((o) => Number(o.qty) > 0).length}건</td>
                     <td className="ivs-mono ivs-right">${fmtKg(outSum)}</td>
-                    <td colSpan=${3}></td>
+                    <td colSpan=${4}></td>
                     <td className="ivs-mono ivs-right">${inputKg > 0 ? `${((outSum / inputKg) * 100).toFixed(1)}%` : "-"}</td>
                     <td></td>
                   </tr></tfoot>` : null}
@@ -14627,8 +14825,21 @@ function PlanCalendar({ ym, days, mes }) {
 // ---------- 기준정보 ----------
 // 계획을 만드는 데 쓰는 값들을 한곳에 모았어요. 생산계획 화면에서는 결과만 보고,
 // "왜 그 숫자가 나오는지"와 그걸 바꾸는 일은 여기서 합니다.
-function BasisTab({ mes, downs, canEdit, onSave, usage, counts, onToast, archOpen, onArchOpen }) {
+function BasisTab({ mes, downs, canEdit, onSave, usage, counts, onToast, archOpen, onArchOpen, master, lots, onSaveLocations }) {
   const [editOpen, setEditOpen] = useState(null);
+  const [locOpen, setLocOpen] = useState(false);
+  const locs = (master && master.locations) || LOCATIONS;
+  // 장소마다 지금 놓여 있는 재공 Lot (출하 · 투입 끝난 Lot은 빼요)
+  const locUse = useMemo(() => {
+    const m = new Map();
+    (lots || []).filter(isLiveLot).forEach((l) => {
+      const k = l.storageId || "";
+      const g = m.get(k) || { n: 0, kg: 0 };
+      g.n += 1; g.kg += Number(l.qtyKg) || 0;
+      m.set(k, g);
+    });
+    return m;
+  }, [lots]);
   const [eqOpen, setEqOpen] = useState(false);
   const eqList = normalizeEquipment(mes.equipment);
   const days = useMemo(() => planDays(mes), [mes]);
@@ -14706,6 +14917,29 @@ function BasisTab({ mes, downs, canEdit, onSave, usage, counts, onToast, archOpe
                 </div>`)}
             </div>
           </div>`)}
+      <//>
+
+      <${Section} title="보관장소" hint="새 로트 추가 · 생산실적에서 고르는 목록이에요 · 재공 Lot 기준"
+        actions=${canEdit ? html`<button className="ivs-btn ivs-btn-sm" onClick=${() => setLocOpen(true)}>
+          <${Icon} name="pencil" size=${13} /> 보관장소 편집</button>` : null}>
+        <div className="ivs-table-wrap">
+          <table className="ivs-table narrow ivs-loc-table">
+            <thead><tr><th>구역</th><th>보관장소</th><th className="ivs-right">재공 Lot</th><th className="ivs-right">중량 (Kg)</th></tr></thead>
+            <tbody>
+              ${locs.map((x) => { const u = locUse.get(x.id); return html`<tr key=${x.id}>
+                <td className="ivs-mono"><b>${x.code || "-"}</b></td>
+                <td>${x.name}</td>
+                <td className="ivs-mono ivs-right">${u ? u.n : "-"}</td>
+                <td className="ivs-mono ivs-right">${u ? fmtKg(u.kg) : "-"}</td>
+              </tr>`; })}
+              ${locUse.get("") ? html`<tr className="ivs-dim">
+                <td>-</td><td>지정 안 함</td>
+                <td className="ivs-mono ivs-right">${locUse.get("").n}</td>
+                <td className="ivs-mono ivs-right">${fmtKg(locUse.get("").kg)}</td>
+              </tr>` : null}
+            </tbody>
+          </table>
+        </div>
       <//>
 
       <${Section} title="근무형태 기준" hint="여기서 정한 규칙이 달력의 조업 · 휴무를 결정해요"
@@ -14853,6 +15087,8 @@ function BasisTab({ mes, downs, canEdit, onSave, usage, counts, onToast, archOpe
 
       ${editOpen ? html`<${PlanEditModal} which=${editOpen} mes=${mes} months=${months}
         onClose=${() => setEditOpen(null)} onSave=${onSave} />` : null}
+      ${locOpen ? html`<${LocationModal} locations=${locs} lots=${lots || []}
+        onSave=${async (next) => { await onSaveLocations(next); setLocOpen(false); }} onClose=${() => setLocOpen(false)} />` : null}
       ${eqOpen ? html`<${EquipMasterModal} mes=${mes} downs=${downs || []}
         onClose=${() => setEqOpen(false)} onSave=${onSave} />` : null}
     </div>`;
@@ -14860,6 +15096,63 @@ function BasisTab({ mes, downs, canEdit, onSave, usage, counts, onToast, archOpe
 
 // 설비 마스터 편집 — ▲▼ 로 공정 순서를 바꾸고, 새 설비를 코드와 함께 더해요.
 // 비가동 기록은 설비 코드로 남기 때문에, 이미 저장한 설비의 코드는 바꾸지 않고, 기록이 있는 설비는 지우지 않아요.
+// 보관장소 편집 — 구역 번호 · 이름을 고치고, 더하고, 지우고, 순서를 바꿔요. 저장을 눌러야 반영돼요.
+function LocationModal({ locations, lots, onSave, onClose }) {
+  const [rows, setRows] = useState(() => locations.map((x) => ({ ...x })));
+  const [err, setErr] = useState("");
+  const used = (id) => lots.filter((l) => l.storageId === id && isLiveLot(l)).length;
+  const upd = (i, patch) => setRows((r) => r.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  const move = (i, d) => setRows((r) => { const n = r.slice(); const j = i + d; if (j < 0 || j >= n.length) return r; [n[i], n[j]] = [n[j], n[i]]; return n; });
+  const add = () => setRows((r) => [...r, { id: `loc-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`, code: "", name: "" }]);
+  const del = (i) => setRows((r) => r.filter((_, j) => j !== i));
+  const save = () => {
+    const clean = rows.map((x) => ({ ...x, code: x.code.trim(), name: x.name.trim() })).filter((x) => x.code || x.name);
+    if (clean.some((x) => !x.name)) { setErr("이름이 빈 보관장소가 있어요."); return; }
+    const labels = clean.map(locLabel);
+    const dup = labels.find((t, i) => labels.indexOf(t) !== i);
+    if (dup) { setErr(`같은 보관장소가 두 번 있어요 — ${dup}`); return; }
+    onSave(clean);
+  };
+  const removed = locations.filter((x) => !rows.some((r) => r.id === x.id)).map((x) => ({ x, n: used(x.id) })).filter((g) => g.n > 0);
+  return html`
+    <div className="ivs-overlay" onMouseDown=${overlayDown} onClick=${(e) => overlayClick(e, onClose)}>
+      <div className="ivs-modal" onClick=${(e) => e.stopPropagation()}>
+        <div className="ivs-modal-head">
+          <h3>보관장소 편집</h3>
+          <button className="ivs-icon-btn" onClick=${onClose}><${X} size=${16} /></button>
+        </div>
+        <div className="ivs-modal-body">
+          <div className="ivs-section-hint" style=${{ marginBottom: 10 }}>
+            구역 번호와 이름을 고치면 그 장소에 있는 Lot에도 바로 반영돼요. 순서는 선택 목록 순서예요.
+          </div>
+          <div className="ivs-loc-edit">
+            <div className="ivs-loc-edit-head"><span>구역</span><span>보관장소 이름</span><span></span></div>
+            ${rows.map((x, i) => html`<div className="ivs-loc-edit-row" key=${x.id}>
+              <input className="ivs-input ivs-mono" value=${x.code} placeholder="7-1" onInput=${(e) => upd(i, { code: e.target.value })} />
+              <input className="ivs-input" value=${x.name} placeholder="분말제품 보관소" onInput=${(e) => upd(i, { name: e.target.value })} />
+              <span className="ivs-loc-edit-btns">
+                <button type="button" className="ivs-icon-btn" title="위로" disabled=${i === 0} onClick=${() => move(i, -1)}><${Icon} name="chevron-up" size=${14} /></button>
+                <button type="button" className="ivs-icon-btn" title="아래로" disabled=${i === rows.length - 1} onClick=${() => move(i, 1)}><${Icon} name="chevron-down" size=${14} /></button>
+                <button type="button" className="ivs-icon-btn ivs-menu-danger" title=${used(x.id) ? `재공 Lot ${used(x.id)}건이 있어요 — 지우면 "지정 안 함"이 돼요` : "지우기"}
+                  onClick=${() => del(i)}><${Trash2} size=${14} /></button>
+              </span>
+            </div>`)}
+          </div>
+          <button type="button" className="ivs-btn ivs-btn-sm" style=${{ marginTop: 10 }} onClick=${add}><${Plus} size=${13} /> 보관장소 추가</button>
+          ${removed.length ? html`<div className="ivs-warnbar" style=${{ marginTop: 12 }}>
+            <${AlertTriangle} size=${14} />
+            <span>${removed.map((g) => `${locLabel(g.x)} (재공 ${g.n}건)`).join(", ")} — 저장하면 이 Lot들은 "지정 안 함"이 돼요.</span>
+          </div>` : null}
+          ${err ? html`<p className="ivs-move-diff loss" style=${{ marginTop: 10 }}>${err}</p>` : null}
+        </div>
+        <div className="ivs-modal-foot">
+          <button className="ivs-btn" onClick=${onClose}>취소</button>
+          <button className="ivs-btn ivs-btn-primary" onClick=${save}>저장</button>
+        </div>
+      </div>
+    </div>`;
+}
+
 function EquipMasterModal({ mes, downs, onSave, onClose }) {
   const [rows, setRows] = useState(() => normalizeEquipment(mes.equipment)
     .map((e) => ({ ...e, devText: (e.devices || []).join(", "), isNew: false })));
@@ -16672,9 +16965,29 @@ const productionDate = (lot) => lot.lastMove || lot.receivedDate || "-";
 
 const LABEL_SIZE = { w: 100, h: 100 }; // mm — 라벨 용지 규격. 프린터 라벨을 바꾸면 여기만 고치면 돼요.
 
-function LabelModal({ lots, manager, onClose }) {
+// 라벨 글자 맞추기 — 화면에 실제로 그려진 폭을 재서, 칸을 넘으면 0.1mm씩 줄여요 (data-fit="최대,최소" mm).
+// 최소 크기로도 넘치면 두 줄로 나눠요. 인쇄도 이 화면 그대로 나가니, 종이에서도 잘리지 않습니다.
+function fitLabelText(root) {
+  if (!root) return;
+  root.querySelectorAll("[data-fit]").forEach((el) => {
+    const [max, min] = el.dataset.fit.split(",").map(Number);
+    const set = (mm) => { el.style.fontSize = `${mm.toFixed(1)}mm`; };
+    const wide = () => el.scrollWidth > el.clientWidth + 0.5;
+    el.classList.remove("wrap");
+    let mm = max; set(mm);
+    while (wide() && mm > min) { mm -= 0.1; set(mm); }
+    if (!wide()) return;
+    el.classList.add("wrap");
+    mm = max; set(mm);
+    const tall = () => el.scrollHeight > (parseFloat(getComputedStyle(el).lineHeight) || 16) * 2 + 1;
+    while ((tall() || wide()) && mm > min * 0.7) { mm -= 0.1; set(mm); }
+  });
+}
+const shiftLabel = (sh) => (sh === "night" ? "야간" : sh === "day" ? "주간" : "-");
+
+function LabelModal({ lots, runs, manager, onClose }) {
   // 라벨 모달이 열려있는 동안에만 인쇄 규칙을 끼워넣어요 (모달을 닫으면 원래대로 돌아가요).
-  //  - 용지를 라벨 크기(50×30mm)로 바꾸고
+  //  - 용지를 라벨 크기로 바꾸고
   //  - 화면의 나머지(카드·표·필터)는 인쇄에서 통째로 빼서 라벨만 나가게 해요.
   useEffect(() => {
     const st = document.createElement("style");
@@ -16688,6 +17001,10 @@ function LabelModal({ lots, manager, onClose }) {
     document.head.appendChild(st);
     return () => st.remove();
   }, []);
+  // 근무조 — 생산 Lot은 그 Lot을 만든 생산실적의 주간/야간, 입고 Lot은 마지막으로 거친 실적의 것을 써요.
+  const runById = useMemo(() => new Map((runs || []).map((r) => [r.id, r])), [runs]);
+  const sheetRef = useRef(null);
+  useLayoutEffect(() => { fitLabelText(sheetRef.current); });
 
   const rows = lots || [];
   return html`
@@ -16707,22 +17024,27 @@ function LabelModal({ lots, manager, onClose }) {
               프린터 설정에서 배율은 "실제 크기(100%)", 여백은 "없음"으로 두세요.
             </span>
           </div>
-          <div className="ivs-label-sheet">
+          <div className="ivs-label-sheet" ref=${sheetRef}>
             ${rows.map((l) => {
               const prod = productionDate(l);
+              const cat = categoryById[l.categoryId];
+              const run = runById.get(l.runId);
               return html`
                 <div className="ivs-label" key=${l.id}>
                   <div className="ivs-label-top">
-                    <div className="ivs-label-lot">${l.lotNo}</div>
-                    <div className="ivs-label-name">${l.name}</div>
+                    <div className="ivs-label-cap">Lot.</div>
+                    <div className="ivs-label-lot" data-fit="8,5">${l.lotNo}</div>
                   </div>
                   <div className="ivs-label-kg">${Number(l.qtyKg).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}<em>kg</em></div>
                   <div className="ivs-label-qr" dangerouslySetInnerHTML=${{ __html: qrSvg(labelPayload(l, manager, prod)) }} />
                   <div className="ivs-label-meta">
-                    <div><span>품목</span><b>${l.code}</b></div>
-                    <div><span>입고</span><b>${l.receivedDate}</b></div>
-                    <div><span>생산</span><b>${prod}</b></div>
-                    <div><span>담당</span><b>${manager}</b></div>
+                    <span className="k" data-fit="4.2,3">품목</span><b className="v" data-fit="4.2,3">${l.code || "-"}</b>
+                    <span className="k" data-fit="4.2,3">품명</span><b className="v" data-fit="4.2,3">${cat ? cat.label : "-"}</b>
+                    <span className="k" data-fit="4.2,3">거래처</span><b className="v v2">
+                      <span data-fit="3.9,2.8">${l.vendor || "-"}</span>${l.shipLoc ? html`<small data-fit="3.3,2.6">${l.shipLoc}</small>` : null}</b>
+                    <span className="k" data-fit="4.2,3">입고일</span><b className="v" data-fit="4.2,3">${l.receivedDate || "-"}</b>
+                    <span className="k" data-fit="4.2,3">생산일</span><b className="v" data-fit="4.2,3">${prod}</b>
+                    <span className="k" data-fit="4.2,3">근무조</span><b className="v" data-fit="4.2,3">${run ? shiftLabel(run.shift) : "-"}</b>
                   </div>
                 </div>
               `;

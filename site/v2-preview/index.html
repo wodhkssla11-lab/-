@@ -4665,6 +4665,8 @@ const DEFAULT_VENDORS = [
   { name: "새빗켐", loc: "", code: "SB" },
 ];
 const VENDORS = DEFAULT_VENDORS; // 샘플 데이터 생성용
+// 이월 배지에 마우스를 올리면 뜨는 설명
+const CARRY_TIP = "이월재고 — 시스템 기록 전부터 있던 기초재고 (전년도·이전 장부에서 넘어옴)\n표시용이라 수량·재고연령 계산에는 영향 없음";
 // 보관장소 — 기준정보에서 추가 · 수정 · 순서 변경. code = 현장 구역 번호, name = 장소 이름.
 // Lot에는 장소의 id(storageId)만 적어요. 그래야 이름을 고쳐도 모든 Lot에 그대로 반영됩니다.
 const DEFAULT_LOCATIONS = [
@@ -9772,7 +9774,7 @@ function InventorySystem() {
                         </button>
                         <span className="ivs-badge" style=${{ "--c": "#A855F7" }}>생산</span>
                       ` : l.lotNo}
-                      ${l.carriedOver ? html`<span className="ivs-badge ivs-badge-warn">이월</span>` : null}
+                      ${l.carriedOver ? html`<span className="ivs-badge ivs-badge-warn" title=${CARRY_TIP}>이월</span>` : null}
                     </td>
                     <td className="ivs-dim">${weekLabel(l.receivedDate)}</td>
                     <td><span className="ivs-badge" style=${{ "--c": stage.color }}>${stage.label}</span></td>

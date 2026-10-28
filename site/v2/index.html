@@ -639,16 +639,19 @@
   .ivs-label-kg em { font-size: 4.6mm; font-weight: 600; font-style: normal; margin-left: 1.5mm; }
   .ivs-label-qr { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
   .ivs-label-qr svg { display: block; height: 34mm; max-height: 100%; width: auto; aspect-ratio: 1 / 1; } /* Lot 번호가 두 줄이면 QR이 조금 줄어요 */
-  .ivs-label-meta { display: grid; grid-template-columns: 14mm minmax(0, 1.15fr) 14mm minmax(0, 1fr);
+  /* 정보표 — 모든 칸이 같은 규칙: 왼쪽 정렬 · 왼쪽 여백 1.5mm · 줄 높이 가운데. 제목은 글자 크기 고정(4mm),
+     내용만 칸에 맞춰 줄어요. 칸 사이는 모두 같은 연회색 선. */
+  .ivs-label-meta { display: grid; grid-template-columns: 15mm minmax(0, 1.15fr) 15mm minmax(0, 1fr);
     border-top: 0.45mm solid #111111; font-size: 4.1mm; line-height: 1.2; }
-  .ivs-label-meta > * { padding: 1.35mm 0; border-bottom: 0.2mm solid #C3CAD6; min-width: 0; display: block; overflow: hidden; box-sizing: border-box; }
-  .ivs-label-meta .k { font-weight: 800; color: #000000; white-space: nowrap; }
-  .ivs-label-meta .k:nth-child(4n+3) { padding-left: 1.8mm; border-left: 0.2mm solid #C3CAD6; } /* 왼쪽 묶음 | 오른쪽 묶음 — 가로줄과 같은 색 */
-  .ivs-label-meta .v { font-weight: 600; color: #000000; white-space: nowrap; padding-left: 1.8mm; border-left: 0.2mm solid #C3CAD6; } /* 제목 | 내용 사이 세로선 */
+  .ivs-label-meta > * { padding: 1.35mm 0 1.35mm 1.5mm; border-bottom: 0.2mm solid #C3CAD6; min-width: 0; box-sizing: border-box;
+    display: flex; align-items: center; justify-content: flex-start; text-align: left; overflow: hidden; }
+  .ivs-label-meta > :not(:nth-child(4n+1)) { border-left: 0.2mm solid #C3CAD6; }
+  .ivs-label-meta .k { font-size: 4mm; font-weight: 800; color: #000000; white-space: nowrap; }
+  .ivs-label-meta .v { font-weight: 600; color: #000000; white-space: nowrap; }
   .ivs-label-meta .v.wrap { white-space: normal; word-break: keep-all; overflow-wrap: anywhere; }
   .ivs-label-meta > *:nth-last-child(-n+4) { border-bottom: 0; }
-  .ivs-label-meta .v2 { padding-top: 0.9mm; padding-bottom: 0.9mm; }
-  .ivs-label-meta .v2 > span, .ivs-label-meta .v2 > small { display: block; white-space: nowrap; overflow: hidden; line-height: 1.15; }
+  .ivs-label-meta .v2 { flex-direction: column; align-items: flex-start; justify-content: center; padding-top: 0.9mm; padding-bottom: 0.9mm; }
+  .ivs-label-meta .v2 > span, .ivs-label-meta .v2 > small { display: block; max-width: 100%; white-space: nowrap; overflow: hidden; line-height: 1.15; }
   .ivs-label-meta .v2 > small { font-weight: 600; color: #3A414C; }
 
   @media print {
@@ -17038,13 +17041,13 @@ function LabelModal({ lots, runs, manager, onClose }) {
                   <div className="ivs-label-kg">${Number(l.qtyKg).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}<em>kg</em></div>
                   <div className="ivs-label-qr" dangerouslySetInnerHTML=${{ __html: qrSvg(labelPayload(l, manager, prod)) }} />
                   <div className="ivs-label-meta">
-                    <span className="k" data-fit="4.2,3">품목</span><b className="v" data-fit="4.2,3">${l.code || "-"}</b>
-                    <span className="k" data-fit="4.2,3">품명</span><b className="v" data-fit="4.2,3">${cat ? cat.label : "-"}</b>
-                    <span className="k" data-fit="4.2,3">거래처</span><b className="v v2">
+                    <span className="k">품목</span><b className="v" data-fit="4.2,3">${l.code || "-"}</b>
+                    <span className="k">품명</span><b className="v" data-fit="4.2,3">${cat ? cat.label : "-"}</b>
+                    <span className="k">거래처</span><b className="v v2">
                       <span data-fit="3.9,2.8">${l.vendor || "-"}</span>${l.shipLoc ? html`<small data-fit="3.3,2.6">${l.shipLoc}</small>` : null}</b>
-                    <span className="k" data-fit="4.2,3">입고일</span><b className="v" data-fit="4.2,3">${l.receivedDate || "-"}</b>
-                    <span className="k" data-fit="4.2,3">생산일</span><b className="v" data-fit="4.2,3">${prod}</b>
-                    <span className="k" data-fit="4.2,3">근무조</span><b className="v" data-fit="4.2,3">${run ? shiftLabel(run.shift) : "-"}</b>
+                    <span className="k">입고일</span><b className="v" data-fit="4.2,3">${l.receivedDate || "-"}</b>
+                    <span className="k">생산일</span><b className="v" data-fit="4.2,3">${prod}</b>
+                    <span className="k">근무조</span><b className="v" data-fit="4.2,3">${run ? shiftLabel(run.shift) : "-"}</b>
                   </div>
                 </div>
               `;

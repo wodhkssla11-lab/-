@@ -631,7 +631,7 @@
   }
   /* 라벨 — 위: "Lot." 머리 + Lot 번호(폭에 맞춰 글자 크기 자동, 잘림 없음) · 중량 · QR(34mm) · 아래: 정보 3줄 표 */
   .ivs-label-top { border-bottom: 0.45mm solid #111111; padding-bottom: 1.8mm; }
-  .ivs-label-cap { font-size: 3.4mm; font-weight: 600; color: #3A414C; line-height: 1.1; margin-bottom: 0.6mm; }
+  .ivs-label-cap { font-size: 3.75mm; font-weight: 600; color: #3A414C; line-height: 1.1; margin-bottom: 0.6mm; }
   .ivs-label-lot { font-size: 8mm; font-weight: 800; letter-spacing: -0.01em; line-height: 1.12; white-space: nowrap; overflow: hidden; }
   .ivs-label-lot.wrap { white-space: normal; word-break: break-all; }
   .ivs-label-kg { font-size: 10mm; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums;
@@ -639,12 +639,12 @@
   .ivs-label-kg em { font-size: 4.6mm; font-weight: 600; font-style: normal; margin-left: 1.5mm; }
   .ivs-label-qr { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
   .ivs-label-qr svg { display: block; height: 34mm; max-height: 100%; width: auto; aspect-ratio: 1 / 1; } /* Lot 번호가 두 줄이면 QR이 조금 줄어요 */
-  .ivs-label-meta { display: grid; grid-template-columns: 13mm minmax(0, 1fr) 24mm 23mm;
+  .ivs-label-meta { display: grid; grid-template-columns: 14mm minmax(0, 1.15fr) 14mm minmax(0, 1fr);
     border-top: 0.45mm solid #111111; font-size: 4.1mm; line-height: 1.2; }
   .ivs-label-meta > * { padding: 1.35mm 0; border-bottom: 0.2mm solid #C3CAD6; min-width: 0; display: block; overflow: hidden; box-sizing: border-box; }
   .ivs-label-meta .k { font-weight: 800; color: #000000; white-space: nowrap; }
-  .ivs-label-meta .k:nth-child(4n+3) { padding-left: 2mm; border-left: 0.2mm solid #C3CAD6; }
-  .ivs-label-meta .v { font-weight: 600; color: #000000; white-space: nowrap; padding-left: 1.5mm; }
+  .ivs-label-meta .k:nth-child(4n+3) { padding-left: 1.8mm; border-left: 0.35mm solid #111111; } /* 왼쪽 묶음 | 오른쪽 묶음 */
+  .ivs-label-meta .v { font-weight: 600; color: #000000; white-space: nowrap; padding-left: 1.8mm; border-left: 0.2mm solid #C3CAD6; } /* 제목 | 내용 사이 세로선 */
   .ivs-label-meta .v.wrap { white-space: normal; word-break: keep-all; overflow-wrap: anywhere; }
   .ivs-label-meta > *:nth-last-child(-n+4) { border-bottom: 0; }
   .ivs-label-meta .v2 { padding-top: 0.9mm; padding-bottom: 0.9mm; }
@@ -1806,7 +1806,14 @@
   .ivs-loc-edit-head { font-size: 12px; font-weight: 600; color: var(--text-dim); }
   .ivs-loc-edit-btns { display: inline-flex; gap: 2px; }
   .ivs-loc-table td { white-space: nowrap; }
-  .ivs-table td.ivs-storage { white-space: nowrap; font-size: 12.5px; }
+  .ivs-table td.ivs-storage { white-space: nowrap; }
+  .ivs-storage-code { position: relative; font-variant-numeric: tabular-nums; font-weight: 600; cursor: help;
+    border-bottom: 1px dotted var(--text-faint); outline: none; }
+  /* 구역에 마우스를 올리거나(키보드로 가면) 보관장소 이름이 바로 떠요 — 같은 줄 왼쪽에 떠서 표 스크롤에 잘리지 않아요 */
+  .ivs-storage-code[data-tip]:hover::after, .ivs-storage-code[data-tip]:focus-visible::after {
+    content: attr(data-tip); position: absolute; right: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+    z-index: 20; white-space: nowrap; padding: 5px 10px; border-radius: var(--radius-sm);
+    background: var(--text); color: var(--surface); font-size: 12.5px; font-weight: 600; box-shadow: var(--shadow); pointer-events: none; }
 </style>
 
 </head>
@@ -4685,6 +4692,9 @@ function setLocations(list) {
 const locLabel = (x) => (x ? [x.code, x.name].filter(Boolean).join(" ") : "");
 // Lot의 보관장소 이름 — 지정 안 했으면 빈 칸, 지운 장소면 그렇다고 알려요.
 const storageLabel = (id) => (!id ? "" : locationById[id] ? locLabel(locationById[id]) : "(삭제된 장소)");
+// 표에는 구역 번호만 (구역이 없는 장소면 이름), 엑셀에는 구역 · 이름을 따로 적어요.
+const storageCode = (id) => (!id ? "" : locationById[id] ? (locationById[id].code || locationById[id].name) : "?");
+const storageName = (id) => (!id ? "" : locationById[id] ? locationById[id].name : "(삭제된 장소)");
 function normalizeLocations(raw, configured) {
   const list = Array.isArray(raw) ? raw : raw && typeof raw === "object" ? Object.values(raw) : [];
   const out = list.filter((x) => x && (x.name || x.code))
@@ -9203,7 +9213,7 @@ function InventorySystem() {
   // ---------- 엑셀(.xlsx)로 내보내기 ----------
   const exportCsv = () => {
     // 최근 처리 공정 = 이 Lot이 마지막으로 거친 생산실적의 공정 (생산 Lot이면 만든 공정, 입고 Lot이면 예: 전기방전)
-    const headers = ["구분", "품목코드", "품목명", "카테고리", "거래처", "출고지", "Lot 번호", "입고/생산", "직전 투입 Lot", "최초 입고 Lot", "최초 입고일", "최근 처리 공정", "주차", "현재공정", "수량(Kg)", "총 중량(Kg)", "재고상태", "재고연령(일)", "무이동(일)", "입고일", "출하일", "최근 이동일", "보관장소", "물중량(Kg)", "제외중량(Kg)", "톨링품", "이월"];
+    const headers = ["구분", "품목코드", "품목명", "카테고리", "거래처", "출고지", "Lot 번호", "입고/생산", "직전 투입 Lot", "최초 입고 Lot", "최초 입고일", "최근 처리 공정", "주차", "현재공정", "수량(Kg)", "총 중량(Kg)", "재고상태", "재고연령(일)", "무이동(일)", "입고일", "출하일", "최근 이동일", "구역", "보관장소", "물중량(Kg)", "제외중량(Kg)", "톨링품", "이월"];
     const rows = filtered.map((l) => {
       // 우리가 만든 Lot이면 어떤 Lot에서 나왔는지 같이 적어요 (직전 투입 Lot → 최초 입고 Lot).
       const made = l.origin === "production";
@@ -9219,13 +9229,13 @@ function InventorySystem() {
         pr, weekLabel(l.receivedDate),
         getStage(l.stage).label, l.qtyKg, lotNetKg(l),
         st ? st.status.label : "", st ? st.age : "", st ? st.idle : "",
-        l.receivedDate, shipDateOf(l) || "", l.lastMove ?? "", storageLabel(l.storageId),
+        l.receivedDate, shipDateOf(l) || "", l.lastMove ?? "", l.storageId && locationById[l.storageId] ? locationById[l.storageId].code : "", storageName(l.storageId),
         l.waterKg ?? "", l.excludeKg ?? "",
         l.tolling ? "Y" : "", l.carriedOver ? "Y" : "",
       ];
     });
     const today = localDateStr();
-    const widths = [10, 11, 20, 14, 20, 11, 20, 9, 24, 24, 13, 13, 18, 13, 12, 13, 10, 11, 10, 12, 12, 13, 24, 12, 13, 8, 7];
+    const widths = [10, 11, 20, 14, 20, 11, 20, 9, 24, 24, 13, 13, 18, 13, 12, 13, 10, 11, 10, 12, 12, 13, 8, 22, 12, 13, 8, 7];
     downloadXlsx(`재고현황_${today}.xlsx`, `재고현황 ${today}`, [headers, ...rows], widths);
     showToast("엑셀 파일로 내보냈어요.", "success");
   };
@@ -9690,7 +9700,7 @@ function InventorySystem() {
                     <td className="ivs-mono">${l.receivedDate}</td>
                     <td className="ivs-mono">${shipDateOf(l) || html`<span className="ivs-dim">-</span>`}</td>
                     <td className="ivs-dim ivs-hide-sm">${l.lastMove ?? "-"}</td>
-                    <td className="ivs-hide-sm ivs-storage">${l.storageId ? storageLabel(l.storageId) : html`<span className="ivs-dim">-</span>`}</td>
+                    <td className="ivs-hide-sm ivs-storage">${l.storageId ? html`<span className="ivs-storage-code" tabIndex=${0} data-tip=${storageLabel(l.storageId)} aria-label=${storageLabel(l.storageId)}>${storageCode(l.storageId)}</span>` : html`<span className="ivs-dim">-</span>`}</td>
                     <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.waterKg)}</td>
                     <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.excludeKg)}</td>
                     <td className="ivs-row-menu-cell">
@@ -16944,7 +16954,7 @@ function LabelModal({ lots, runs, manager, onClose }) {
                   <div className="ivs-label-qr" dangerouslySetInnerHTML=${{ __html: qrSvg(labelPayload(l, manager, prod)) }} />
                   <div className="ivs-label-meta">
                     <span className="k" data-fit="4.2,3">품목</span><b className="v" data-fit="4.2,3">${l.code || "-"}</b>
-                    <span className="k" data-fit="4.2,3">품명(카테고리)</span><b className="v" data-fit="4.2,3">${cat ? cat.label : "-"}</b>
+                    <span className="k" data-fit="4.2,3">품명</span><b className="v" data-fit="4.2,3">${cat ? cat.label : "-"}</b>
                     <span className="k" data-fit="4.2,3">거래처</span><b className="v v2">
                       <span data-fit="3.9,2.8">${l.vendor || "-"}</span>${l.shipLoc ? html`<small data-fit="3.3,2.6">${l.shipLoc}</small>` : null}</b>
                     <span className="k" data-fit="4.2,3">입고일</span><b className="v" data-fit="4.2,3">${l.receivedDate || "-"}</b>

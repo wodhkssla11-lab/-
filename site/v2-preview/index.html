@@ -643,7 +643,7 @@
     border-top: 0.45mm solid #111111; font-size: 4.1mm; line-height: 1.2; }
   .ivs-label-meta > * { padding: 1.35mm 0; border-bottom: 0.2mm solid #C3CAD6; min-width: 0; display: block; overflow: hidden; box-sizing: border-box; }
   .ivs-label-meta .k { font-weight: 800; color: #000000; white-space: nowrap; }
-  .ivs-label-meta .k:nth-child(4n+3) { padding-left: 1.8mm; border-left: 0.35mm solid #111111; } /* 왼쪽 묶음 | 오른쪽 묶음 */
+  .ivs-label-meta .k:nth-child(4n+3) { padding-left: 1.8mm; border-left: 0.2mm solid #C3CAD6; } /* 왼쪽 묶음 | 오른쪽 묶음 — 가로줄과 같은 색 */
   .ivs-label-meta .v { font-weight: 600; color: #000000; white-space: nowrap; padding-left: 1.8mm; border-left: 0.2mm solid #C3CAD6; } /* 제목 | 내용 사이 세로선 */
   .ivs-label-meta .v.wrap { white-space: normal; word-break: keep-all; overflow-wrap: anywhere; }
   .ivs-label-meta > *:nth-last-child(-n+4) { border-bottom: 0; }
@@ -1807,13 +1807,7 @@
   .ivs-loc-edit-btns { display: inline-flex; gap: 2px; }
   .ivs-loc-table td { white-space: nowrap; }
   .ivs-table td.ivs-storage { white-space: nowrap; }
-  .ivs-storage-code { position: relative; font-variant-numeric: tabular-nums; font-weight: 600; cursor: help;
-    border-bottom: 1px dotted var(--text-faint); outline: none; }
-  /* 구역에 마우스를 올리거나(키보드로 가면) 보관장소 이름이 바로 떠요 — 같은 줄 왼쪽에 떠서 표 스크롤에 잘리지 않아요 */
-  .ivs-storage-code[data-tip]:hover::after, .ivs-storage-code[data-tip]:focus-visible::after {
-    content: attr(data-tip); position: absolute; right: calc(100% + 8px); top: 50%; transform: translateY(-50%);
-    z-index: 20; white-space: nowrap; padding: 5px 10px; border-radius: var(--radius-sm);
-    background: var(--text); color: var(--surface); font-size: 12.5px; font-weight: 600; box-shadow: var(--shadow); pointer-events: none; }
+  .ivs-storage-code { font-variant-numeric: tabular-nums; }
 </style>
 
 </head>
@@ -9700,7 +9694,7 @@ function InventorySystem() {
                     <td className="ivs-mono">${l.receivedDate}</td>
                     <td className="ivs-mono">${shipDateOf(l) || html`<span className="ivs-dim">-</span>`}</td>
                     <td className="ivs-dim ivs-hide-sm">${l.lastMove ?? "-"}</td>
-                    <td className="ivs-hide-sm ivs-storage">${l.storageId ? html`<span className="ivs-storage-code" tabIndex=${0} data-tip=${storageLabel(l.storageId)} aria-label=${storageLabel(l.storageId)}>${storageCode(l.storageId)}</span>` : html`<span className="ivs-dim">-</span>`}</td>
+                    <td className="ivs-hide-sm ivs-storage">${l.storageId ? html`<span className="ivs-storage-code" title=${storageName(l.storageId)}>${storageCode(l.storageId)}</span>` : html`<span className="ivs-dim">-</span>`}</td>
                     <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.waterKg)}</td>
                     <td className="ivs-mono ivs-right ivs-hide-sm">${fmtKg(l.excludeKg)}</td>
                     <td className="ivs-row-menu-cell">

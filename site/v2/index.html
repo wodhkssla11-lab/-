@@ -1658,6 +1658,12 @@
   .ivs-table td { padding: 10px 12px; }
   .ivs-table tbody tr:nth-child(even) { background: transparent; }
   .ivs-table tbody tr:hover { background: var(--accent-soft); }
+  /* 체크한 행 — 옅은 코발트 음영 + 왼쪽 코발트 띠 (마우스를 올린 행보다 한 단계 진하게) */
+  .ivs-table tbody tr.ivs-row-sel { background: color-mix(in srgb, var(--accent) 13%, transparent); }
+  .ivs-table tbody tr.ivs-row-sel:hover { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .ivs-table tbody tr.ivs-row-sel > td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+  .ivs-root[data-theme="dark"] .ivs-table tbody tr.ivs-row-sel { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+  .ivs-root[data-theme="dark"] .ivs-table tbody tr.ivs-row-sel:hover { background: color-mix(in srgb, var(--accent) 28%, transparent); }
 
   /* 칩 · 배지 — 꼬리표처럼 각진 3px */
   .ivs-chip, .ivs-badge { border-radius: 3px; font-weight: 600; }
@@ -4667,6 +4673,8 @@ const DEFAULT_VENDORS = [
   { name: "새빗켐", loc: "", code: "SB" },
 ];
 const VENDORS = DEFAULT_VENDORS; // 샘플 데이터 생성용
+// 엑셀 장부 "비고" — Lot 번호의 (P)는 열분해(Pyrolysis)를 거친 품목 코드라, 열처리 후 Lot이라고 적어요.
+const lotRemark = (l) => (/\(P\)/i.test(String((l && l.lotNo) || "")) ? "열처리 후" : "");
 // 이월 배지에 마우스를 올리면 뜨는 설명
 const CARRY_TIP = "이월재고 — 시스템 기록 전부터 있던 기초재고 (전년도·이전 장부에서 넘어옴)\n표시용이라 수량·재고연령 계산에는 영향 없음";
 // 보관장소 — 기준정보에서 추가 · 수정 · 순서 변경. code = 현장 구역 번호, name = 장소 이름.
@@ -9299,7 +9307,7 @@ function InventorySystem() {
   // ---------- 엑셀(.xlsx)로 내보내기 ----------
   const exportCsv = () => {
     // 최근 처리 공정 = 이 Lot이 마지막으로 거친 생산실적의 공정 (생산 Lot이면 만든 공정, 입고 Lot이면 예: 전기방전)
-    const headers = ["구분", "품목코드", "품목명", "카테고리", "거래처", "출고지", "Lot 번호", "입고/생산", "직전 투입 Lot", "최초 입고 Lot", "최초 입고일", "최근 처리 공정", "주차", "현재공정", "수량(Kg)", "총 중량(Kg)", "재고상태", "재고연령(일)", "무이동(일)", "입고일", "출하일", "최근 이동일", "구역", "보관장소", "물중량(Kg)", "제외중량(Kg)", "톨링품", "이월"];
+    const headers = ["구분", "품목코드", "품목명", "카테고리", "거래처", "출고지", "Lot 번호", "입고/생산", "직전 투입 Lot", "최초 입고 Lot", "최초 입고일", "최근 처리 공정", "주차", "현재공정", "수량(Kg)", "총 중량(Kg)", "재고상태", "재고연령(일)", "무이동(일)", "입고일", "출하일", "최근 이동일", "구역", "보관장소", "물중량(Kg)", "제외중량(Kg)", "톨링품", "이월", "비고"];
     const rows = filtered.map((l) => {
       // 우리가 만든 Lot이면 어떤 Lot에서 나왔는지 같이 적어요 (직전 투입 Lot → 최초 입고 Lot).
       const made = l.origin === "production";
@@ -9318,10 +9326,11 @@ function InventorySystem() {
         l.receivedDate, shipDateOf(l) || "", l.lastMove ?? "", l.storageId && locationById[l.storageId] ? locationById[l.storageId].code : "", storageName(l.storageId),
         l.waterKg ?? "", l.excludeKg ?? "",
         l.tolling ? "Y" : "", l.carriedOver ? "Y" : "",
+        lotRemark(l),
       ];
     });
     const today = localDateStr();
-    const widths = [10, 11, 20, 14, 20, 11, 20, 9, 24, 24, 13, 13, 18, 13, 12, 13, 10, 11, 10, 12, 12, 13, 8, 22, 12, 13, 8, 7];
+    const widths = [10, 11, 20, 14, 20, 11, 20, 9, 24, 24, 13, 13, 18, 13, 12, 13, 10, 11, 10, 12, 12, 13, 8, 22, 12, 13, 8, 7, 14];
     const ledger = { name: "재고현황", rows: [headers.map((h) => ({ v: h, s: "hdr" })), ...rows], widths, freezeRow: 1,
       autoFilter: `A1:${colLetter(headers.length - 1)}${rows.length + 1}` };
     downloadXlsxBook(`재고현황_${today}.xlsx`, [ledger, stockSummarySheet(headers, rows, today)]);
@@ -9760,7 +9769,7 @@ function InventorySystem() {
                 const st = stockById.get(l.id);
                 return html`
                   <${Fragment} key=${l.id}>
-                  <tr>
+                  <tr className=${selected.has(l.id) ? "ivs-row-sel" : ""}>
                     <td><input type="checkbox" checked=${selected.has(l.id)} onChange=${() => toggleSelectOne(l.id)} /></td>
                     <td><span className="ivs-lotcls" style=${{ "--c": lc.color }}>${lc.label}</span></td>
                     <td className="ivs-mono">${l.code}</td>

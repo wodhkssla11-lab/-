@@ -4721,8 +4721,12 @@ function normalizeLocations(raw, configured) {
 }
 
 const DEFAULT_MASTER = { configured: true, vendors: DEFAULT_VENDORS, categories: DEFAULT_CATEGORIES, locations: DEFAULT_LOCATIONS };
+// 시스템 이름은 "DRT · 생산시스템". 예전 기본 제목(…재고관리)으로 저장돼 있으면 새 이름으로 보여줘요.
+// 설정에서 직접 다른 제목을 적어 둔 경우는 그대로 둡니다.
+const OLD_TITLES = ["리사이클링팀 · 재고관리", "DRT · 재고관리", "DRT_ 재고관리", "DRT 재고관리", "DRT·재고관리"];
+const renameOldTitle = (st) => (OLD_TITLES.includes(String(st.title || "").trim()) ? { ...st, title: "DRT · 생산시스템" } : st);
 const DEFAULT_SETTINGS = {
-  title: "리사이클링팀 · 재고관리",
+  title: "DRT · 생산시스템",
   subtitle: "입고부터 출하까지 — 생산실적으로 재고가 함께 움직이는 Lot 단위 공정 관리",
   editPin: "", // 편집 잠금 — 아는 사람만 입력/수정 가능 (설정에서 변경)
   viewPin: "", // 보기 잠금 — 이게 있으면 링크를 열어도 이 PIN을 넣기 전엔 아무것도 안 보여요
@@ -5863,7 +5867,7 @@ function docToLive(doc) {
     moves: list(doc.moves).sort(newestFirst("date")),
     runs: list(doc.runs).sort(newestFirst("date")),
     downs: list(doc.downs).sort(newestFirst("date")),
-    settings: { ...DEFAULT_SETTINGS, ...(doc.settings || {}) },
+    settings: renameOldTitle({ ...DEFAULT_SETTINGS, ...(doc.settings || {}) }),
     master: normalizeMaster(doc.master),
     mes: normalizeMes(doc.mes),
     usage: doc.usage || {},
@@ -17120,7 +17124,7 @@ function ConfirmModal({ icon, title, body, confirmLabel, danger, onCancel, onCon
     const hist = historySeed();
     LIVE_DOC = liveToDoc({
       lots: seedData().concat(agedSeedLots(), hist.lots), moves: moveSeedData(), runs: runSeedData().concat(hist.runs), downs: downSeedData(), master: {},
-      settings: { title: "DRT · 재고관리", subtitle: "로트 단위 공정 흐름 관리", editPin: "", viewPin: "" },
+      settings: { title: "DRT · 생산시스템", subtitle: "로트 단위 공정 흐름 관리", editPin: "", viewPin: "" },
       mes: {},
     });
     LIVE_DATA = docToLive(LIVE_DOC);
